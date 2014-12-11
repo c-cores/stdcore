@@ -8,6 +8,9 @@
 #include "memory.h"
 #include "container.h"
 #include "math.h"
+#include <csignal>
+#include "stdio.h"
+#include "stdlib.h"
 
 #ifndef array_h
 #define array_h
@@ -448,17 +451,17 @@ struct array
 	value_type &at(int i) const
 	{
 		if (i < 0)
-			return *(data + i + count);
-		else
-			return *(data + i);
+			i += count;
+
+		return *(data + i);
 	}
 
 	value_type &operator[](int i) const
 	{
 		if (i < 0)
-			return *(data + i + count);
-		else
-			return *(data + i);
+			i += count;
+
+		return *(data + i);
 	}
 
 	value_type &front() const

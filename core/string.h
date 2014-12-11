@@ -86,8 +86,10 @@ struct string : array<char>
 
 	using array<char>::operator=;
 	string &operator=(const char *str);
+	string &operator=(char *str);
 
 	string &operator+=(const char *str);
+	string &operator+=(char *str);
 	string &operator+=(string str);
 
 	char *c_str();

@@ -33,7 +33,6 @@
 
 namespace core
 {
-
 typedef complex<float>  complexf;
 typedef complex<int>	complexi;
 
@@ -120,7 +119,7 @@ typedef vec<poly, 4> field4;
 typedef vec<poly, 5> field5;
 
 
-typedef vec<Float,  1>	vec1F;
+/*typedef vec<Float,  1>	vec1F;
 typedef vec<Float,  2>	vec2F;
 typedef vec<Float,  3>	vec3F;
 typedef vec<Float,  4>	vec4F;
@@ -222,7 +221,73 @@ typedef vec5I				cuboidI;
 typedef vec5I				hypersphereI;
 typedef vec5I				hypercubeI;
 typedef vec6I				hyperellipseI;
-typedef vec6I				tesseractI;
+typedef vec6I				tesseractI;*/
+
+typedef vec<float, 3> uvw;
+typedef vec<float, 2> uv;
+typedef vec<float, 4> xyzw;
+typedef vec<float, 3> xyz;
+typedef vec<unsigned char, 4> rgba;
+typedef vec<unsigned char, 3> rgb;
+typedef vec<float, 4> rgba_hdr;
+typedef vec<float, 3> rgb_hdr;
+
+template <class type, int n>
+struct space
+{
+	space()
+	{
+		for (int i = 0; i < n; i++)
+			axis[i][i] = (type)1.0;
+	}
+
+	template <class angle_type>
+	space(vec<angle_type, n> angle, bool ror = true)
+	{
+		if (ror)
+			for (int i = 0; i < n; i++)
+			{
+				axis[i][i] = (type)1.0;
+				axis[i] = core::ror(axis[i], angle);
+			}
+		else
+			for (int i = 0; i < n; i++)
+			{
+				axis[i][i] = (type)1.0;
+				axis[i] = core::rol(axis[i], angle);
+			}
+	}
+
+	~space()
+	{
+
+	}
+
+	vec<type, n> axis[n];
+
+	template <class angle_type>
+	void ror(vec<angle_type, n> angle)
+	{
+		for (int i = 0; i < n; i++)
+			axis[i] = core::ror(axis[i], angle);
+	}
+
+	template <class angle_type>
+	void rol(vec<angle_type, n> angle)
+	{
+		for (int i = 0; i < n; i++)
+			axis[i] = core::rol(axis[i], angle);
+	}
+
+	template <class input_type>
+	vec<type, n> tranform(vec<input_type, n> v)
+	{
+		vec<type, n> result;
+		for (int i = 0; i < n; i++)
+			result += v[i]*axis[i];
+		return result;
+	}
+};
 
 }
 

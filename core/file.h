@@ -53,6 +53,7 @@ public:
 };
 
 file &operator<<(file &fout, const char *str);
+file &operator<<(file &fout, char *str);
 file &operator<<(file &fout, string str);
 file &operator<<(file &fout, char i);
 file &operator<<(file &fout, unsigned char i);

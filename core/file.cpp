@@ -176,6 +176,12 @@ file &operator<<(file &fout, const char *str)
 	return fout;
 }
 
+file &operator<<(file &fout, char *str)
+{
+	fout.write(str);
+	return fout;
+}
+
 file &operator<<(file &fout, string str)
 {
 	fout.write(str);

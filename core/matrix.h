@@ -23,6 +23,7 @@
 
 #include "big.h"
 #include "vector.h"
+#include "file.h"
 
 #ifndef matrix_h
 #define matrix_h
@@ -72,9 +73,10 @@ struct mat
 		data[0][0] = first;
 		for (int i = 0; i < v; i++)
 			for (int j = (i == 0 ? 1 : 0); j < h; j++)
-				data[i][j] = va_arg(arguments, t2);
+				data[i][j] = (t)va_arg(arguments, t2);
 		va_end(arguments);
 	}
+
 	mat(float first, ...)
 	{
 		va_list arguments;
@@ -83,7 +85,7 @@ struct mat
 		data[0][0] = first;
 		for (int i = 0; i < v; i++)
 			for (int j = (i == 0 ? 1 : 0); j < h; j++)
-				data[i][j] = va_arg(arguments, double);
+				data[i][j] = (t)va_arg(arguments, double);
 		va_end(arguments);
 	}
 
@@ -223,215 +225,16 @@ struct mat
 		return *this;
 	}
 
-	void print(FILE *file)
-	{
-		for (int i = 0; i < v; i++)
-			data[i].print(file);
-		fprintf(file, "\n");
-	}
 
-	void print()
-	{
-		print(stdout);
-	}
 };
 
-template <int v, int h>
-struct mat<float, v, h>
+template <class t, int v, int h>
+file &operator<<(file &f, mat<t, v, h> m)
 {
-	mat()
-	{
-		for (int i = 0; i < v; i++)
-			this->data[i] = vec<float, h>();
-	}
-
-	mat(const char *str)
-	{
-		char vector[256];
-		char last_bracket = ' ';
-		int j = 0;
-		int k = 0;
-		for (int i = 0; str[i] != '\0' && k < v; i++)
-		{
-			if (str[i] == '[')
-			{
-				last_bracket = '[';
-				j = 0;
-			}
-			else if (str[i] == ']' && last_bracket == '[')
-			{
-				last_bracket = ']';
-				vector[j++] = '\0';
-				data[k++] = vec<float, h>((const char *)vector);
-			}
-			else
-				vector[j++] = str[i];
-		}
-	}
-
-	template <class t2>
-	mat(t2 first, ...)
-	{
-		va_list arguments;
-
-		va_start(arguments, first);
-		data[0][0] = first;
-		for (int i = 0; i < v; i++)
-			for (int j = (i == 0 ? 1 : 0); j < h; j++)
-				data[i][j] = va_arg(arguments, t2);
-		va_end(arguments);
-	}
-
-	mat(float first, ...)
-	{
-		va_list arguments;
-
-		va_start(arguments, first);
-		data[0][0] = first;
-		for (int i = 0; i < v; i++)
-			for (int j = (i == 0 ? 1 : 0); j < h; j++)
-				data[i][j] = va_arg(arguments, double);
-		va_end(arguments);
-	}
-	~mat()
-	{
-
-	}
-
-	vec<float, h> data[v];
-
-	template <class t2, int v2, int h2>
-	mat<float, v, h> &operator=(mat<t2, v2, h2> m)
-	{
-		for (int i = 0; i < min(v, v2); i++)
-			data[i] = m[i];
-		return *this;
-	}
-
-	template <class t2>
-	mat<float, v, h> &operator+=(mat<t2, v, h> m)
-	{
-		*this = *this + m;
-		return *this;
-	}
-
-	template <class t2>
-	mat<float, v, h> &operator-=(mat<t2, v, h> m)
-	{
-		*this = *this - m;
-		return *this;
-	}
-
-	template <class t2>
-	mat<float, v, h> &operator*=(mat<t2, h, v> m)
-	{
-		*this = *this * m;
-		return *this;
-	}
-
-	template <class t2>
-	mat<float, v, h> &operator/=(mat<t2, h, v> m)
-	{
-		*this = *this / m;
-		return *this;
-	}
-
-	template <class t2>
-	mat<float, v, h> &operator+=(t2 f)
-	{
-		*this = *this + f;
-		return *this;
-	}
-
-	template <class t2>
-	mat<float, v, h> &operator-=(t2 f)
-	{
-		*this = *this - f;
-		return *this;
-	}
-
-	template <class t2>
-	mat<float, v, h> &operator*=(t2 f)
-	{
-		*this = *this * f;
-		return *this;
-	}
-
-	template <class t2>
-	mat<float, v, h> &operator/=(t2 f)
-	{
-		*this = *this / f;
-		return *this;
-	}
-
-	vec<float, h> &operator[](int index)
-	{
-		return data[index];
-	}
-
-	vec<ref<float>, v> operator()(int index)
-	{
-		vec<ref<float>, v> result;
-
-		for (int i = 0; i < v; i++)
-			result[i].value = &(data[i][index]);
-
-		return result;
-	}
-
-	mat<ref<float>,v,h> operator()(int a, int b, int c, int d)
-	{
-		mat<ref<float>, v, h> result;
-
-		for (int i = a; i <= b; i++)
-			result.data[i-a] = data[i](c, d);
-		return result;
-	}
-
-	mat<float, v-1, h-1> remove(int y, int x)
-	{
-		mat<float, v-1, h-1> result;
-		int i, j, a, b;
-
-		for (i = 0, a = 0; i < v; i == y ? i+=2 : i++, a++)
-			for (j = 0, b = 0; j < h; j == x ? j+=2 : i++, b++)
-				result[a][b] = data[i][j];
-
-		return result;
-	}
-
-	mat<float, v, h> &swapr(int a, int b)
-	{
-		vec<float, h> temp = data[a];
-		data[a] = data[b];
-		data[b] = temp;
-		return *this;
-	}
-
-	mat<float, v, h> &swapc(int a, int b)
-	{
-		float temp;
-		for (int i = 0; i < h; i++)
-		{
-			temp = data[i].data[a];
-			data[i].data[a] = data[i].data[b];
-			data[i].data[b] = temp;
-		}
-		return *this;
-	}
-
-	void print(FILE *file)
-	{
-		for (int i = 0; i < v; i++)
-			data[i].print(file);
-		fprintf(file, "\n");
-	}
-
-	void print()
-	{
-		print(stdout);
-	}
-};
+	for (int i = 0; i < v; i++)
+		f << m[i] << endl;
+	return f;
+}
 
 template <class t, int v, int h>
 mat<t, v, h> operator-(mat<t, v, h> m)
@@ -579,76 +382,76 @@ t trace(mat<t, s, s> m)
 	return result;
 }
 
-/* det
+/* determinant
  *
  * Calculates the determinant of an s x s matrix.
  */
 template <class t, int s>
-t det(mat<t, s, s> m)
+t determinant(mat<t, s, s> m)
 {
 	int i, j;
 	t result = 0;
 	for (i = 0, j = 1; i < s; i++, j*=-1)
 		if (m[0][i] != 0)
-			result += (t)j*m[0][i]*det(m.remove(0, i));
+			result += (t)j*m[0][i]*determinant(m.remove(0, i));
 	return result;
 }
 
-/* det
+/* determinant
  *
  * Calculates the determinant of a 1 x 1 matrix.
  */
 template <class t>
-t det(mat<t, 1, 1> m)
+t determinant(mat<t, 1, 1> m)
 {
 	return m[0][0];
 }
 
-/* det
+/* determinant
  *
  * Calculates the determinant of a 2 x 2 matrix.
  */
 template <class t>
-t det(mat<t, 2, 2> m)
+t determinant(mat<t, 2, 2> m)
 {
 	return m[0][0]*m[1][1] - m[0][1]*m[1][0];
 }
 
-/* det
+/* determinant
  *
  * Calculates the determinant of a 3 x 3 matrix.
  */
 template <class t>
-t det(mat<t, 3, 3> m)
+t determinant(mat<t, 3, 3> m)
 {
 	return m[0][0]*(m[1][1]*m[2][2] - m[1][2]*m[2][1]) +
 		   m[0][1]*(m[1][2]*m[2][0] - m[1][0]*m[2][2]) +
 		   m[0][2]*(m[1][0]*m[2][1] - m[1][1]*m[2][0]);
 }
 
-/* adj
+/* adjugate
  *
  * Calculates the adjugate matrix of the matrix m.
  */
 template <class t, int s>
-mat<t, s, s> adj(mat<t, s, s> m)
+mat<t, s, s> adjugate(mat<t, s, s> m)
 {
 	mat<t, s, s> result;
 	int i, j, k, l;
 
 	for (i = 0, k = 1; i < s; i++, k*=-1)
 		for (j = 0, l = 1; j < s; j++, l*=-1)
-			result[i][j] = (t)(k*l)*det(m.remove(i, j));
+			result[i][j] = (t)(k*l)*determinant(m.remove(i, j));
 
 	return result;
 }
 
-/* T
+/* transpose
  *
  * Returns the transpose of the matrix m.
  */
 template <class t, int v, int h>
-mat<t, h, v> T(mat<t, v, h> m)
+mat<t, h, v> transpose(mat<t, v, h> m)
 {
 	mat<t, h, v> result;
 	int i, j;
@@ -660,17 +463,17 @@ mat<t, h, v> T(mat<t, v, h> m)
 	return result;
 }
 
-/* I
+/* identity
  *
- * Returns an s-dimensional identity matrix.
+ * Returns a v,h-dimensional identity matrix.
  */
-template <class t, int s>
-mat<t, s, s> I()
+template <class t, int v, int h>
+mat<t, v, h> identity()
 {
-	mat<t, s, s> result;
+	mat<t, v, h> result;
 	int i;
 
-	for (i = 0; i < s; i++)
+	for (i = 0; i < v && i < h; i++)
 		result[i][i] = (t)1;
 
 	return result;
@@ -678,12 +481,145 @@ mat<t, s, s> I()
 
 /* rref
  *
- * returns the reduced row echelon form of the matrix m.
+ * returns the reduced row-echelon form of the matrix m.
+ *
+ * A matrix is in reduced row-echelon form (RREF) if it satisfies all of the following conditions.
+ *  1. If a row has nonzero entries, then the first non-zero entry is 1 called the leading 1 in this row.
+ *  2. If a column contains a leading one then all other entries in that column are zero.
+ *  3. If a row contains a leading one the each row above contains a leading one further to the left.
+ * The last point implies that if a matrix in rref has any zero rows they must appear as the
+ * last rows of the matrix.
  */
 template <class t, int v, int h>
 mat<t, v, h> rref(mat<t, v, h> m)
 {
-	perror("Error: Function \"rref\" not yet implemented.\n");
+	int i = 0, j = 0;
+	while (i < v && j < h)
+	{
+		// If m_ij = 0 swap the i-th row with some other row below to guarantee that
+		// m_ij != 0. The non-zero entry in the (i, j)-position is called a pivot.
+		if (m[i][j] == 0)
+		{
+			for (int k = 0; k < v; k++)
+				if (m[k][j] != 0)
+				{
+					m.swapr(i, k);
+					k = v;
+				}
+		}
+
+		// If all entries in the column are zero, increase j by 1.
+		if (m[i][j] != 0)
+		{
+			// Divide the i-th row by m_ij to make the pivot entry = 1.
+			m[i] /= m[i][j];
+
+			// Eliminate all other entries in the j-th column by subtracting suitable
+			// multiples of the i-th row from the other rows.
+			for (int k = 0; k < v; k++)
+				if (k != i)
+					m[k] -= m[i]*m[k][j];
+
+			// Increase i by 1 and j by 1 to choose the new pivot element. Return to Step 1.
+			i++;
+		}
+		j++;
+	}
+	return m;
+}
+
+/* inverse
+ *
+ * Attempts to invert the matrix: This is not guaranteed to be correct.
+ * If the matrix isn't invertible given the value type, then the matrix returned
+ * won't be the inverse.
+ *
+ * A matrix is in reduced row-echelon form (RREF) if it satisfies all of the following conditions.
+ *  1. If a row has nonzero entries, then the first non-zero entry is 1 called the leading 1 in this row.
+ *  2. If a column contains a leading one then all other entries in that column are zero.
+ *  3. If a row contains a leading one the each row above contains a leading one further to the left.
+ * The last point implies that if a matrix in rref has any zero rows they must appear as the
+ * last rows of the matrix.
+ */
+template <class t, int v, int h>
+mat<t, v, h> inverse(mat<t, v, h> m)
+{
+	mat<t, v, h> result = identity<t, v, h>();
+	int i = 0, j = 0;
+	while (i < v && j < h)
+	{
+		// If m_ij = 0 swap the i-th row with some other row below to guarantee that
+		// m_ij != 0. The non-zero entry in the (i, j)-position is called a pivot.
+		if (m[i][j] == 0)
+		{
+			for (int k = 0; k < v; k++)
+				if (m[k][j] != 0)
+				{
+					m.swapr(i, k);
+					result.swapr(i, k);
+					k = v;
+				}
+		}
+
+		// If all entries in the column are zero, increase j by 1.
+		if (m[i][j] != 0)
+		{
+			// Divide the i-th row by m_ij to make the pivot entry = 1.
+			result[i] /= m[i][j];
+			m[i] /= m[i][j];
+
+			// Eliminate all other entries in the j-th column by subtracting suitable
+			// multiples of the i-th row from the other rows.
+			for (int k = 0; k < v; k++)
+				if (k != i)
+				{
+					result[k] -= result[i]*m[k][j];
+					m[k] -= m[i]*m[k][j];
+				}
+
+			// Increase i by 1 and j by 1 to choose the new pivot element. Return to Step 1.
+			i++;
+		}
+		j++;
+	}
+	return result;
+}
+
+/* invertible
+ *
+ * Checks to see if a matrix is invertible
+ *
+ * A matrix m is invertible if it is square (v = h) and determinant(m) != 0
+ */
+template <class t, int v, int h>
+bool invertible(mat<t, v, h> m)
+{
+	if (v != h)
+		return false;
+
+	if (determinant(m) == 0)
+		return false;
+
+	return true;
+}
+
+/* rank
+ *
+ * returns the number of linearly independent columns
+ */
+template <class t, int v, int h>
+int rank(mat<t, v, h> m)
+{
+	int count = 0;
+	mat<t, v, h> check = rref(m);
+	for (int i = 0; i < v; i++)
+		for (int j = 0; j < h; j++)
+			if (check[i][j] != 0)
+			{
+				count++;
+				j = h;
+			}
+	return count;
 }
 
 /* rotate

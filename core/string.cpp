@@ -995,7 +995,24 @@ string &string::operator=(const char *str)
 	return *this;
 }
 
+string &string::operator=(char *str)
+{
+	array<char>::resize(strlen(str));
+	memcpy(data, str, size()*sizeof(char));
+	return *this;
+}
+
 string &string::operator+=(const char *str)
+{
+	array<const char> temp;
+	temp.data = str;
+	temp.count = strlen(str);
+	temp.capacity = temp.count;
+	array<char>::merge_back(temp);
+	return *this;
+}
+
+string &string::operator+=(char *str)
 {
 	array<const char> temp;
 	temp.data = str;

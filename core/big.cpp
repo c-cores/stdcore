@@ -23,924 +23,1195 @@
 
 #include "big.h"
 #include "math.h"
+#include <float.h>
 
 namespace core
 {
 
-Float::Float()
+// Integers
+
+Integer::Integer()
 {
-	mpf_init(value);
+	sign = 0;
 }
 
-Float::~Float()
+Integer::Integer(int i)
 {
-	mpf_clear(value);
+	data.push_back(i & 0x7FFFFFFF);
+	if (i < 0)
+		sign = 0x7FFFFFFF;
+	else
+		sign = 0;
 }
 
-unsigned long int Float::size()
+Integer::Integer(unsigned int i)
 {
-	return mpf_get_prec(value)/8;
+	while (i > 0)
+	{
+		data.push_back((int)(i & 0x7FFFFFFF));
+		i >>= 31;
+	}
+	sign = 0;
 }
 
-unsigned long int Float::prec()
+Integer::Integer(long long i)
 {
-	return mpf_get_prec(value);
+	bool neg = (i < 0);
+	i *= -1;
+
+	while (i > 0)
+	{
+		data.push_back((int)(i & 0x7FFFFFFF));
+		i >>= 31;
+	}
+	sign = 0;
+
+	if (neg)
+		*this = -*this;
 }
 
-void Float::set_prec(unsigned long int p)
+Integer::Integer(unsigned long long i)
 {
-	mpf_set_prec(value, p);
+	while (i > 0)
+	{
+		data.push_back((int)(i & 0x7FFFFFFF));
+		i >>= 31;
+	}
+	sign = 0;
 }
 
-Float &Float::operator=(Float f)
+Integer::Integer(float i)
 {
-	mpf_set(value, f.value);
+	bool neg = false;
+	if (i < 0)
+	{
+		neg = true;
+		i = -i;
+	}
+
+	sign = 0;
+
+	while (i != 0)
+	{
+		i /= 2147483648.0;
+		double fractional = (i - trunc(i));
+		data.push_back((unsigned int)(2147483648.0*fractional));
+		i -= fractional;
+	}
+
+	if (neg)
+		*this = -*this;
+}
+
+Integer::Integer(double i)
+{
+	bool neg = false;
+	if (i < 0)
+	{
+		neg = true;
+		i = -i;
+	}
+
+	sign = 0;
+
+	while (i != 0)
+	{
+		i /= 2147483648.0;
+		double fractional = (i - trunc(i));
+		data.push_back((unsigned int)(2147483648.0*fractional));
+		i -= fractional;
+	}
+
+	if (neg)
+		*this = -*this;
+}
+
+Integer::~Integer()
+{
+}
+
+Integer::operator double()
+{
+	double result = 0;
+	for (int i = 0; i < data.size(); i++)
+		result += ::pow(2147483648.0, (double)i)*(double)(data[i] ^ sign);
+
+	if (sign != 0)
+	{
+		result += 1.0;
+		result *= -1.0;
+	}
+
+	return result;
+}
+
+int Integer::size()
+{
+	return (data.size()*(sizeof(int)*8 - 1) + 7)/8;
+}
+
+Integer &Integer::operator=(Integer i)
+{
+	sign = i.sign;
+	data = i.data;
 	return *this;
 }
 
-Float &Float::operator+=(Float f)
+Integer &Integer::operator+=(Integer i)
 {
-	mpf_add(value, value, f.value);
+	int m = min(data.size(), i.data.size());
+	int carry = 0;
+	for (int j = 0; j < m; j++)
+	{
+		data[j] += i.data[j] + carry;
+		carry = (int)(data[j] < 0);
+		data[j] &= 0x7FFFFFFF;
+	}
+	for (int j = m; j < i.data.size(); j++)
+	{
+		data.push_back(i.data[j] + sign + carry);
+		carry = (int)(data[j] < 0);
+		data[j] &= 0x7FFFFFFF;
+	}
+	for (int j = m; j < data.size(); j++)
+	{
+		data[j] += i.sign + carry;
+		carry = (int)(data[j] < 0);
+		data[j] &= 0x7FFFFFFF;
+	}
+
+	if (sign != i.sign)
+		sign = (sign + i.sign + carry) & 0x7FFFFFFF;
+	else if (sign == 0 && carry == 1)
+		data.push_back(1);
+	else if (sign == 0x7FFFFFFF && carry == 0)
+		data.push_back(0x7FFFFFFE);
+
 	return *this;
 }
 
-Float &Float::operator-=(Float f)
+Integer &Integer::operator-=(Integer i)
 {
-	mpf_sub(value, value, f.value);
+	int m = min(data.size(), i.data.size());
+	int carry = 1;
+	int isign = (~i.sign & 0x7FFFFFFF);
+	for (int j = 0; j < m; j++)
+	{
+		data[j] += (~i.data[j] & 0x7FFFFFFF) + carry;
+		carry = (int)(data[j] < 0);
+		data[j] &= 0x7FFFFFFF;
+	}
+	for (int j = m; j < i.data.size(); j++)
+	{
+		data.push_back((~i.data[j] & 0x7FFFFFFF) + sign + carry);
+		carry = (int)(data[j] < 0);
+		data[j] &= 0x7FFFFFFF;
+	}
+	for (int j = m; j < data.size(); j++)
+	{
+		data[j] += isign + carry;
+		carry = (int)(data[j] < 0);
+		data[j] &= 0x7FFFFFFF;
+	}
+
+	if (sign != isign)
+		sign = (sign + isign + carry) & 0x7FFFFFFF;
+	else if (sign == 0 && carry == 1)
+		data.push_back(1);
+	else if (sign == 0x7FFFFFFF && carry == 0)
+		data.push_back(0x7FFFFFFE);
+
 	return *this;
 }
 
-Float &Float::operator*=(Float f)
+Integer &Integer::operator*=(Integer i)
 {
-	mpf_mul(value, value, f.value);
+	*this = *this * i;
 	return *this;
 }
 
-Float &Float::operator/=(Float f)
+Integer &Integer::operator/=(Integer i)
 {
-	mpf_div(value, value, f.value);
+	*this = *this / i;
 	return *this;
 }
 
-Float &Float::operator+=(float f)
+Integer &Integer::operator%=(Integer i)
 {
-	mpf_add(value, value, Float(f).value);
+	*this = *this % i;
 	return *this;
 }
 
-Float &Float::operator-=(float f)
+Integer &Integer::operator&=(Integer i)
 {
-	mpf_sub(value, value, Float(f).value);
+	int m = min(data.size(), i.data.size());
+	for (int j = 0; j < m; j++)
+		data[j] &= i.data[j];
+	for (int j = m; j < data.size(); j++)
+		data[j] &= i.sign;
+	for (int j = m; j < i.data.size(); j++)
+		data.push_back(sign & i.data[j]);
+	sign &= i.sign;
 	return *this;
 }
 
-Float &Float::operator*=(float f)
+Integer &Integer::operator|=(Integer i)
 {
-	mpf_mul(value, value, Float(f).value);
+	int m = min(data.size(), i.data.size());
+	for (int j = 0; j < m; j++)
+		data[j] |= i.data[j];
+	for (int j = m; j < data.size(); j++)
+		data[j] |= i.sign;
+	for (int j = m; j < i.data.size(); j++)
+		data.push_back(sign | i.data[j]);
+	sign |= i.sign;
 	return *this;
 }
 
-Float &Float::operator/=(float f)
+Integer &Integer::operator^=(Integer i)
 {
-	mpf_div(value, value, Float(f).value);
+	int m = min(data.size(), i.data.size());
+	for (int j = 0; j < m; j++)
+		data[j] ^= i.data[j];
+	for (int j = m; j < data.size(); j++)
+		data[j] ^= i.sign;
+	for (int j = m; j < i.data.size(); j++)
+		data.push_back(sign ^ i.data[j]);
+	sign ^= i.sign;
 	return *this;
 }
 
-Float &Float::operator+=(double f)
+Integer &Integer::operator<<=(Integer i)
 {
-	mpf_add(value, value, Float(f).value);
+	*this = *this << i;
 	return *this;
 }
 
-Float &Float::operator-=(double f)
+Integer &Integer::operator>>=(Integer i)
 {
-	mpf_sub(value, value, Float(f).value);
+	*this = *this >> i;
 	return *this;
 }
 
-Float &Float::operator*=(double f)
+file &operator<<(file &f, Integer i)
 {
-	mpf_mul(value, value, Float(f).value);
+	f << (double)i << " " << i.data << " " << i.sign;
+	return f;
+}
+
+Integer operator-(Integer i)
+{
+	int carry = 1;
+	for (int j = 0; j < i.data.size(); j++)
+	{
+		i.data[j] = (~i.data[j] & 0x7FFFFFFF) + carry;
+		carry = (int)(i.data[j] < 0);
+		i.data[j] &= 0x7FFFFFFF;
+	}
+
+	i.sign = ~i.sign & 0x7FFFFFFF;
+
+	if (i.sign == 0x7FFFFFFF)
+		i.sign = (i.sign + carry) & 0x7FFFFFFF;
+	else if (carry > 0)
+		i.data.push_back(1);
+
+	return i;
+}
+
+Integer operator+(Integer i1, Integer i2)
+{
+	Integer result;
+	result.data.reserve(max(i1.data.size(), i2.data.size()));
+
+	int m = min(i1.data.size(), i2.data.size());
+	int carry = 0;
+	for (int j = 0; j < m; j++)
+	{
+		result.data.push_back(i1.data[j] + i2.data[j] + carry);
+		carry = (int)(result.data[j] < 0);
+		result.data[j] &= 0x7FFFFFFF;
+	}
+	for (int j = m; j < i2.data.size(); j++)
+	{
+		result.data.push_back(i2.data[j] + i1.sign + carry);
+		carry = (int)(result.data[j] < 0);
+		result.data[j] &= 0x7FFFFFFF;
+	}
+	for (int j = m; j < i1.data.size(); j++)
+	{
+		result.data.push_back(i1.data[j] + i2.sign + carry);
+		carry = (int)(result.data[j] < 0);
+		result.data[j] &= 0x7FFFFFFF;
+	}
+
+	if (i1.sign != i2.sign)
+		result.sign = (i1.sign + i2.sign + carry) & 0x7FFFFFFF;
+	else if (i1.sign == 0)
+	{
+		if (carry == 1)
+			result.data.push_back(1);
+		result.sign = 0;
+	}
+	else if (i1.sign == 0x7FFFFFFF)
+	{
+		if (carry == 0)
+			result.data.push_back(0x7FFFFFFE);
+		result.sign = 0x7FFFFFFF;
+	}
+
+	while (result.data.back() == result.sign)
+		result.data.pop_back();
+
+	return result;
+}
+
+Integer operator-(Integer i1, Integer i2)
+{
+	Integer result;
+	result.data.reserve(max(i1.data.size(), i2.data.size()));
+
+	int m = min(i1.data.size(), i2.data.size());
+	int i2sign = (~i2.sign & 0x7FFFFFFF);
+	int carry = 1;
+	for (int j = 0; j < m; j++)
+	{
+		result.data.push_back(i1.data[j] + (~i2.data[j] & 0x7FFFFFFF) + carry);
+		carry = (int)(result.data[j] < 0);
+		result.data[j] &= 0x7FFFFFFF;
+	}
+	for (int j = m; j < i2.data.size(); j++)
+	{
+		result.data.push_back((~i2.data[j] & 0x7FFFFFFF) + i1.sign + carry);
+		carry = (int)(result.data[j] < 0);
+		result.data[j] &= 0x7FFFFFFF;
+	}
+	for (int j = m; j < i1.data.size(); j++)
+	{
+		result.data.push_back(i1.data[j] + i2sign + carry);
+		carry = (int)(result.data[j] < 0);
+		result.data[j] &= 0x7FFFFFFF;
+	}
+
+	if (i1.sign != i2sign)
+		result.sign = (i1.sign + i2sign + carry) & 0x7FFFFFFF;
+	else if (i1.sign == 0)
+	{
+		if (carry == 1)
+			result.data.push_back(1);
+		result.sign = 0;
+	}
+	else if (i1.sign == 0x7FFFFFFF)
+	{
+		if (carry == 0)
+			result.data.push_back(0x7FFFFFFE);
+		result.sign = 0x7FFFFFFF;
+	}
+
+	while (result.data.back() == result.sign)
+		result.data.pop_back();
+
+	return result;
+}
+
+Integer operator*(Integer i1, Integer i2)
+{
+	array<array<int> > partial_products;
+	partial_products.extend(i1.data.size() + i2.data.size()+1);
+
+	int vali, valj;
+
+	for (int i = 0; i < i1.data.size()*2; i++)
+	{
+		if (i < i1.data.size())
+			vali = i1.data[i];
+		else
+			vali = i1.sign;
+
+		if (vali != 0)
+			for (int j = 0; j < i2.data.size()*2; j++)
+			{
+				if (j < i2.data.size())
+					valj = i2.data[j];
+				else
+					valj = i2.sign;
+
+				if (i+j < i1.data.size() + i2.data.size())
+				{
+					int i00, i01, i10, i11;
+					i00 = (vali & 0x0000FFFF) * (valj & 0x0000FFFF);
+					i10 = ((vali & 0xFFFF0000) >> 16) * (valj & 0x0000FFFF);
+					i01 = (vali & 0x0000FFFF) * ((valj & 0xFFFF0000) >> 16);
+					i11 = (((vali & 0xFFFF0000) >> 16) * ((valj & 0xFFFF0000) >> 16)) << 1;
+
+					partial_products[i+j].push_back(i00);
+					partial_products[i+j].push_back((i10 << 16) & 0x7FFFFFFF);
+					partial_products[i+j].push_back((i01 << 16) & 0x7FFFFFFF);
+					partial_products[i+j+1].push_back((i10 >> 15) & 0x0000FFFF);
+					partial_products[i+j+1].push_back((i01 >> 15) & 0x0000FFFF);
+					partial_products[i+j+1].push_back(i11);
+				}
+			}
+	}
+
+	Integer result;
+	result.data.reserve(partial_products.size());
+	result.sign = i1.sign ^ i2.sign;
+
+	for (int i = 0; i < partial_products.size()-1; i++)
+	{
+		int carry = 0;
+		if (partial_products[i].size() > 0 && partial_products[i].back() < 0)
+		{
+			carry++;
+			partial_products[i].back() &= 0x7FFFFFFF;
+		}
+
+		for (int j = partial_products[i].size()-1; j > 0; j--)
+		{
+			if (partial_products[i][j-1] < 0)
+			{
+				carry++;
+				partial_products[i][j-1] &= 0x7FFFFFFF;
+			}
+
+			partial_products[i][j-1] += partial_products[i][j];
+			partial_products[i].pop_back();
+			if (partial_products[i][j-1] < 0)
+			{
+				carry++;
+				partial_products[i][j-1] &= 0x7FFFFFFF;
+			}
+		}
+
+		if (partial_products[i].size() > 0)
+			result.data.push_back(partial_products[i][0]);
+		else
+			result.data.push_back(0);
+
+		if (carry > 0 && i+1 < partial_products.size())
+			partial_products[i+1].push_back(carry);
+		else if (carry > 0)
+			partial_products.push_back(array<int>(1, carry));
+	}
+
+	while (result.data.back() == result.sign)
+		result.data.pop_back();
+
+	return result;
+}
+
+Integer operator/(Integer i1, Integer i2)
+{
+	bool neg = false;
+	if (i1.sign != 0 && i2.sign != 0)
+	{
+		i1 = -i1;
+		i2 = -i2;
+	}
+	else if (i1.sign != 0)
+	{
+		neg = true;
+		i1 = -i1;
+	}
+	else if (i2.sign != 0)
+	{
+		neg = true;
+		i2 = -i2;
+	}
+
+	Integer quotient;
+	Integer remainder;
+	for (int i = i1.data.size()-1; i >= 0; i--)
+	{
+		// shift the remainder left by 1 place
+		remainder.data.push_front(i1.data[i]);
+
+		// At this point, I am guaranteed that remainder.data.size() - i2.data.size() <= 1
+		// y > x, worst case is if y = x+1
+		// (x*2^31 + z)/x = 2^31 + z/x < 2^32
+		unsigned long long ll = 0;
+		for (int j = remainder.data.size()-1; j >= i2.data.size()-1; j--)
+		{
+			ll <<= 31;
+			ll |= remainder.data[j];
+		}
+
+		ll /= (i2.data.back()+1);
+		Integer result(ll);
+		remainder -= i2*result;
+		int k = 0;
+		while (remainder >= i2)
+		{
+			remainder -= i2;
+			result += 1;
+			k++;
+		}
+
+		quotient += (result << (i*31));
+	}
+
+	if (neg)
+		return -quotient;
+	else
+		return quotient;
+}
+
+Integer operator%(Integer i1, Integer i2)
+{
+	bool neg = false;
+	if (i1.sign != 0 && i2.sign != 0)
+	{
+		i1 = -i1;
+		i2 = -i2;
+	}
+	else if (i1.sign != 0)
+	{
+		neg = true;
+		i1 = -i1;
+	}
+	else if (i2.sign != 0)
+	{
+		neg = true;
+		i2 = -i2;
+	}
+
+	Integer quotient;
+	Integer remainder;
+	for (int i = i1.data.size()-1; i >= 0; i--)
+	{
+		// shift the remainder left by 1 place
+		remainder.data.push_front(i1.data[i]);
+
+		// At this point, I am guaranteed that remainder.data.size() - i2.data.size() <= 1
+		// y > x, worst case is if y = x+1
+		// (x*2^31 + z)/x = 2^31 + z/x < 2^32
+		unsigned long long ll = 0;
+		for (int j = remainder.data.size()-1; j >= i2.data.size()-1; j--)
+		{
+			ll <<= 31;
+			ll |= remainder.data[j];
+		}
+
+		ll /= (i2.data.back()+1);
+		Integer result(ll);
+		remainder -= i2*result;
+		int k = 0;
+		while (remainder >= i2)
+		{
+			remainder -= i2;
+			result += 1;
+			k++;
+		}
+
+		quotient += (result << (i*31));
+	}
+
+	if (neg)
+		return -remainder;
+	else
+		return remainder;
+}
+
+bool operator==(Integer i1, Integer i2)
+{
+	int m = min(i1.data.size(), i2.data.size());
+	for (int i = 0; i < m; i++)
+		if (i1.data[i] != i2.data[i])
+			return false;
+	for (int i = m; i < i1.data.size(); i++)
+		if (i1.data[i] != i2.sign)
+			return false;
+	for (int i = m; i < i2.data.size(); i++)
+		if (i2.data[i] != i1.sign)
+			return false;
+
+	return (i1.sign == i2.sign);
+}
+
+bool operator!=(Integer i1, Integer i2)
+{
+	int m = min(i1.data.size(), i2.data.size());
+	for (int i = 0; i < m; i++)
+		if (i1.data[i] != i2.data[i])
+			return true;
+	for (int i = m; i < i1.data.size(); i++)
+		if (i1.data[i] != i2.sign)
+			return true;
+	for (int i = m; i < i2.data.size(); i++)
+		if (i2.data[i] != i1.sign)
+			return true;
+
+	return (i1.sign != i2.sign);
+}
+
+bool operator>(Integer i1, Integer i2)
+{
+	if (i1.sign != i2.sign)
+		return (i1.sign < i2.sign);
+
+	int m = min(i1.data.size(), i2.data.size());
+	for (int i = i1.data.size()-1; i >= i2.data.size(); i--)
+		if (i1.data[i] != i2.sign)
+			return (i1.data[i] > i2.sign);
+	for (int i = i2.data.size()-1; i >= i1.data.size(); i--)
+		if (i2.data[i] != i1.sign)
+			return (i1.sign > i2.data[i]);
+	for (int i = m-1; i >= 0; i--)
+		if (i1.data[i] != i2.data[i])
+			return (i1.data[i] > i2.data[i]);
+
+	return false;
+}
+
+bool operator<(Integer i1, Integer i2)
+{
+	if (i1.sign != i2.sign)
+		return (i1.sign > i2.sign);
+
+	int m = min(i1.data.size(), i2.data.size());
+	for (int i = i1.data.size()-1; i >= i2.data.size(); i--)
+		if (i1.data[i] != i2.sign)
+			return (i1.data[i] < i2.sign);
+	for (int i = i2.data.size()-1; i >= i1.data.size(); i--)
+		if (i2.data[i] != i1.sign)
+			return (i1.sign < i2.data[i]);
+	for (int i = m-1; i >= 0; i--)
+		if (i1.data[i] != i2.data[i])
+			return (i1.data[i] < i2.data[i]);
+
+	return false;
+}
+
+bool operator>=(Integer i1, Integer i2)
+{
+	if (i1.sign != i2.sign)
+		return (i1.sign < i2.sign);
+
+	int m = min(i1.data.size(), i2.data.size());
+	for (int i = i1.data.size()-1; i >= i2.data.size(); i--)
+		if (i1.data[i] != i2.sign)
+			return (i1.data[i] > i2.sign);
+	for (int i = i2.data.size()-1; i >= i1.data.size(); i--)
+		if (i2.data[i] != i1.sign)
+			return (i1.sign > i2.data[i]);
+	for (int i = m-1; i >= 0; i--)
+		if (i1.data[i] != i2.data[i])
+			return (i1.data[i] > i2.data[i]);
+
+	return true;
+}
+
+bool operator<=(Integer i1, Integer i2)
+{
+	if (i1.sign != i2.sign)
+		return (i1.sign > i2.sign);
+
+	int m = min(i1.data.size(), i2.data.size());
+	for (int i = i1.data.size()-1; i >= i2.data.size(); i--)
+		if (i1.data[i] != i2.sign)
+			return (i1.data[i] < i2.sign);
+	for (int i = i2.data.size()-1; i >= i1.data.size(); i--)
+		if (i2.data[i] != i1.sign)
+			return (i1.sign < i2.data[i]);
+	for (int i = m-1; i >= 0; i--)
+		if (i1.data[i] != i2.data[i])
+			return (i1.data[i] < i2.data[i]);
+
+	return true;
+}
+
+Integer operator&(Integer i1, Integer i2)
+{
+	Integer result;
+	result.data.reserve(max(i1.data.size(), i2.data.size()));
+	int m = min(i1.data.size(), i2.data.size());
+	for (int i = 0; i < m; i++)
+		result.data.push_back(i1.data[i] & i2.data[i]);
+	for (int i = m; i < i1.data.size(); i++)
+		result.data.push_back(i1.data[i] & i2.sign);
+	for (int i = m; i < i2.data.size(); i++)
+		result.data.push_back(i1.sign & i2.data[i]);
+	result.sign = i1.sign & i2.sign;
+	return result;
+}
+
+Integer operator|(Integer i1, Integer i2)
+{
+	Integer result;
+	result.data.reserve(max(i1.data.size(), i2.data.size()));
+	int m = min(i1.data.size(), i2.data.size());
+	for (int i = 0; i < m; i++)
+		result.data.push_back(i1.data[i] | i2.data[i]);
+	for (int i = m; i < i1.data.size(); i++)
+		result.data.push_back(i1.data[i] | i2.sign);
+	for (int i = m; i < i2.data.size(); i++)
+		result.data.push_back(i1.sign | i2.data[i]);
+	result.sign = i1.sign | i2.sign;
+	return result;
+}
+
+Integer operator^(Integer i1, Integer i2)
+{
+	Integer result;
+	result.data.reserve(max(i1.data.size(), i2.data.size()));
+	int m = min(i1.data.size(), i2.data.size());
+	for (int i = 0; i < m; i++)
+		result.data.push_back(i1.data[i] ^ i2.data[i]);
+	for (int i = m; i < i1.data.size(); i++)
+		result.data.push_back(i1.data[i] ^ i2.sign);
+	for (int i = m; i < i2.data.size(); i++)
+		result.data.push_back(i1.sign ^ i2.data[i]);
+	result.sign = i1.sign ^ i2.sign;
+	return result;
+}
+
+Integer operator<<(Integer i1, int i2)
+{
+	if (i2 < 0)
+		return i1 >> (-i2);
+	else if (i1.data.size() == 0)
+		return i1;
+	else
+	{
+		int a = i2/31;
+		int b = i2%31;
+
+		Integer result;
+		result.data.resize(i1.data.size() + a + 1);
+
+		result.data.back() = ((i1.sign << b) & 0x7FFFFFFF) | ((i1.data.back() >> (31 - b)) & 0x7FFFFFFF);
+		for (int i = a+1; i < result.data.size()-1; i++)
+			result.data[i] = ((i1.data[i-a] << b) & 0x7FFFFFFF) | ((i1.data[i-a-1] >> (31 - b)) & 0x7FFFFFFF);
+		result.data[a] = (i1.data[0] << b) & 0x7FFFFFFF;
+		for (int i = 0; i < a; i++)
+			result.data[i] = 0;
+		result.sign = i1.sign;
+
+		while (result.data.back() == result.sign)
+			result.data.pop_back();
+
+		return result;
+	}
+}
+
+Integer operator>>(Integer i1, int i2)
+{
+	if (i2 < 0)
+		return i1 << (-i2);
+	else
+	{
+		int a = i2/31;
+		int b = i2%31;
+
+		Integer result;
+		if (i1.data.size() > a + 1)
+		{
+			result.data.reserve(i1.data.size() - a);
+
+			for (int i = 0; i < i1.data.size() - a - 1; i++)
+				result.data.push_back(((i1.data[i+a] >> b) | (i1.data[i+a+1] << (31 - b))) & 0x7FFFFFFF);
+
+			result.data.push_back(((i1.data.back() >> b) | (i1.sign << (31 - b))) & 0x7FFFFFFF);
+			result.sign = i1.sign;
+
+			while (result.data.back() == result.sign)
+				result.data.pop_back();
+		}
+
+		return result;
+	}
+}
+
+Integer abs(Integer i)
+{
+	if (i.sign == 0x7FFFFFFF)
+		return -i;
+	else
+		return i;
+}
+
+Integer pow(Integer f, int p)
+{
+	Integer result;
+	while (p > 0)
+	{
+		if ((p & 1) != 0)
+			result += f;
+		p >>= 1;
+		f *= f;
+	}
+	return result;
+}
+
+Integer sqrt(Integer f)
+{
+	// TODO
+	return Integer();
+}
+
+Integer root(Integer f, int r)
+{
+	// TODO
+	return Integer();
+}
+
+Real::Real()
+{
+	exp = 0;
+	limit = 5;
+}
+
+Real::Real(int f) : num(f)
+{
+	exp = 0;
+	limit = 5;
+}
+
+Real::Real(unsigned int f) : num(f)
+{
+	exp = 0;
+	limit = 5;
+}
+
+Real::Real(long long f) : num(f)
+{
+	exp = 0;
+	limit = 5;
+}
+
+Real::Real(unsigned long long f) : num(f)
+{
+	exp = 0;
+	limit = 5;
+}
+
+Real::Real(float f)
+{
+	double sig = frexp(f, &exp);
+	int *fi = (int*)&sig;
+	num.data.push_back(*fi & 0x7FFFFFFF);
+	num.data.push_back(((*(fi+1) & 0x000FFFFF) << 1) | ((*fi & 0x80000000) >> 31) | 0x00200000);
+	exp -= 53;
+	if ((*fi & 0x80000000) != 0)
+		num = -num;
+	limit = 5;
+}
+
+Real::Real(double f)
+{
+	double sig = frexp(f, &exp);
+	int *fi = (int*)&sig;
+	num.data.push_back(*fi & 0x7FFFFFFF);
+	num.data.push_back(((*(fi+1) & 0x000FFFFF) << 1) | ((*fi & 0x80000000) >> 31) | 0x00200000);
+	exp -= 53;
+	if ((*(fi+1) & 0x80000000) != 0)
+		num = -num;
+	limit = 5;
+}
+
+Real::~Real()
+{
+
+}
+
+Real::operator double()
+{
+	return (double)num*::pow(2.0, (double)exp);
+}
+
+Real &Real::operator=(Real f)
+{
+	exp = f.exp;
+	num = f.num;
 	return *this;
 }
 
-Float &Float::operator/=(double f)
+Real &Real::operator+=(Real f)
 {
-	mpf_div(value, value, Float(f).value);
+	*this = *this + f;
 	return *this;
 }
 
-Float operator-(Float f)
+Real &Real::operator-=(Real f)
 {
-	Float result(0, f.prec());
-	mpf_neg(result.value, f.value);
+	*this = *this - f;
+	return *this;
+}
+
+Real &Real::operator*=(Real f)
+{
+	*this = *this * f;
+	return *this;
+}
+
+Real &Real::operator/=(Real f)
+{
+	*this = *this / f;
+	return *this;
+}
+
+file &operator<<(file &fout, Real f)
+{
+	fout << (double)f;
+	return fout;
+}
+
+Real operator-(Real f)
+{
+	f.num = -f.num;
+	return f;
+}
+
+Real operator+(Real f1, Real f2)
+{
+	Real result;
+	result.exp = f1.exp;
+	if (f1.exp > f2.exp)
+	{
+		f1.num <<= (f1.exp - f2.exp);
+		result.exp = f2.exp;
+	}
+	else if (f2.exp > f1.exp)
+	{
+		f2.num <<= (f2.exp - f1.exp);
+		result.exp = f1.exp;
+	}
+
+	result.num = f1.num + f2.num;
 	return result;
 }
 
-Float operator+(Float f1, Float f2)
+Real operator-(Real f1, Real f2)
 {
-	Float result(0, max(f1.prec(), f2.prec()));
-	mpf_add(result, f1.value, f2.value);
+	Real result;
+	result.exp = f1.exp;
+	if (f1.exp > f2.exp)
+	{
+		f1.num <<= (f1.exp - f2.exp);
+		result.exp = f2.exp;
+	}
+	else if (f2.exp > f1.exp)
+	{
+		f2.num <<= (f2.exp - f1.exp);
+		result.exp = f1.exp;
+	}
+
+	result.num = f1.num - f2.num;
 	return result;
 }
 
-Float operator+(Float f1, float f2)
+Real operator*(Real f1, Real f2)
 {
-	Float result(0, f1.prec());
-	mpf_add(result, f1.value, Float(f2).value);
+	Real result;
+	result.num = f1.num*f2.num;
+	result.exp = f1.exp + f2.exp;
 	return result;
 }
 
-Float operator+(float f1, Float f2)
+Real operator/(Real f1, Real f2)
 {
-	Float result(0, f2.prec());
-	mpf_add(result, Float(f1).value, f2.value);
-	return result;
+	bool neg = false;
+	if (f1.num.sign != 0 && f2.num.sign != 0)
+	{
+		f1 = -f1;
+		f2 = -f2;
+	}
+	else if (f1.num.sign != 0)
+	{
+		neg = true;
+		f1 = -f1;
+	}
+	else if (f2.num.sign != 0)
+	{
+		neg = true;
+		f2 = -f2;
+	}
+
+	Real quotient;
+	quotient.exp = f1.exp - f2.exp;
+	quotient.limit = max(f1.limit, f2.limit);
+	Integer remainder;
+	for (int i = f1.num.data.size()-1; i >= 0; i--)
+	{
+		// shift the remainder left by 1 place
+		remainder.data.push_front(f1.num.data[i]);
+
+		// At this point, I am guaranteed that remainder.data.size() - f2.data.size() <= 1
+		// y > x, worst case is if y = x+1
+		// (x*2^31 + z)/x = 2^31 + z/x < 2^32
+		unsigned long long ll = 0;
+		for (int j = remainder.data.size()-1; j >= f2.num.data.size()-1; j--)
+		{
+			ll <<= 31;
+			ll |= remainder.data[j];
+		}
+
+		ll /= (f2.num.data.back()+1);
+		Integer result(ll);
+		remainder -= f2.num*result;
+		int k = 0;
+		while (remainder >= f2.num)
+		{
+			remainder -= f2.num;
+			result += 1;
+			k++;
+		}
+
+		quotient.num += (result << (i*31));
+	}
+
+	while (remainder != 0 && quotient.num.data.size() < quotient.limit)
+	{
+		// shift the remainder left by 1 place
+		remainder.data.push_front(0);
+
+		// At this point, I am guaranteed that remainder.data.size() - f2.data.size() <= 1
+		// y > x, worst case is if y = x+1
+		// (x*2^31 + z)/x = 2^31 + z/x < 2^32
+		unsigned long long ll = 0;
+		for (int j = remainder.data.size()-1; j >= f2.num.data.size()-1; j--)
+		{
+			ll <<= 31;
+			ll |= remainder.data[j];
+		}
+
+		ll /= (f2.num.data.back()+1);
+		Integer result(ll);
+		remainder -= f2.num*result;
+		int k = 0;
+		while (remainder >= f2.num)
+		{
+			remainder -= f2.num;
+			result += 1;
+			k++;
+		}
+
+		quotient.num = (quotient.num << 31) + result;
+		quotient.exp -= 31;
+	}
+
+	if (neg)
+		return -quotient;
+	else
+		return quotient;
 }
 
-Float operator+(Float f1, double f2)
+bool operator==(Real f1, Real f2)
 {
-	Float result(0, f1.prec());
-	mpf_add(result, f1.value, Float(f2).value);
-	return result;
+	if (f1.exp > f2.exp)
+	{
+		f1.num <<= (f1.exp - f2.exp);
+		f1.exp = f2.exp;
+	}
+	else if (f2.exp > f1.exp)
+	{
+		f2.num <<= (f2.exp - f1.exp);
+		f2.exp = f1.exp;
+	}
+
+	return (f1.num == f2.num);
 }
 
-Float operator+(double f1, Float f2)
+bool operator!=(Real f1, Real f2)
 {
-	Float result(0, f2.prec());
-	mpf_add(result, Float(f1).value, f2.value);
-	return result;
+	if (f1.exp > f2.exp)
+	{
+		f1.num <<= (f1.exp - f2.exp);
+		f1.exp = f2.exp;
+	}
+	else if (f2.exp > f1.exp)
+	{
+		f2.num <<= (f2.exp - f1.exp);
+		f2.exp = f1.exp;
+	}
+
+	return (f1.num != f2.num);
 }
 
-Float operator-(Float f1, Float f2)
+bool operator>(Real f1, Real f2)
 {
-	Float result(0, max(f1.prec(), f2.prec()));
-	mpf_sub(result, f1.value, f2.value);
-	return result;
+	if (f1.exp > f2.exp)
+	{
+		f1.num <<= (f1.exp - f2.exp);
+		f1.exp = f2.exp;
+	}
+	else if (f2.exp > f1.exp)
+	{
+		f2.num <<= (f2.exp - f1.exp);
+		f2.exp = f1.exp;
+	}
+
+	return (f1.num > f2.num);
 }
 
-Float operator-(Float f1, float f2)
+bool operator<(Real f1, Real f2)
 {
-	Float result(0, f1.prec());
-	mpf_sub(result, f1.value, Float(f2).value);
-	return result;
+	if (f1.exp > f2.exp)
+	{
+		f1.num <<= (f1.exp - f2.exp);
+		f1.exp = f2.exp;
+	}
+	else if (f2.exp > f1.exp)
+	{
+		f2.num <<= (f2.exp - f1.exp);
+		f2.exp = f1.exp;
+	}
+
+	return (f1.num < f2.num);
 }
 
-Float operator-(float f1, Float f2)
+bool operator>=(Real f1, Real f2)
 {
-	Float result(0, f2.prec());
-	mpf_sub(result, Float(f1).value, f2.value);
-	return result;
+	if (f1.exp > f2.exp)
+	{
+		f1.num <<= (f1.exp - f2.exp);
+		f1.exp = f2.exp;
+	}
+	else if (f2.exp > f1.exp)
+	{
+		f2.num <<= (f2.exp - f1.exp);
+		f2.exp = f1.exp;
+	}
+
+	return (f1.num >= f2.num);
 }
 
-Float operator-(Float f1, double f2)
+bool operator<=(Real f1, Real f2)
 {
-	Float result(0, f1.prec());
-	mpf_sub(result, f1.value, Float(f2).value);
-	return result;
+	if (f1.exp > f2.exp)
+	{
+		f1.num <<= (f1.exp - f2.exp);
+		f1.exp = f2.exp;
+	}
+	else if (f2.exp > f1.exp)
+	{
+		f2.num <<= (f2.exp - f1.exp);
+		f2.exp = f1.exp;
+	}
+
+	return (f1.num <= f2.num);
 }
 
-Float operator-(double f1, Float f2)
+/*Real sqrt(Real f)
 {
-	Float result(0, f2.prec());
-	mpf_sub(result, Float(f1).value, f2.value);
-	return result;
-}
-
-Float operator*(Float f1, Float f2)
-{
-	Float result(0, max(f1.prec(), f2.prec()));
-	mpf_mul(result, f1.value, f2.value);
-	return result;
-}
-
-Float operator*(Float f1, float f2)
-{
-	Float result(0, f1.prec());
-	mpf_mul(result, f1.value, Float(f2).value);
-	return result;
-}
-
-Float operator*(float f1, Float f2)
-{
-	Float result(0, f2.prec());
-	mpf_mul(result, Float(f1).value, f2.value);
-	return result;
-}
-
-Float operator*(Float f1, double f2)
-{
-	Float result(0, f1.prec());
-	mpf_mul(result, f1.value, Float(f2).value);
-	return result;
-}
-
-Float operator*(double f1, Float f2)
-{
-	Float result(0, f2.prec());
-	mpf_mul(result, Float(f1).value, f2.value);
-	return result;
-}
-
-Float operator/(Float f1, Float f2)
-{
-	Float result(0, max(f1.prec(), f2.prec()));
-	mpf_div(result, f1.value, f2.value);
-	return result;
-}
-
-Float operator/(Float f1, float f2)
-{
-	Float result(0, f1.prec());
-	mpf_div(result, f1.value, Float(f2).value);
-	return result;
-}
-
-Float operator/(float f1, Float f2)
-{
-	Float result(0, f2.prec());
-	mpf_div(result, Float(f1).value, f2.value);
-	return result;
-}
-
-Float operator/(Float f1, double f2)
-{
-	Float result(0, f1.prec());
-	mpf_div(result, f1.value, Float(f2).value);
-	return result;
-}
-
-Float operator/(double f1, Float f2)
-{
-	Float result(0, f2.prec());
-	mpf_div(result, Float(f1).value, f2.value);
-	return result;
-}
-
-bool operator==(Float f1, Float f2)
-{
-	return (mpf_cmp(f1.value, f2.value) == 0);
-}
-
-bool operator==(Float f1, float f2)
-{
-	return (mpf_cmp_d(f1.value, (double)f2) == 0);
-}
-
-bool operator==(float f1, Float f2)
-{
-	return (mpf_cmp_d(f2.value, (double)f1) == 0);
-}
-
-bool operator==(Float f1, double f2)
-{
-	return (mpf_cmp_d(f1.value, (double)f2) == 0);
-}
-
-bool operator==(double f1, Float f2)
-{
-	return (mpf_cmp_d(f2.value, (double)f1) == 0);
-}
-
-bool operator!=(Float f1, Float f2)
-{
-	return (mpf_cmp(f1.value, f2.value) != 0);
-}
-
-bool operator!=(Float f1, float f2)
-{
-	return (mpf_cmp_d(f1.value, (double)f2) != 0);
-}
-
-bool operator!=(float f1, Float f2)
-{
-	return (mpf_cmp_d(f2.value, (double)f1) != 0);
-}
-
-bool operator!=(Float f1, double f2)
-{
-	return (mpf_cmp_d(f1.value, (double)f2) != 0);
-}
-
-bool operator!=(double f1, Float f2)
-{
-	return (mpf_cmp_d(f2.value, (double)f1) != 0);
-}
-
-bool operator>(Float f1, Float f2)
-{
-	return (mpf_cmp(f1.value, f2.value) > 0);
-}
-
-bool operator>(Float f1, float f2)
-{
-	return (mpf_cmp_d(f1.value, (double)f2) > 0);
-}
-
-bool operator>(float f1, Float f2)
-{
-	return (-mpf_cmp_d(f2.value, (double)f1) > 0);
-}
-
-bool operator>(Float f1, double f2)
-{
-	return (mpf_cmp_d(f1.value, (double)f2) > 0);
-}
-
-bool operator>(double f1, Float f2)
-{
-	return (-mpf_cmp_d(f2.value, (double)f1) > 0);
-}
-
-bool operator<(Float f1, Float f2)
-{
-	return (mpf_cmp(f1.value, f2.value) < 0);
-}
-
-bool operator<(Float f1, float f2)
-{
-	return (mpf_cmp_d(f1.value, (double)f2) < 0);
-}
-
-bool operator<(float f1, Float f2)
-{
-	return (-mpf_cmp_d(f2.value, (double)f1) < 0);
-}
-
-bool operator<(Float f1, double f2)
-{
-	return (mpf_cmp_d(f1.value, (double)f2) < 0);
-}
-
-bool operator<(double f1, Float f2)
-{
-	return (-mpf_cmp_d(f2.value, (double)f1) < 0);
-}
-
-bool operator>=(Float f1, Float f2)
-{
-	return (mpf_cmp(f1.value, f2.value) >= 0);
-}
-
-bool operator>=(Float f1, float f2)
-{
-	return (mpf_cmp_d(f1.value, (double)f2) >= 0);
-}
-
-bool operator>=(float f1, Float f2)
-{
-	return (-mpf_cmp_d(f2.value, (double)f1) >= 0);
-}
-
-bool operator>=(Float f1, double f2)
-{
-	return (mpf_cmp_d(f1.value, (double)f2) >= 0);
-}
-
-bool operator>=(double f1, Float f2)
-{
-	return (-mpf_cmp_d(f2.value, (double)f1) >= 0);
-}
-
-bool operator<=(Float f1, Float f2)
-{
-	return (mpf_cmp(f1.value, f2.value) <= 0);
-}
-
-bool operator<=(Float f1, float f2)
-{
-	return (mpf_cmp_d(f1.value, (double)f2) <= 0);
-}
-
-bool operator<=(float f1, Float f2)
-{
-	return (-mpf_cmp_d(f2.value, (double)f1) <= 0);
-}
-
-bool operator<=(Float f1, double f2)
-{
-	return (mpf_cmp_d(f1.value, (double)f2) <= 0);
-}
-
-bool operator<=(double f1, Float f2)
-{
-	return (-mpf_cmp_d(f2.value, (double)f1) <= 0);
-}
-
-Float sqrt(Float f)
-{
-	Float result(0, f.prec());
+	Real result(0, f.prec());
 	mpf_sqrt(result.value, f.value);
 	return result;
 }
 
-Float pow(Float f, unsigned long int p)
+Real pow(Real f, int p)
 {
-	Float result(0, f.prec());
+	Real result(0, f.prec());
 	mpf_pow_ui(result.value, f.value, p);
 	return result;
 }
 
-Float abs(Float f)
+Real abs(Real f)
 {
-	Float result(0, f.prec());
+	Real result(0, f.prec());
 	mpf_abs(result.value, f.value);
 	return result;
-}
-
-// Integers
-
-Int::Int()
-{
-	mpz_init(value);
-}
-
-Int::~Int()
-{
-	mpz_clear(value);
-}
-
-unsigned long int Int::size()
-{
-	return mpz_sizeinbase(value, 2)/8;
-}
-
-unsigned long int Int::prec()
-{
-	return mpz_sizeinbase(value, 2);
-}
-
-void Int::set_prec(unsigned long int p)
-{
-	mpz_realloc2(value, p);
-}
-
-Int &Int::operator=(Int f)
-{
-	mpz_set(value, f.value);
-	return *this;
-}
-
-Int &Int::operator=(signed long int f)
-{
-	mpz_set_d(value, f);
-	return *this;
-}
-
-Int &Int::operator+=(Int f)
-{
-	mpz_add(value, value, f.value);
-	return *this;
-}
-
-Int &Int::operator-=(Int f)
-{
-	mpz_sub(value, value, f.value);
-	return *this;
-}
-
-Int &Int::operator*=(Int f)
-{
-	mpz_mul(value, value, f.value);
-	return *this;
-}
-
-Int &Int::operator/=(Int f)
-{
-	mpz_div(value, value, f.value);
-	return *this;
-}
-
-Int &Int::operator%=(Int f)
-{
-	mpz_mod(value, value, f.value);
-	return *this;
-}
-
-Int &Int::operator&=(Int f)
-{
-	mpz_and(value, value, f.value);
-	return *this;
-}
-
-Int &Int::operator|=(Int f)
-{
-	mpz_ior(value, value, f.value);
-	return *this;
-}
-
-Int &Int::operator^=(Int f)
-{
-	mpz_xor(value, value, f.value);
-	return *this;
-}
-
-Int &Int::operator<<=(Int f)
-{
-	mpz_mul_2exp(value, value, (unsigned long int)f);
-	return *this;
-}
-
-Int &Int::operator>>=(Int f)
-{
-	mpz_tdiv_q_2exp(value, value, (unsigned long int)f);
-	return *this;
-}
-
-Int &Int::operator+=(signed long int f)
-{
-	mpz_add(value, value, Int(f).value);
-	return *this;
-}
-
-Int &Int::operator-=(signed long int f)
-{
-	mpz_sub(value, value, Int(f).value);
-	return *this;
-}
-
-Int &Int::operator*=(signed long int f)
-{
-	mpz_mul(value, value, Int(f).value);
-	return *this;
-}
-
-Int &Int::operator/=(signed long int f)
-{
-	mpz_div(value, value, Int(f).value);
-	return *this;
-}
-
-Int &Int::operator%=(unsigned long int f)
-{
-	mpz_mod_ui(value, value, f);
-	return *this;
-}
-
-Int &Int::operator&=(unsigned long int f)
-{
-	mpz_and(value, value, Int(f).value);
-	return *this;
-}
-
-Int &Int::operator|=(unsigned long int f)
-{
-	mpz_ior(value, value, Int(f).value);
-	return *this;
-}
-
-Int &Int::operator^=(unsigned long int f)
-{
-	mpz_xor(value, value, Int(f).value);
-	return *this;
-}
-
-Int &Int::operator<<=(unsigned long int f)
-{
-	mpz_mul_2exp(value, value, f);
-	return *this;
-}
-
-Int &Int::operator>>=(unsigned long int f)
-{
-	mpz_tdiv_q_2exp(value, value, f);
-	return *this;
-}
-
-Int operator-(Int f)
-{
-	Int result(0, f.prec());
-	mpz_neg(result.value, f.value);
-	return result;
-}
-
-Int operator+(Int f1, Int f2)
-{
-	Int result(0, max(f1.prec(), f2.prec()));
-	mpz_add(result, f1.value, f2.value);
-	return result;
-}
-
-Int operator+(Int f1, signed long int f2)
-{
-	Int result(0, f1.prec());
-	mpz_add(result, f1.value, Int(f2).value);
-	return result;
-}
-
-Int operator+(signed long int f1, Int f2)
-{
-	Int result(0, f2.prec());
-	mpz_add(result, Int(f1).value, f2.value);
-	return result;
-}
-
-Int operator-(Int f1, Int f2)
-{
-	Int result(0, max(f1.prec(), f2.prec()));
-	mpz_sub(result, f1.value, f2.value);
-	return result;
-}
-
-Int operator-(Int f1, signed long int f2)
-{
-	Int result(0, f1.prec());
-	mpz_sub(result, f1.value, Int(f2).value);
-	return result;
-}
-
-Int operator-(signed long int f1, Int f2)
-{
-	Int result(0, f2.prec());
-	mpz_sub(result, Int(f1).value, f2.value);
-	return result;
-}
-
-Int operator*(Int f1, Int f2)
-{
-	Int result(0, max(f1.prec(), f2.prec()));
-	mpz_mul(result, f1.value, f2.value);
-	return result;
-}
-
-Int operator*(Int f1, signed long int f2)
-{
-	Int result(0, f1.prec());
-	mpz_mul(result, f1.value, Int(f2).value);
-	return result;
-}
-
-Int operator*(signed long int f1, Int f2)
-{
-	Int result(0, f2.prec());
-	mpz_mul(result, Int(f1).value, f2.value);
-	return result;
-}
-
-Int operator/(Int f1, Int f2)
-{
-	Int result(0, max(f1.prec(), f2.prec()));
-	mpz_div(result, f1.value, f2.value);
-	return result;
-}
-
-Int operator/(Int f1, signed long int f2)
-{
-	Int result(0, f1.prec());
-	mpz_div(result, f1.value, Int(f2).value);
-	return result;
-}
-
-Int operator/(signed long int f1, Int f2)
-{
-	Int result(0, f2.prec());
-	mpz_div(result, Int(f1).value, f2.value);
-	return result;
-}
-
-Int operator%(Int f1, Int f2)
-{
-	Int result(0, max(f1.prec(), f2.prec()));
-	mpz_mod(result.value, f1.value, f2.value);
-	return result;
-}
-
-Int operator%(Int f1, unsigned long int f2)
-{
-	Int result(0, f1.prec());
-	mpz_mod_ui(result.value, f1.value, f2);
-	return result;
-}
-
-Int operator%(unsigned long int f1, Int f2)
-{
-	Int result(0, f2.prec());
-	mpz_mod(result.value, Int(f1).value, f2.value);
-	return result;
-}
-
-bool operator==(Int f1, Int f2)
-{
-	return (mpz_cmp(f1.value, f2.value) == 0);
-}
-
-bool operator==(Int f1, signed long int f2)
-{
-	return (mpz_cmp(f1.value, Int(f2).value) == 0);
-}
-
-bool operator==(signed long int f1, Int f2)
-{
-	return (mpz_cmp(f2.value, Int(f1).value) == 0);
-}
-
-bool operator!=(Int f1, Int f2)
-{
-	return (mpz_cmp(f1.value, f2.value) != 0);
-}
-
-bool operator!=(Int f1, signed long int f2)
-{
-	return (mpz_cmp(f1.value, Int(f2).value) != 0);
-}
-
-bool operator!=(signed long int f1, Int f2)
-{
-	return (mpz_cmp(f2.value, Int(f1).value) != 0);
-}
-
-bool operator>(Int f1, Int f2)
-{
-	return (mpz_cmp(f1.value, f2.value) > 0);
-}
-
-bool operator>(Int f1, signed long int f2)
-{
-	return (mpz_cmp(f1.value, Int(f2).value) > 0);
-}
-
-bool operator>(signed long int f1, Int f2)
-{
-	return (-mpz_cmp(f2.value, Int(f1).value) > 0);
-}
-
-bool operator<(Int f1, Int f2)
-{
-	return (mpz_cmp(f1.value, f2.value) < 0);
-}
-
-bool operator<(Int f1, signed long int f2)
-{
-	return (mpz_cmp(f1.value, Int(f2).value) < 0);
-}
-
-bool operator<(signed long int f1, Int f2)
-{
-	return (-mpz_cmp(f2.value, Int(f1).value) < 0);
-}
-
-bool operator>=(Int f1, Int f2)
-{
-	return (mpz_cmp(f1.value, f2.value) >= 0);
-}
-
-bool operator>=(Int f1, signed long int f2)
-{
-	return (mpz_cmp(f1.value, Int(f2).value) >= 0);
-}
-
-bool operator>=(signed long int f1, Int f2)
-{
-	return (-mpz_cmp(f2.value, Int(f1).value) >= 0);
-}
-
-bool operator<=(Int f1, Int f2)
-{
-	return (mpz_cmp(f1.value, f2.value) <= 0);
-}
-
-bool operator<=(Int f1, signed long int f2)
-{
-	return (mpz_cmp(f1.value, Int(f2).value) <= 0);
-}
-
-bool operator<=(signed long int f1, Int f2)
-{
-	return (-mpz_cmp(f2.value, Int(f1).value) <= 0);
-}
-
-Int operator&(Int f1, Int f2)
-{
-	Int result(0, max(f1.prec(), f2.prec()));
-	mpz_and(result.value, f1.value, f2.value);
-	return result;
-}
-
-Int operator&(Int f1, signed long int f2)
-{
-	Int result(0, f1.prec());
-	mpz_and(result.value, f1.value, Int(f2).value);
-	return result;
-}
-
-Int operator&(signed long int  f1, Int f2)
-{
-	Int result(0, f2.prec());
-	mpz_and(result.value, Int(f1).value, f2.value);
-	return result;
-}
-
-
-Int operator|(Int f1, Int f2)
-{
-	Int result(0, max(f1.prec(), f2.prec()));
-	mpz_ior(result.value, f1.value, f2.value);
-	return result;
-}
-
-Int operator|(Int f1, signed long int  f2)
-{
-	Int result(0, f1.prec());
-	mpz_ior(result.value, f1.value, Int(f2).value);
-	return result;
-}
-
-Int operator|(signed long int  f1, Int f2)
-{
-	Int result(0, f2.prec());
-	mpz_ior(result.value, Int(f1).value, f2.value);
-	return result;
-}
-
-Int operator^(Int f1, Int f2)
-{
-	Int result(0, max(f1.prec(), f2.prec()));
-	mpz_xor(result.value, f1.value, f2.value);
-	return result;
-}
-
-Int operator^(Int f1, signed long int  f2)
-{
-	Int result(0, f1.prec());
-	mpz_xor(result.value, f1.value, Int(f2).value);
-	return result;
-}
-
-Int operator^(signed long int  f1, Int f2)
-{
-	Int result(0, f2.prec());
-	mpz_xor(result.value, Int(f1).value, f2.value);
-	return result;
-}
-
-Int operator<<(Int f1, Int f2)
-{
-	Int result(0, f1.prec());
-	mpz_mul_2exp(result, f1.value, (unsigned long int)f2);
-	return result;
-}
-
-Int operator<<(Int f1, unsigned long int f2)
-{
-	Int result(0, f1.prec());
-	mpz_mul_2exp(result, f1.value, f2);
-	return result;
-}
-
-Int operator<<(unsigned long int f1, Int f2)
-{
-	Int result(0, sizeof(unsigned long int)*8);
-	mpz_mul_2exp(result, Int(f1).value, (unsigned long int)f2);
-	return result;
-}
-
-Int operator>>(Int f1, Int f2)
-{
-	Int result(0, f1.prec());
-	mpz_tdiv_q_2exp(result, f1.value, (unsigned long int)f2);
-	return result;
-}
-
-Int operator>>(Int f1, unsigned long int f2)
-{
-	Int result(0, f1.prec());
-	mpz_tdiv_q_2exp(result, f1.value, f2);
-	return result;
-}
-
-Int operator>>(unsigned long int f1, Int f2)
-{
-	Int result(0, sizeof(unsigned long int)*8);
-	mpz_tdiv_q_2exp(result, Int(f1).value, (unsigned long int)f2);
-	return result;
-}
-
-Int abs(Int f)
-{
-	Int result(0, f.prec());
-	mpz_abs(result.value, f.value);
-	return result;
-}
-
-Int pow(Int f, unsigned long int p)
-{
-	Int result(0, f.prec());
-	mpz_pow_ui(result.value, f.value, p);
-	return result;
-}
-
-Int sqrt(Int f)
-{
-	Int result(0, f.prec());
-	mpz_sqrt(result.value, f.value);
-	return result;
-}
-
-Int root(Int f, unsigned long int r)
-{
-	Int result(0, f.prec());
-	mpz_root(result.value, f.value, r);
-	return result;
-}
+}*/
 
 }

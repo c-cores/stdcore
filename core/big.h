@@ -21,7 +21,8 @@
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <gmp.h>
+#include "array.h"
+#include "file.h"
 
 #ifndef big_h
 #define big_h
@@ -29,264 +30,521 @@
 namespace core
 {
 
-struct Float
+struct Integer
 {
-	Float();
-	~Float();
+	Integer();
+	Integer(int i);
+	Integer(unsigned int i);
+	Integer(long long i);
+	Integer(unsigned long long i);
+	Integer(float i);
+	Integer(double i);
+	~Integer();
+
+	int sign;
+	array<int> data;
+
+	operator double();
 
 	template <class t>
-	Float(t f)
+	operator t()
 	{
-		mpf_init_set_d(value, (double)f);
+		return (t)((double)*this);
 	}
+
+	int size();
+
+	Integer &operator=(Integer i);
 
 	template <class t>
-	Float(t f, unsigned long prec)
+	Integer &operator=(t i)
 	{
-		mpf_init2(value, prec);
-		mpf_set_d(value, (double)f);
-	}
-
-	mpf_t value;
-
-	template <class t>
-	inline operator t()
-	{
-		return ((t)mpf_get_d(value));
-	}
-
-	inline operator __mpf_struct*()
-	{
-		return value;
-	}
-
-	unsigned long int size();
-	unsigned long int prec();
-	void set_prec(unsigned long int p);
-
-	Float &operator=(Float f);
-
-	template <class t>
-	Float &operator=(t f)
-	{
-		mpf_set_d(value, (double)f);
+		*this = Integer(i);
 		return *this;
 	}
 
-	Float &operator+=(Float f);
-	Float &operator-=(Float f);
-	Float &operator*=(Float f);
-	Float &operator/=(Float f);
+	Integer &operator+=(Integer i);
+	Integer &operator-=(Integer i);
+	Integer &operator*=(Integer i);
+	Integer &operator/=(Integer i);
+	Integer &operator%=(Integer i);
+	Integer &operator&=(Integer i);
+	Integer &operator|=(Integer i);
+	Integer &operator^=(Integer i);
+	Integer &operator<<=(Integer i);
+	Integer &operator>>=(Integer i);
 
-	Float &operator+=(float f);
-	Float &operator-=(float f);
-	Float &operator*=(float f);
-	Float &operator/=(float f);
+	template <class t>
+	Integer &operator+=(t i)
+	{
+		*this += Integer(i);
+		return *this;
+	}
 
-	Float &operator+=(double f);
-	Float &operator-=(double f);
-	Float &operator*=(double f);
-	Float &operator/=(double f);
+	template <class t>
+	Integer &operator-=(t i)
+	{
+		*this -= Integer(i);
+		return *this;
+	}
+
+	template <class t>
+	Integer &operator*=(t i)
+	{
+		*this *= Integer(i);
+		return *this;
+	}
+
+	template <class t>
+	Integer &operator/=(t i)
+	{
+		*this /= Integer(i);
+		return *this;
+	}
+
+	template <class t>
+	Integer &operator%=(t i)
+	{
+		*this %= Integer(i);
+		return *this;
+	}
+
+	template <class t>
+	Integer &operator&=(t i)
+	{
+		*this &= Integer(i);
+		return *this;
+	}
+
+	template <class t>
+	Integer &operator|=(t i)
+	{
+		*this |= Integer(i);
+		return *this;
+	}
+
+	template <class t>
+	Integer &operator^=(t i)
+	{
+		*this ^= Integer(i);
+		return *this;
+	}
+
+	template <class t>
+	Integer &operator<<=(t i)
+	{
+		*this <<= Integer(i);
+		return *this;
+	}
+
+	template <class t>
+	Integer &operator>>=(t i)
+	{
+		*this >>= Integer(i);
+		return *this;
+	}
 };
 
-Float operator-(Float f);
+file &operator<<(file &f, Integer i);
 
-Float operator+(Float f1, Float f2);
-Float operator+(Float f1, float f2);
-Float operator+(float f1, Float f2);
-Float operator+(Float f1, double f2);
-Float operator+(double f1, Float f2);
+Integer operator-(Integer i);
 
-Float operator-(Float f1, Float f2);
-Float operator-(Float f1, float f2);
-Float operator-(float f1, Float f2);
-Float operator-(Float f1, double f2);
-Float operator-(double f1, Float f2);
+Integer operator+(Integer i1, Integer i2);
+Integer operator-(Integer i1, Integer i2);
+Integer operator*(Integer i1, Integer i2);
+Integer operator/(Integer i1, Integer i2);
+Integer operator%(Integer i1, Integer i2);
+Integer operator&(Integer i1, Integer i2);
+Integer operator|(Integer i1, Integer i2);
+Integer operator^(Integer i1, Integer i2);
+Integer operator>>(Integer i1, int i2);
+Integer operator<<(Integer i1, int i2);
 
-Float operator*(Float f1, Float f2);
-Float operator*(Float f1, float f2);
-Float operator*(float f1, Float f2);
-Float operator*(Float f1, double f2);
-Float operator*(double f1, Float f2);
+bool operator==(Integer i1, Integer i2);
+bool operator!=(Integer i1, Integer i2);
+bool operator>(Integer i1, Integer i2);
+bool operator<(Integer i1, Integer i2);
+bool operator>=(Integer i1, Integer i2);
+bool operator<=(Integer i1, Integer i2);
 
-Float operator/(Float f1, Float f2);
-Float operator/(Float f1, float f2);
-Float operator/(float f1, Float f2);
-Float operator/(Float f1, double f2);
-Float operator/(double f1, Float f2);
-
-bool operator==(Float f1, Float f2);
-bool operator==(Float f1, float f2);
-bool operator==(float f1, Float f2);
-bool operator==(Float f1, double f2);
-bool operator==(double f1, Float f2);
-
-bool operator!=(Float f1, Float f2);
-bool operator!=(Float f1, float f2);
-bool operator!=(float f1, Float f2);
-bool operator!=(Float f1, double f2);
-bool operator!=(double f1, Float f2);
-
-bool operator>(Float f1, Float f2);
-bool operator>(Float f1, float f2);
-bool operator>(float f1, Float f2);
-bool operator>(Float f1, double f2);
-bool operator>(double f1, Float f2);
-
-bool operator<(Float f1, Float f2);
-bool operator<(Float f1, float f2);
-bool operator<(float f1, Float f2);
-bool operator<(Float f1, double f2);
-bool operator<(double f1, Float f2);
-
-bool operator>=(Float f1, Float f2);
-bool operator>=(Float f1, float f2);
-bool operator>=(float f1, Float f2);
-bool operator>=(Float f1, double f2);
-bool operator>=(double f1, Float f2);
-
-bool operator<=(Float f1, Float f2);
-bool operator<=(Float f1, float f2);
-bool operator<=(float f1, Float f2);
-bool operator<=(Float f1, double f2);
-bool operator<=(double f1, Float f2);
-
-
-Float sqrt(Float f);
-Float pow(Float f, unsigned long int p);
-Float abs(Float f);
-
-struct Int
+template <class t>
+Integer operator+(Integer i1, t i2)
 {
-	Int();
-	~Int();
+	return i1 + Integer(i2);
+}
 
-	template <class t>
-	Int(t f)
-	{
-		mpz_init_set_si(value, (signed long int)f);
-	}
+template <class t>
+Integer operator+(t i1, Integer i2)
+{
+	return Integer(i1) + i2;
+}
 
-	template <class t>
-	Int(t f, unsigned long prec)
-	{
-		mpz_init2(value, prec);
-		mpz_set_si(value, (signed long int)f);
-	}
+template <class t>
+Integer operator-(Integer i1, t i2)
+{
+	return i1 - Integer(i2);
+}
 
-	mpz_t value;
+template <class t>
+Integer operator-(t i1, Integer i2)
+{
+	return Integer(i1) - i2;
+}
+
+template <class t>
+Integer operator*(Integer i1, t i2)
+{
+	return i1 * Integer(i2);
+}
+
+template <class t>
+Integer operator*(t i1, Integer i2)
+{
+	return Integer(i1) * i2;
+}
+
+template <class t>
+Integer operator/(Integer i1, t i2)
+{
+	return i1 / Integer(i2);
+}
+
+template <class t>
+Integer operator/(t i1, Integer i2)
+{
+	return Integer(i1) / i2;
+}
+
+template <class t>
+Integer operator%(Integer i1, t i2)
+{
+	return i1 % Integer(i2);
+}
+
+template <class t>
+Integer operator%(t i1, Integer i2)
+{
+	return Integer(i1) % i2;
+}
+
+template <class t>
+Integer operator&(Integer i1, t i2)
+{
+	return i1 & Integer(i2);
+}
+
+template <class t>
+Integer operator&(t i1, Integer i2)
+{
+	return Integer(i1) & i2;
+}
+
+template <class t>
+Integer operator|(Integer i1, t i2)
+{
+	return i1 | Integer(i2);
+}
+
+template <class t>
+Integer operator|(t i1, Integer i2)
+{
+	return Integer(i1) | i2;
+}
+
+template <class t>
+Integer operator^(Integer i1, t i2)
+{
+	return i1 ^ Integer(i2);
+}
+
+template <class t>
+Integer operator^(t i1, Integer i2)
+{
+	return Integer(i1) ^ i2;
+}
+
+template <class t>
+bool operator==(Integer i1, t i2)
+{
+	return i1 == Integer(i2);
+}
+
+template <class t>
+bool operator==(t i1, Integer i2)
+{
+	return Integer(i1) == i2;
+}
+
+template <class t>
+bool operator!=(Integer i1, t i2)
+{
+	return i1 != Integer(i2);
+}
+
+template <class t>
+bool operator!=(t i1, Integer i2)
+{
+	return Integer(i1) != i2;
+}
+
+template <class t>
+bool operator>(Integer i1, t i2)
+{
+	return i1 > Integer(i2);
+}
+
+template <class t>
+bool operator>(t i1, Integer i2)
+{
+	return Integer(i1) > i2;
+}
+
+template <class t>
+bool operator<(Integer i1, t i2)
+{
+	return i1 < Integer(i2);
+}
+
+template <class t>
+bool operator<(t i1, Integer i2)
+{
+	return Integer(i1) < i2;
+}
+
+template <class t>
+bool operator>=(Integer i1, t i2)
+{
+	return i1 >= Integer(i2);
+}
+
+template <class t>
+bool operator>=(t i1, Integer i2)
+{
+	return Integer(i1) >= i2;
+}
+
+template <class t>
+bool operator<=(Integer i1, t i2)
+{
+	return i1 <= Integer(i2);
+}
+
+template <class t>
+bool operator<=(t i1, Integer i2)
+{
+	return Integer(i1) <= i2;
+}
+
+Integer abs(Integer i);
+Integer pow(Integer i, int p);
+Integer sqrt(Integer i);
+Integer root(Integer i, int r);
+
+struct Real
+{
+	Real();
+	Real(int f);
+	Real(unsigned int f);
+	Real(long long f);
+	Real(unsigned long long f);
+	Real(float f);
+	Real(double f);
+	~Real();
+
+	int exp;
+	int limit;
+	Integer num;
+
+	operator double();
 
 	template <class t>
 	inline operator t()
 	{
-		return ((t)mpz_get_si(value));
+		return (t)((double)*this);
 	}
 
-	inline operator __mpz_struct*()
+	Real &operator=(Real f);
+
+	template <class t>
+	Real &operator=(t f)
 	{
-		return value;
+		*this = Real(f);
+		return *this;
 	}
 
-	unsigned long int size();
-	unsigned long int prec();
-	void set_prec(unsigned long int p);
+	Real &operator+=(Real f);
+	Real &operator-=(Real f);
+	Real &operator*=(Real f);
+	Real &operator/=(Real f);
 
-	Int &operator=(Int f);
-	Int &operator=(signed long int f);
+	template <class t>
+	Real &operator+=(t f)
+	{
+		*this += Real(f);
+		return *this;
+	}
 
-	Int &operator+=(Int f);
-	Int &operator-=(Int f);
-	Int &operator*=(Int f);
-	Int &operator/=(Int f);
-	Int &operator%=(Int f);
-	Int &operator&=(Int f);
-	Int &operator|=(Int f);
-	Int &operator^=(Int f);
-	Int &operator<<=(Int f);
-	Int &operator>>=(Int f);
+	template <class t>
+	Real &operator-=(t f)
+	{
+		*this -= Real(f);
+		return *this;
+	}
 
-	Int &operator+=(signed long int f);
-	Int &operator-=(signed long int f);
-	Int &operator*=(signed long int f);
-	Int &operator/=(signed long int f);
-	Int &operator%=(unsigned long int f);
-	Int &operator&=(unsigned long int f);
-	Int &operator|=(unsigned long int f);
-	Int &operator^=(unsigned long int f);
-	Int &operator<<=(unsigned long int f);
-	Int &operator>>=(unsigned long int f);
+	template <class t>
+	Real &operator*=(t f)
+	{
+		*this *= Real(f);
+		return *this;
+	}
+
+	template <class t>
+	Real &operator/=(t f)
+	{
+		*this /= Real(f);
+		return *this;
+	}
 };
 
-Int operator-(Int f);
+file &operator<< (file &fin, Real f);
 
-Int operator+(Int f1, Int f2);
-Int operator+(Int f1, signed long int f2);
-Int operator+(signed long int f1, Int f2);
+Real operator-(Real f);
 
-Int operator-(Int f1, Int f2);
-Int operator-(Int f1, signed long int f2);
-Int operator-(signed long int f1, Int f2);
+Real operator+(Real f1, Real f2);
+Real operator-(Real f1, Real f2);
+Real operator*(Real f1, Real f2);
+Real operator/(Real f1, Real f2);
 
-Int operator*(Int f1, Int f2);
-Int operator*(Int f1, signed long int f2);
-Int operator*(signed long int f1, Int f2);
+bool operator==(Real f1, Real f2);
+bool operator!=(Real f1, Real f2);
+bool operator>(Real f1, Real f2);
+bool operator<(Real f1, Real f2);
+bool operator>=(Real f1, Real f2);
+bool operator<=(Real f1, Real f2);
 
-Int operator/(Int f1, Int f2);
-Int operator/(Int f1, signed long int f2);
-Int operator/(signed long int f1, Int f2);
+template <class t>
+Real operator+(Real f1, t f2)
+{
+	return f1 + Real(f2);
+}
 
-Int operator%(Int f1, Int f2);
-Int operator%(Int f1, unsigned long int f2);
-Int operator%(unsigned long int f1, Int f2);
+template <class t>
+Real operator+(t f1, Real f2)
+{
+	return Real(f1) + f2;
+}
 
-bool operator==(Int f1, Int f2);
-bool operator==(Int f1, signed long int f2);
-bool operator==(signed long int f1, Int f2);
+template <class t>
+Real operator-(Real f1, t f2)
+{
+	return f1 - Real(f2);
+}
 
-bool operator!=(Int f1, Int f2);
-bool operator!=(Int f1, signed long int f2);
-bool operator!=(signed long int f1, Int f2);
+template <class t>
+Real operator-(t f1, Real f2)
+{
+	return Real(f1) - f2;
+}
 
-bool operator>(Int f1, Int f2);
-bool operator>(Int f1, signed long int f2);
-bool operator>(signed long int f1, Int f2);
+template <class t>
+Real operator*(Real f1, t f2)
+{
+	return f1 * Real(f2);
+}
 
-bool operator<(Int f1, Int f2);
-bool operator<(Int f1, signed long int f2);
-bool operator<(signed long int f1, Int f2);
+template <class t>
+Real operator*(t f1, Real f2)
+{
+	return Real(f1) * f2;
+}
 
-bool operator>=(Int f1, Int f2);
-bool operator>=(Int f1, signed long int f2);
-bool operator>=(signed long int f1, Int f2);
+template <class t>
+Real operator/(Real f1, t f2)
+{
+	return f1 / Real(f2);
+}
 
-bool operator<=(Int f1, Int f2);
-bool operator<=(Int f1, signed long int f2);
-bool operator<=(signed long int f1, Int f2);
+template <class t>
+Real operator/(t f1, Real f2)
+{
+	return Real(f1) / f2;
+}
 
-Int operator&(Int f1, Int f2);
-Int operator&(Int f1, unsigned long int f2);
-Int operator&(unsigned long int f1, Int f2);
+template <class t>
+bool operator==(Real f1, t f2)
+{
+	return f1 == Real(f2);
+}
 
-Int operator|(Int f1, Int f2);
-Int operator|(Int f1, unsigned long int f2);
-Int operator|(unsigned long int f1, Int f2);
+template <class t>
+bool operator==(t f1, Real f2)
+{
+	return Real(f1) == f2;
+}
 
-Int operator^(Int f1, Int f2);
-Int operator^(Int f1, unsigned long int f2);
-Int operator^(unsigned long int f1, Int f2);
+template <class t>
+bool operator!=(Real f1, t f2)
+{
+	return f1 != Real(f2);
+}
 
-Int operator<<(Int f1, Int f2);
-Int operator<<(Int f1, unsigned long int  f2);
-Int operator<<(unsigned long int f1, Int f2);
+template <class t>
+bool operator!=(t f1, Real f2)
+{
+	return Real(f1) != f2;
+}
 
-Int operator>>(Int f1, Int f2);
-Int operator>>(Int f1, unsigned long int  f2);
-Int operator>>(unsigned long int f1, Int f2);
+template <class t>
+bool operator>(Real f1, t f2)
+{
+	return f1 > Real(f2);
+}
 
-Int abs(Int f);
-Int pow(Int f, unsigned long int p);
-Int sqrt(Int f);
-Int root(Int f, unsigned long int r);
+template <class t>
+bool operator>(t f1, Real f2)
+{
+	return Real(f1) > f2;
+}
+
+template <class t>
+bool operator<(Real f1, t f2)
+{
+	return f1 < Real(f2);
+}
+
+template <class t>
+bool operator<(t f1, Real f2)
+{
+	return Real(f1) < f2;
+}
+
+template <class t>
+bool operator>=(Real f1, t f2)
+{
+	return f1 >= Real(f2);
+}
+
+template <class t>
+bool operator>=(t f1, Real f2)
+{
+	return Real(f1) >= f2;
+}
+
+template <class t>
+bool operator<=(Real f1, t f2)
+{
+	return f1 <= Real(f2);
+}
+
+template <class t>
+bool operator<=(t f1, Real f2)
+{
+	return Real(f1) <= f2;
+}
+
+/*Real sqrt(Real f);
+Real pow(Real f, int p);
+Real abs(Real f);*/
 
 }
 

@@ -81,7 +81,8 @@ struct vec
 			this->data[k] = 0.0;
 	}
 
-	vec(t first, ...)
+	template <class t2>
+	vec(t2 first, ...)
 	{
 		va_list arguments;
 		int i;
@@ -89,11 +90,11 @@ struct vec
 		va_start(arguments, first);
 		this->data[0] = first;
 		for (i = 1; i < s; i++)
-			this->data[i] = va_arg(arguments, t);
+			this->data[i] = (t)va_arg(arguments, t2);
 		va_end(arguments);
 	}
 
-	vec(double first, ...)
+	vec(float first, ...)
 	{
 		va_list arguments;
 		int i;
@@ -101,7 +102,7 @@ struct vec
 		va_start(arguments, first);
 		this->data[0] = first;
 		for (i = 1; i < s; i++)
-			this->data[i] = va_arg(arguments, double);
+			this->data[i] = (t)va_arg(arguments, double);
 		va_end(arguments);
 	}
 
@@ -223,7 +224,7 @@ struct vec
 			indices[1] = indices[0];
 
 		vec<ref<t>, s> result;
-		for (int i = indices[0]; i <= indices[1]; i++)
+		for (int i = indices[0]; i < min(s, indices[1]); i++)
 			result.data[i-indices[0]] = ref<t>(this->data[i]);
 
 		return result;
@@ -232,7 +233,7 @@ struct vec
 	vec<ref<t>,s> operator()(int start, int end)
 	{
 		vec<ref<t>, s> result;
-		for (int i = start; i <= min(s, end); i++)
+		for (int i = start; i < min(s, end); i++)
 			result.data[i-start] = ref<t>(data[i]);
 		return result;
 	}
@@ -262,217 +263,6 @@ struct vec
 
 		for (i = 0; i < s; i++)
 			this->data[i] = (t)v;
-	}
-};
-
-template <int s>
-struct vec<float, s>
-{
-	vec()
-	{
-	}
-
-	vec(const float v[s])
-	{
-		int i;
-
-		for (i = 0; i < s; i++)
-			this->data[i] = v[i];
-	}
-
-	template <class t2, int s2>
-	vec(vec<t2, s2> v)
-	{
-		for (int i = 0; i < min(s, s2); i++)
-			this->data[i] = (float)v.data[i];
-	}
-
-	vec(const char *str)
-	{
-		char num[32];
-		int j = 0, k = 0;
-		for (int i = 0; str[i] != '\0' && k < s; i++)
-		{
-			if ((str[i] >= '0' && str[i] <= '9') || str[i] == '.' || str[i] == '-' || ((str[i] == 'e' || str[i] == 'E') && j > 0))
-				num[j++] = str[i];
-			else if (j > 0)
-			{
-				num[j++] = '\0';
-				this->data[k++] = string(num).to_double();
-				j = 0;
-			}
-		}
-
-		if (j > 0)
-		{
-			num[j++] = '\0';
-			this->data[k++] = string(num).to_double();
-			j = 0;
-		}
-
-		for (; k < s; k++)
-			this->data[k] = 0.0;
-	}
-
-	vec(double first, ...)
-	{
-		va_list arguments;
-		int i;
-
-		va_start(arguments, first);
-		this->data[0] = first;
-		for (i = 1; i < s; i++)
-			this->data[i] = va_arg(arguments, double);
-		va_end(arguments);
-	}
-	~vec()
-	{
-	}
-
-	float data[s];
-
-	template <class t2, int s2>
-	vec<float, s> &operator=(vec<t2, s2> v)
-	{
-		int i;
-		for (i = 0; i < min(s, s2); i++)
-			this->data[i] = v.data[i];
-		return *this;
-	}
-
-	template <class t2>
-	vec<float, s> &operator+=(vec<t2, s> v)
-	{
-		*this = *this + v;
-		return *this;
-	}
-
-	template <class t2>
-	vec<float, s> &operator-=(vec<t2, s> v)
-	{
-		*this = *this - v;
-		return *this;
-	}
-
-	template <class t2>
-	vec<float, s> &operator*=(vec<t2, s> v)
-	{
-		*this = *this * v;
-		return *this;
-	}
-
-	template <class t2>
-	vec<float, s> &operator/=(vec<t2, s> v)
-	{
-		*this = *this / v;
-		return *this;
-	}
-
-	template <class t2>
-	vec<float, s> &operator+=(t2 f)
-	{
-		*this = *this + f;
-		return *this;
-	}
-
-	template <class t2>
-	vec<float, s> &operator-=(t2 f)
-	{
-		*this = *this - f;
-		return *this;
-	}
-
-	template <class t2>
-	vec<float, s> &operator*=(t2 f)
-	{
-		*this = *this * f;
-		return *this;
-	}
-
-	template <class t2>
-	vec<float, s> &operator/=(t2 f)
-	{
-		*this = *this / f;
-		return *this;
-	}
-
-	template <int s2>
-	operator vec<float, s2>()
-	{
-		vec<float, s2> ret;
-		for (int i = 0; i < min(s, s2); i++)
-			ret[i] = data[i];
-		return ret;
-	}
-
-	vec<ref<float>, s> operator()(const char *str)
-	{
-		int indices[2];
-
-		char num[32];
-		int j = 0, k = 0;
-		for (int i = 0; str[i] != '\0' && k < 2; i++)
-		{
-			if ((str[i] >= '0' && str[i] <= '9') || str[i] == '-')
-				num[j++] = str[i];
-			else if (j > 0)
-			{
-				num[j++] = '\0';
-				indices[k++] = string(num).to_long();
-				j = 0;
-			}
-		}
-
-		if (j > 0 && k < 2)
-		{
-			num[j++] = '\0';
-			indices[k++] = string(num).to_long();
-			j = 0;
-		}
-
-		if (k < 2)
-			indices[1] = indices[0];
-
-		vec<ref<float>, s> result;
-		for (int i = indices[0]; i <= indices[1]; i++)
-			result.data[i-indices[0]] = ref<float>(this->data[i]);
-
-		return result;
-	}
-
-	vec<ref<float>,s> operator()(int a, int b)
-	{
-		vec<ref<float>, s> result;
-		for (int i = a; i <= b; i++)
-			result.data[i-a] = ref<float>(data[i]);
-		return result;
-	}
-
-	float &operator()(int index)
-	{
-		return data[index];
-	}
-
-	float &operator[](int index)
-	{
-		return data[index];
-	}
-
-	vec<float, s> &swap(int a, int b)
-	{
-		float temp = data[a];
-		data[a] = data[b];
-		data[b] = temp;
-		return *this;
-	}
-
-	template <class t2>
-	void set(t2 v)
-	{
-		int i;
-
-		for (i = 0; i < s; i++)
-			this->data[i] = (float)v;
 	}
 };
 
@@ -913,8 +703,8 @@ vec<t, s> rot(vec<t, s> v, double a, int i, int j)
  *
  * x, y, z, ...
  */
-template <class t, int s>
-vec<t, s> ror(vec<t, s> v, vec <float, s> a)
+template <class t, class at, int s>
+vec<t, s> ror(vec<t, s> v, vec <at, s> a)
 {
 	vec<t, s> result = v;
 	vec<t, s> temp = v;
@@ -940,8 +730,8 @@ vec<t, s> ror(vec<t, s> v, vec <float, s> a)
  *
  * ..., z, y, x
  */
-template <class t, int s>
-vec<t, s> rol(vec<t, s> v, vec <float, s> a)
+template <class t, class at, int s>
+vec<t, s> rol(vec<t, s> v, vec <at, s> a)
 {
 	vec<t, s> result = v;
 	vec<t, s> temp = v;
@@ -968,8 +758,8 @@ vec<t, s> rol(vec<t, s> v, vec <float, s> a)
  *
  * x, y, z, ...
  */
-template <class t, int s>
-vec<t, s> ror3(vec<t, s> v, vec<float, s> a)
+template <class t, class at, int s>
+vec<t, s> ror3(vec<t, s> v, vec<at, s> a)
 {
 	vec<t, s> x = v;
 	vec<t, s> y;
@@ -997,8 +787,8 @@ vec<t, s> ror3(vec<t, s> v, vec<float, s> a)
  *
  * ..., z, y, x
  */
-template <class t, int s>
-vec<t, s> rol3(vec<t, s> v, vec <float, s> a)
+template <class t, class at, int s>
+vec<t, s> rol3(vec<t, s> v, vec <at, s> a)
 {
 	vec<t, s> x = v;
 	vec<t, s> y;
