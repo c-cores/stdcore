@@ -1061,7 +1061,7 @@ Real operator/(Real f1, Real f2)
 		quotient.num += (result << (i*31));
 	}
 
-	while (remainder != 0 && quotient.num.data.size() < quotient.limit)
+	while (remainder != Integer(0) && quotient.num.data.size() < quotient.limit)
 	{
 		// shift the remainder left by 1 place
 		remainder.data.push_front(0);

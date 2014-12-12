@@ -56,13 +56,6 @@ struct Integer
 
 	Integer &operator=(Integer i);
 
-	template <class t>
-	Integer &operator=(t i)
-	{
-		*this = Integer(i);
-		return *this;
-	}
-
 	Integer &operator+=(Integer i);
 	Integer &operator-=(Integer i);
 	Integer &operator*=(Integer i);
@@ -73,76 +66,6 @@ struct Integer
 	Integer &operator^=(Integer i);
 	Integer &operator<<=(Integer i);
 	Integer &operator>>=(Integer i);
-
-	template <class t>
-	Integer &operator+=(t i)
-	{
-		*this += Integer(i);
-		return *this;
-	}
-
-	template <class t>
-	Integer &operator-=(t i)
-	{
-		*this -= Integer(i);
-		return *this;
-	}
-
-	template <class t>
-	Integer &operator*=(t i)
-	{
-		*this *= Integer(i);
-		return *this;
-	}
-
-	template <class t>
-	Integer &operator/=(t i)
-	{
-		*this /= Integer(i);
-		return *this;
-	}
-
-	template <class t>
-	Integer &operator%=(t i)
-	{
-		*this %= Integer(i);
-		return *this;
-	}
-
-	template <class t>
-	Integer &operator&=(t i)
-	{
-		*this &= Integer(i);
-		return *this;
-	}
-
-	template <class t>
-	Integer &operator|=(t i)
-	{
-		*this |= Integer(i);
-		return *this;
-	}
-
-	template <class t>
-	Integer &operator^=(t i)
-	{
-		*this ^= Integer(i);
-		return *this;
-	}
-
-	template <class t>
-	Integer &operator<<=(t i)
-	{
-		*this <<= Integer(i);
-		return *this;
-	}
-
-	template <class t>
-	Integer &operator>>=(t i)
-	{
-		*this >>= Integer(i);
-		return *this;
-	}
 };
 
 file &operator<<(file &f, Integer i);
@@ -167,174 +90,6 @@ bool operator<(Integer i1, Integer i2);
 bool operator>=(Integer i1, Integer i2);
 bool operator<=(Integer i1, Integer i2);
 
-template <class t>
-Integer operator+(Integer i1, t i2)
-{
-	return i1 + Integer(i2);
-}
-
-template <class t>
-Integer operator+(t i1, Integer i2)
-{
-	return Integer(i1) + i2;
-}
-
-template <class t>
-Integer operator-(Integer i1, t i2)
-{
-	return i1 - Integer(i2);
-}
-
-template <class t>
-Integer operator-(t i1, Integer i2)
-{
-	return Integer(i1) - i2;
-}
-
-template <class t>
-Integer operator*(Integer i1, t i2)
-{
-	return i1 * Integer(i2);
-}
-
-template <class t>
-Integer operator*(t i1, Integer i2)
-{
-	return Integer(i1) * i2;
-}
-
-template <class t>
-Integer operator/(Integer i1, t i2)
-{
-	return i1 / Integer(i2);
-}
-
-template <class t>
-Integer operator/(t i1, Integer i2)
-{
-	return Integer(i1) / i2;
-}
-
-template <class t>
-Integer operator%(Integer i1, t i2)
-{
-	return i1 % Integer(i2);
-}
-
-template <class t>
-Integer operator%(t i1, Integer i2)
-{
-	return Integer(i1) % i2;
-}
-
-template <class t>
-Integer operator&(Integer i1, t i2)
-{
-	return i1 & Integer(i2);
-}
-
-template <class t>
-Integer operator&(t i1, Integer i2)
-{
-	return Integer(i1) & i2;
-}
-
-template <class t>
-Integer operator|(Integer i1, t i2)
-{
-	return i1 | Integer(i2);
-}
-
-template <class t>
-Integer operator|(t i1, Integer i2)
-{
-	return Integer(i1) | i2;
-}
-
-template <class t>
-Integer operator^(Integer i1, t i2)
-{
-	return i1 ^ Integer(i2);
-}
-
-template <class t>
-Integer operator^(t i1, Integer i2)
-{
-	return Integer(i1) ^ i2;
-}
-
-template <class t>
-bool operator==(Integer i1, t i2)
-{
-	return i1 == Integer(i2);
-}
-
-template <class t>
-bool operator==(t i1, Integer i2)
-{
-	return Integer(i1) == i2;
-}
-
-template <class t>
-bool operator!=(Integer i1, t i2)
-{
-	return i1 != Integer(i2);
-}
-
-template <class t>
-bool operator!=(t i1, Integer i2)
-{
-	return Integer(i1) != i2;
-}
-
-template <class t>
-bool operator>(Integer i1, t i2)
-{
-	return i1 > Integer(i2);
-}
-
-template <class t>
-bool operator>(t i1, Integer i2)
-{
-	return Integer(i1) > i2;
-}
-
-template <class t>
-bool operator<(Integer i1, t i2)
-{
-	return i1 < Integer(i2);
-}
-
-template <class t>
-bool operator<(t i1, Integer i2)
-{
-	return Integer(i1) < i2;
-}
-
-template <class t>
-bool operator>=(Integer i1, t i2)
-{
-	return i1 >= Integer(i2);
-}
-
-template <class t>
-bool operator>=(t i1, Integer i2)
-{
-	return Integer(i1) >= i2;
-}
-
-template <class t>
-bool operator<=(Integer i1, t i2)
-{
-	return i1 <= Integer(i2);
-}
-
-template <class t>
-bool operator<=(t i1, Integer i2)
-{
-	return Integer(i1) <= i2;
-}
-
 Integer abs(Integer i);
 Integer pow(Integer i, int p);
 Integer sqrt(Integer i);
@@ -358,52 +113,19 @@ struct Real
 	operator double();
 
 	template <class t>
-	inline operator t()
+	operator t()
 	{
 		return (t)((double)*this);
 	}
 
 	Real &operator=(Real f);
 
-	template <class t>
-	Real &operator=(t f)
-	{
-		*this = Real(f);
-		return *this;
-	}
+	Real &operator=(double f);
 
 	Real &operator+=(Real f);
 	Real &operator-=(Real f);
 	Real &operator*=(Real f);
 	Real &operator/=(Real f);
-
-	template <class t>
-	Real &operator+=(t f)
-	{
-		*this += Real(f);
-		return *this;
-	}
-
-	template <class t>
-	Real &operator-=(t f)
-	{
-		*this -= Real(f);
-		return *this;
-	}
-
-	template <class t>
-	Real &operator*=(t f)
-	{
-		*this *= Real(f);
-		return *this;
-	}
-
-	template <class t>
-	Real &operator/=(t f)
-	{
-		*this /= Real(f);
-		return *this;
-	}
 };
 
 file &operator<< (file &fin, Real f);
@@ -421,126 +143,6 @@ bool operator>(Real f1, Real f2);
 bool operator<(Real f1, Real f2);
 bool operator>=(Real f1, Real f2);
 bool operator<=(Real f1, Real f2);
-
-template <class t>
-Real operator+(Real f1, t f2)
-{
-	return f1 + Real(f2);
-}
-
-template <class t>
-Real operator+(t f1, Real f2)
-{
-	return Real(f1) + f2;
-}
-
-template <class t>
-Real operator-(Real f1, t f2)
-{
-	return f1 - Real(f2);
-}
-
-template <class t>
-Real operator-(t f1, Real f2)
-{
-	return Real(f1) - f2;
-}
-
-template <class t>
-Real operator*(Real f1, t f2)
-{
-	return f1 * Real(f2);
-}
-
-template <class t>
-Real operator*(t f1, Real f2)
-{
-	return Real(f1) * f2;
-}
-
-template <class t>
-Real operator/(Real f1, t f2)
-{
-	return f1 / Real(f2);
-}
-
-template <class t>
-Real operator/(t f1, Real f2)
-{
-	return Real(f1) / f2;
-}
-
-template <class t>
-bool operator==(Real f1, t f2)
-{
-	return f1 == Real(f2);
-}
-
-template <class t>
-bool operator==(t f1, Real f2)
-{
-	return Real(f1) == f2;
-}
-
-template <class t>
-bool operator!=(Real f1, t f2)
-{
-	return f1 != Real(f2);
-}
-
-template <class t>
-bool operator!=(t f1, Real f2)
-{
-	return Real(f1) != f2;
-}
-
-template <class t>
-bool operator>(Real f1, t f2)
-{
-	return f1 > Real(f2);
-}
-
-template <class t>
-bool operator>(t f1, Real f2)
-{
-	return Real(f1) > f2;
-}
-
-template <class t>
-bool operator<(Real f1, t f2)
-{
-	return f1 < Real(f2);
-}
-
-template <class t>
-bool operator<(t f1, Real f2)
-{
-	return Real(f1) < f2;
-}
-
-template <class t>
-bool operator>=(Real f1, t f2)
-{
-	return f1 >= Real(f2);
-}
-
-template <class t>
-bool operator>=(t f1, Real f2)
-{
-	return Real(f1) >= f2;
-}
-
-template <class t>
-bool operator<=(Real f1, t f2)
-{
-	return f1 <= Real(f2);
-}
-
-template <class t>
-bool operator<=(t f1, Real f2)
-{
-	return Real(f1) <= f2;
-}
 
 /*Real sqrt(Real f);
 Real pow(Real f, int p);
