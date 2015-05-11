@@ -36,258 +36,148 @@ namespace core
 typedef complex<float>  complexf;
 typedef complex<int>	complexi;
 
-typedef vec<float,  1>	vec1f;
-typedef vec<float,  2>	vec2f;
-typedef vec<float,  3>	vec3f;
-typedef vec<float,  4>	vec4f;
-typedef vec<float,  5>	vec5f;
-typedef vec<float,  6>	vec6f;
-typedef vec<float,  7>	vec7f;
-typedef vec<float,  8>	vec8f;
-typedef vec<float,  9>	vec9f;
-typedef vec<float,  10>	vec10f;
-typedef vec<float,  11>	vec11f;
-typedef vec<float,  12>	vec12f;
+typedef vector<float,  1>	vec1f;
+typedef vector<float,  2>	vec2f;
+typedef vector<float,  3>	vec3f;
+typedef vector<float,  4>	vec4f;
+typedef vector<float,  5>	vec5f;
+typedef vector<float,  6>	vec6f;
+typedef vector<float,  7>	vec7f;
+typedef vector<float,  8>	vec8f;
+typedef vector<float,  9>	vec9f;
+typedef vector<float,  10>	vec10f;
+typedef vector<float,  11>	vec11f;
+typedef vector<float,  12>	vec12f;
 
-typedef vec<int,    1>	vec1i;
-typedef vec<int,    2>	vec2i;
-typedef vec<int,    3>	vec3i;
-typedef vec<int,    4>	vec4i;
-typedef vec<int,    5>	vec5i;
-typedef vec<int,    6>	vec6i;
-typedef vec<int,    7>	vec7i;
-typedef vec<int,    8>	vec8i;
-typedef vec<int,    9>	vec9i;
-typedef vec<int,    10>	vec10i;
-typedef vec<int,    11>	vec11i;
-typedef vec<int,    12>	vec12i;
+typedef vector<int,    1>	vec1i;
+typedef vector<int,    2>	vec2i;
+typedef vector<int,    3>	vec3i;
+typedef vector<int,    4>	vec4i;
+typedef vector<int,    5>	vec5i;
+typedef vector<int,    6>	vec6i;
+typedef vector<int,    7>	vec7i;
+typedef vector<int,    8>	vec8i;
+typedef vector<int,    9>	vec9i;
+typedef vector<int,    10>	vec10i;
+typedef vector<int,    11>	vec11i;
+typedef vector<int,    12>	vec12i;
 
-typedef grad<float,  1>	 grad1f;
-typedef grad<float,  2>	 grad2f;
-typedef grad<float,  3>	 grad3f;
-typedef grad<float,  4>	 grad4f;
-typedef grad<float,  5>	 grad5f;
-typedef grad<float,  6>	 grad6f;
-typedef grad<float,  7>	 grad7f;
-typedef grad<float,  8>	 grad8f;
-typedef grad<float,  9>	 grad9f;
-typedef grad<float,  10> grad10f;
-typedef grad<float,  11> grad11f;
-typedef grad<float,  12> grad12f;
+typedef gradient<float,  1>	 grad1f;
+typedef gradient<float,  2>	 grad2f;
+typedef gradient<float,  3>	 grad3f;
+typedef gradient<float,  4>	 grad4f;
+typedef gradient<float,  5>	 grad5f;
+typedef gradient<float,  6>	 grad6f;
+typedef gradient<float,  7>	 grad7f;
+typedef gradient<float,  8>	 grad8f;
+typedef gradient<float,  9>	 grad9f;
+typedef gradient<float,  10> grad10f;
+typedef gradient<float,  11> grad11f;
+typedef gradient<float,  12> grad12f;
 
-typedef grad<int,    1>	 grad1i;
-typedef grad<int,    2>	 grad2i;
-typedef grad<int,    3>	 grad3i;
-typedef grad<int,    4>	 grad4i;
-typedef grad<int,    5>	 grad5i;
-typedef grad<int,    6>	 grad6i;
-typedef grad<int,    7>	 grad7i;
-typedef grad<int,    8>	 grad8i;
-typedef grad<int,    9>	 grad9i;
-typedef grad<int,    10> grad10i;
-typedef grad<int,    11> grad11i;
-typedef grad<int,    12> grad12i;
+typedef gradient<int,    1>	 grad1i;
+typedef gradient<int,    2>	 grad2i;
+typedef gradient<int,    3>	 grad3i;
+typedef gradient<int,    4>	 grad4i;
+typedef gradient<int,    5>	 grad5i;
+typedef gradient<int,    6>	 grad6i;
+typedef gradient<int,    7>	 grad7i;
+typedef gradient<int,    8>	 grad8i;
+typedef gradient<int,    9>	 grad9i;
+typedef gradient<int,    10> grad10i;
+typedef gradient<int,    11> grad11i;
+typedef gradient<int,    12> grad12i;
 
-typedef mat<float,  1, 1> mat1f;
-typedef mat<float,  2, 2> mat2f;
-typedef mat<float,  3, 3> mat3f;
-typedef mat<float,  4, 4> mat4f;
-typedef mat<float,  5, 5> mat5f;
+typedef matrix<float,  1, 1> mat1f;
+typedef matrix<float,  2, 2> mat2f;
+typedef matrix<float,  3, 3> mat3f;
+typedef matrix<float,  4, 4> mat4f;
+typedef matrix<float,  5, 5> mat5f;
 
-typedef mat<int,  1, 1>	mat1i;
-typedef mat<int,  2, 2>	mat2i;
-typedef mat<int,  3, 3>	mat3i;
-typedef mat<int,  4, 4>	mat4i;
-typedef mat<int,  5, 5>	mat5i;
+typedef matrix<int,  1, 1>	mat1i;
+typedef matrix<int,  2, 2>	mat2i;
+typedef matrix<int,  3, 3>	mat3i;
+typedef matrix<int,  4, 4>	mat4i;
+typedef matrix<int,  5, 5>	mat5i;
 
-typedef mat<float,  1, 2>	frustum1f;
-typedef mat<float,  2, 2>	frustum2f;
-typedef mat<float,  3, 2>	frustum3f;
-typedef mat<float,  4, 2>	frustum4f;
-typedef mat<float,  5, 2>	frustum5f;
+typedef vector<poly, 1> field1;
+typedef vector<poly, 2> field2;
+typedef vector<poly, 3> field3;
+typedef vector<poly, 4> field4;
+typedef vector<poly, 5> field5;
 
-typedef mat<int,    1, 2>	frustum1i;
-typedef mat<int,    2, 2>	frustum2i;
-typedef mat<int,    3, 2>	frustum3i;
-typedef mat<int,    4, 2>	frustum4i;
-typedef mat<int,    5, 2>	frustum5i;
+typedef vector<Real,  1>	vec1F;
+typedef vector<Real,  2>	vec2F;
+typedef vector<Real,  3>	vec3F;
+typedef vector<Real,  4>	vec4F;
+typedef vector<Real,  5>	vec5F;
+typedef vector<Real,  6>	vec6F;
+typedef vector<Real,  7>	vec7F;
+typedef vector<Real,  8>	vec8F;
+typedef vector<Real,  9>	vec9F;
+typedef vector<Real,  10>	vec10F;
+typedef vector<Real,  11>	vec11F;
+typedef vector<Real,  12>	vec12F;
 
-typedef vec<poly, 1> field1;
-typedef vec<poly, 2> field2;
-typedef vec<poly, 3> field3;
-typedef vec<poly, 4> field4;
-typedef vec<poly, 5> field5;
+typedef vector<Integer,    1>	vec1I;
+typedef vector<Integer,    2>	vec2I;
+typedef vector<Integer,    3>	vec3I;
+typedef vector<Integer,    4>	vec4I;
+typedef vector<Integer,    5>	vec5I;
+typedef vector<Integer,    6>	vec6I;
+typedef vector<Integer,    7>	vec7I;
+typedef vector<Integer,    8>	vec8I;
+typedef vector<Integer,    9>	vec9I;
+typedef vector<Integer,    10>	vec10I;
+typedef vector<Integer,    11>	vec11I;
+typedef vector<Integer,    12>	vec12I;
 
+typedef gradient<Real,  1>	grad1F;
+typedef gradient<Real,  2>	grad2F;
+typedef gradient<Real,  3>	grad3F;
+typedef gradient<Real,  4>	grad4F;
+typedef gradient<Real,  5>	grad5F;
+typedef gradient<Real,  6>	grad6F;
+typedef gradient<Real,  7>	grad7F;
+typedef gradient<Real,  8>	grad8F;
+typedef gradient<Real,  9>	grad9F;
+typedef gradient<Real,  10>	grad10F;
+typedef gradient<Real,  11>	grad11F;
+typedef gradient<Real,  12>	grad12F;
 
-typedef vec<Real,  1>	vec1F;
-typedef vec<Real,  2>	vec2F;
-typedef vec<Real,  3>	vec3F;
-typedef vec<Real,  4>	vec4F;
-typedef vec<Real,  5>	vec5F;
-typedef vec<Real,  6>	vec6F;
-typedef vec<Real,  7>	vec7F;
-typedef vec<Real,  8>	vec8F;
-typedef vec<Real,  9>	vec9F;
-typedef vec<Real,  10>	vec10F;
-typedef vec<Real,  11>	vec11F;
-typedef vec<Real,  12>	vec12F;
+typedef gradient<Integer,    1>	grad1I;
+typedef gradient<Integer,    2>	grad2I;
+typedef gradient<Integer,    3>	grad3I;
+typedef gradient<Integer,    4>	grad4I;
+typedef gradient<Integer,    5>	grad5I;
+typedef gradient<Integer,    6>	grad6I;
+typedef gradient<Integer,    7>	grad7I;
+typedef gradient<Integer,    8>	grad8I;
+typedef gradient<Integer,    9>	grad9I;
+typedef gradient<Integer,    10>	grad10I;
+typedef gradient<Integer,    11>	grad11I;
+typedef gradient<Integer,    12>	grad12I;
 
-typedef vec<Integer,    1>	vec1I;
-typedef vec<Integer,    2>	vec2I;
-typedef vec<Integer,    3>	vec3I;
-typedef vec<Integer,    4>	vec4I;
-typedef vec<Integer,    5>	vec5I;
-typedef vec<Integer,    6>	vec6I;
-typedef vec<Integer,    7>	vec7I;
-typedef vec<Integer,    8>	vec8I;
-typedef vec<Integer,    9>	vec9I;
-typedef vec<Integer,    10>	vec10I;
-typedef vec<Integer,    11>	vec11I;
-typedef vec<Integer,    12>	vec12I;
+typedef matrix<Real,  1, 1>	mat1F;
+typedef matrix<Real,  2, 2>	mat2F;
+typedef matrix<Real,  3, 3>	mat3F;
+typedef matrix<Real,  4, 4>	mat4F;
+typedef matrix<Real,  5, 5>	mat5F;
 
-typedef grad<Real,  1>	grad1F;
-typedef grad<Real,  2>	grad2F;
-typedef grad<Real,  3>	grad3F;
-typedef grad<Real,  4>	grad4F;
-typedef grad<Real,  5>	grad5F;
-typedef grad<Real,  6>	grad6F;
-typedef grad<Real,  7>	grad7F;
-typedef grad<Real,  8>	grad8F;
-typedef grad<Real,  9>	grad9F;
-typedef grad<Real,  10>	grad10F;
-typedef grad<Real,  11>	grad11F;
-typedef grad<Real,  12>	grad12F;
+typedef matrix<Integer,  1, 1>	mat1I;
+typedef matrix<Integer,  2, 2>	mat2I;
+typedef matrix<Integer,  3, 3>	mat3I;
+typedef matrix<Integer,  4, 4>	mat4I;
+typedef matrix<Integer,  5, 5>	mat5I;
 
-typedef grad<Integer,    1>	grad1I;
-typedef grad<Integer,    2>	grad2I;
-typedef grad<Integer,    3>	grad3I;
-typedef grad<Integer,    4>	grad4I;
-typedef grad<Integer,    5>	grad5I;
-typedef grad<Integer,    6>	grad6I;
-typedef grad<Integer,    7>	grad7I;
-typedef grad<Integer,    8>	grad8I;
-typedef grad<Integer,    9>	grad9I;
-typedef grad<Integer,    10>	grad10I;
-typedef grad<Integer,    11>	grad11I;
-typedef grad<Integer,    12>	grad12I;
-
-typedef mat<Real,  1, 1>	mat1F;
-typedef mat<Real,  2, 2>	mat2F;
-typedef mat<Real,  3, 3>	mat3F;
-typedef mat<Real,  4, 4>	mat4F;
-typedef mat<Real,  5, 5>	mat5F;
-
-typedef mat<Integer,  1, 1>	mat1I;
-typedef mat<Integer,  2, 2>	mat2I;
-typedef mat<Integer,  3, 3>	mat3I;
-typedef mat<Integer,  4, 4>	mat4I;
-typedef mat<Integer,  5, 5>	mat5I;
-
-typedef mat<Real,  1, 2>	frustum1F;
-typedef mat<Real,  2, 2>	frustum2F;
-typedef mat<Real,  3, 2>	frustum3F;
-typedef mat<Real,  4, 2>	frustum4F;
-typedef mat<Real,  5, 2>	frustum5F;
-
-typedef mat<Integer,    1, 2>	frustum1I;
-typedef mat<Integer,    2, 2>	frustum2I;
-typedef mat<Integer,    3, 2>	frustum3I;
-typedef mat<Integer,    4, 2>	frustum4I;
-typedef mat<Integer,    5, 2>	frustum5I;
-
-typedef vec2F				lineF;
-typedef vec3F				circleF;
-typedef vec3F				squareF;
-typedef vec4F				ovalF;
-typedef vec4F				rectangleF;
-typedef vec4F				sphereF;
-typedef vec4F				cubeF;
-typedef vec5F				ellipseF;
-typedef vec5F				cuboidF;
-typedef vec5F				hypersphereF;
-typedef vec5F				hypercubeF;
-typedef vec6F				hyperellipseF;
-typedef vec6F				tesseractF;
-
-typedef vec2I				lineI;
-typedef vec3I				circleI;
-typedef vec3I				squareI;
-typedef vec4I				ovalI;
-typedef vec4I				rectangleI;
-typedef vec4I				sphereI;
-typedef vec4I				cubeI;
-typedef vec5I				ellipseI;
-typedef vec5I				cuboidI;
-typedef vec5I				hypersphereI;
-typedef vec5I				hypercubeI;
-typedef vec6I				hyperellipseI;
-typedef vec6I				tesseractI;
-
-typedef vec<float, 3> uvw;
-typedef vec<float, 2> uv;
-typedef vec<float, 4> xyzw;
-typedef vec<float, 3> xyz;
-typedef vec<unsigned char, 4> rgba;
-typedef vec<unsigned char, 3> rgb;
-typedef vec<float, 4> rgba_hdr;
-typedef vec<float, 3> rgb_hdr;
-
-template <class type, int n>
-struct space
-{
-	space()
-	{
-		for (int i = 0; i < n; i++)
-			axis[i][i] = (type)1.0;
-	}
-
-	template <class angle_type>
-	space(vec<angle_type, n> angle, bool ror = true)
-	{
-		if (ror)
-			for (int i = 0; i < n; i++)
-			{
-				axis[i][i] = (type)1.0;
-				axis[i] = core::ror(axis[i], angle);
-			}
-		else
-			for (int i = 0; i < n; i++)
-			{
-				axis[i][i] = (type)1.0;
-				axis[i] = core::rol(axis[i], angle);
-			}
-	}
-
-	~space()
-	{
-
-	}
-
-	vec<type, n> axis[n];
-
-	template <class angle_type>
-	void ror(vec<angle_type, n> angle)
-	{
-		for (int i = 0; i < n; i++)
-			axis[i] = core::ror(axis[i], angle);
-	}
-
-	template <class angle_type>
-	void rol(vec<angle_type, n> angle)
-	{
-		for (int i = 0; i < n; i++)
-			axis[i] = core::rol(axis[i], angle);
-	}
-
-	template <class input_type>
-	vec<type, n> tranform(vec<input_type, n> v)
-	{
-		vec<type, n> result;
-		for (int i = 0; i < n; i++)
-			result += v[i]*axis[i];
-		return result;
-	}
-};
+typedef vector<float, 3> uvw;
+typedef vector<float, 2> uv;
+typedef vector<float, 4> xyzw;
+typedef vector<float, 3> xyz;
+typedef vector<unsigned char, 4> rgba;
+typedef vector<unsigned char, 3> rgb;
+typedef vector<float, 4> rgba_hdr;
+typedef vector<float, 3> rgb_hdr;
 
 }
 

@@ -11,6 +11,11 @@ noise1hdl::noise1hdl()
 	seed = 0;
 }
 
+noise1hdl::noise1hdl(int s)
+{
+	initialize(s);
+}
+
 noise1hdl::~noise1hdl()
 {
 }
@@ -77,6 +82,11 @@ grad1f noise1hdl::operator()(vec1f n, float r, float m)
 noise2hdl::noise2hdl()
 {
 	seed = 0;
+}
+
+noise2hdl::noise2hdl(int s)
+{
+	initialize(s);
 }
 
 noise2hdl::~noise2hdl()
@@ -181,6 +191,11 @@ grad2f noise2hdl::operator()(vec2f n, float r, float m)
 noise3hdl::noise3hdl()
 {
 	seed = 0;
+}
+
+noise3hdl::noise3hdl(int s)
+{
+	initialize(s);
 }
 
 noise3hdl::~noise3hdl()

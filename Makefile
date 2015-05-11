@@ -9,7 +9,7 @@ all: $(TARGET)
 $(TARGET): $(OBJECTS)
 	ar rvs $(TARGET) $(OBJECTS)
 
-%.o: src/%.cpp 
+%.o: core/%.cpp 
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -c -o $@ $<
 	
 clean:

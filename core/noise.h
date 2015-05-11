@@ -14,6 +14,7 @@ namespace core
 struct noise1hdl
 {
 	noise1hdl();
+	noise1hdl(int s);
 	~noise1hdl();
 
 	int seed;
@@ -27,6 +28,7 @@ struct noise1hdl
 struct noise2hdl
 {
 	noise2hdl();
+	noise2hdl(int s);
 	~noise2hdl();
 
 	int seed;
@@ -40,6 +42,7 @@ struct noise2hdl
 struct noise3hdl
 {
 	noise3hdl();
+	noise3hdl(int s);
 	~noise3hdl();
 
 	int seed;

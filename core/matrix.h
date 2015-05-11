@@ -32,204 +32,319 @@ namespace core
 {
 
 template <class t, int v, int h>
-struct mat
+struct matrix
 {
-	mat()
+	matrix()
 	{
-		for (int i = 0; i < v; i++)
-			this->data[i] = vec<t, h>();
-	}
-
-	mat(const char *str)
-	{
-		char vector[256];
-		char last_bracket = ' ';
-		int j = 0;
-		int k = 0;
-		for (int i = 0; str[i] != '\0' && k < v; i++)
-		{
-			if (str[i] == '[')
-			{
-				last_bracket = '[';
-				j = 0;
-			}
-			else if (str[i] == ']' && last_bracket == '[')
-			{
-				last_bracket = ']';
-				vector[j++] = '\0';
-				data[k++] = vec<t, h>((const char *)vector);
-			}
-			else
-				vector[j++] = str[i];
-		}
 	}
 
 	template <class t2>
-	mat(t2 first, ...)
+	matrix(const t2 m[v*h])
+	{
+		for (int i = 0; i < v; i++)
+			for (int j = 0; j < h; j++)
+				rows[i][j] = m[i*h + j];
+	}
+
+	template <int v2, int h2>
+	matrix(matrix<t, v2, h2> m)
+	{
+		int mv = min(v, v2);
+		int mh = min(h, h2);
+		for (int i = 0; i < mv; i++)
+		{
+			for (int j = 0; j < mh; j++)
+				rows[i][j] = m.rows[i][j];
+			for (int j = mh; j < h2; j++)
+				rows[i][j] = 0;
+		}
+		for (int i = mv; i < v2; i++)
+			for (int j = 0; j < h2; j++)
+				rows[i][j] = 0;
+	}
+
+	template <class t2>
+	matrix(t2 first, ...)
 	{
 		va_list arguments;
 
 		va_start(arguments, first);
-		data[0][0] = first;
+		rows[0][0] = first;
 		for (int i = 0; i < v; i++)
 			for (int j = (i == 0 ? 1 : 0); j < h; j++)
-				data[i][j] = (t)va_arg(arguments, t2);
+				rows[i][j] = (t)va_arg(arguments, t2);
 		va_end(arguments);
 	}
 
-	mat(float first, ...)
+	matrix(float first, ...)
 	{
 		va_list arguments;
 
 		va_start(arguments, first);
-		data[0][0] = first;
+		rows[0][0] = first;
 		for (int i = 0; i < v; i++)
 			for (int j = (i == 0 ? 1 : 0); j < h; j++)
-				data[i][j] = (t)va_arg(arguments, double);
+				rows[i][j] = (t)va_arg(arguments, double);
 		va_end(arguments);
 	}
 
-	~mat()
+	~matrix()
 	{
 
 	}
 
-	vec<t, h> data[v];
+	vector<t, h> rows[v];
 
 	template <class t2, int v2, int h2>
-	mat<t, v, h> &operator=(mat<t2, v2, h2> m)
+	matrix<t, v, h> &operator=(matrix<t2, v2, h2> m)
 	{
-		for (int i = 0; i < min(v, v2); i++)
-			data[i] = m[i];
+		int mv = min(v, v2);
+		int mh = min(h, h2);
+		for (int i = 0; i < mv; i++)
+		{
+			for (int j = 0; j < mh; j++)
+				rows[i][j] = m.rows[i][j];
+			for (int j = mh; j < h2; j++)
+				rows[i][j] = 0;
+		}
+		for (int i = mv; i < v2; i++)
+			for (int j = 0; j < h2; j++)
+				rows[i][j] = 0;
 		return *this;
 	}
 
 	template <class t2>
-	mat<t, v, h> &operator+=(mat<t2, v, h> m)
+	matrix<t, v, h> &operator+=(matrix<t2, v, h> m)
 	{
-		*this = *this + m;
+		for (int i = 0; i < v; i++)
+			for (int j = 0; j < h; j++)
+				rows[i].rows[j] += m.rows[i].rows[j];
 		return *this;
 	}
 
 	template <class t2>
-	mat<t, v, h> &operator-=(mat<t2, v, h> m)
+	matrix<t, v, h> &operator-=(matrix<t2, v, h> m)
 	{
-		*this = *this - m;
+		for (int i = 0; i < v; i++)
+			for (int j = 0; j < h; j++)
+				rows[i].rows[j] -= m.rows[i].rows[j];
 		return *this;
 	}
 
 	template <class t2>
-	mat<t, v, h> &operator*=(mat<t2, h, v> m)
+	matrix<t, v, h> &operator*=(matrix<t2, h, v> m)
 	{
-		*this = *this * m;
+		for (int i = 0; i < v; i++)
+			for (int j = 0; j < h; j++)
+				rows[i].rows[j] *= m.rows[i].rows[j];
 		return *this;
 	}
 
 	template <class t2>
-	mat<t, v, h> &operator/=(mat<t2, h, v> m)
+	matrix<t, v, h> &operator/=(matrix<t2, h, v> m)
 	{
-		*this = *this / m;
+		for (int i = 0; i < v; i++)
+			for (int j = 0; j < h; j++)
+				rows[i].rows[j] /= m.rows[i].rows[j];
 		return *this;
 	}
 
-	template <class t2>
-	mat<t, v, h> &operator+=(t2 f)
+	matrix<t, v, h> &operator+=(t f)
 	{
-		*this = *this + f;
+		for (int i = 0; i < v; i++)
+			for (int j = 0; j < h; j++)
+				rows[i].rows[j] += f;
 		return *this;
 	}
 
-	template <class t2>
-	mat<t, v, h> &operator-=(t2 f)
+	matrix<t, v, h> &operator-=(t f)
 	{
-		*this = *this - f;
+		for (int i = 0; i < v; i++)
+			for (int j = 0; j < h; j++)
+				rows[i].rows[j] -= f;
 		return *this;
 	}
 
-	template <class t2>
-	mat<t, v, h> &operator*=(t2 f)
+	matrix<t, v, h> &operator*=(t f)
 	{
-		*this = *this * f;
+		for (int i = 0; i < v; i++)
+			for (int j = 0; j < h; j++)
+				rows[i].rows[j] *= f;
 		return *this;
 	}
 
-	template <class t2>
-	mat<t, v, h> &operator/=(t2 f)
+	matrix<t, v, h> &operator/=(t f)
 	{
-		*this = *this / f;
+		for (int i = 0; i < v; i++)
+			for (int j = 0; j < h; j++)
+				rows[i].rows[j] /= f;
 		return *this;
 	}
 
-	vec<t, h> &operator[](int index)
+	vector<t, h> &operator[](int index)
 	{
-		return data[index];
+		return rows[index];
 	}
 
-	vec<ref<t>, v> operator()(int index)
+	vector<t, h> operator[](int index) const
 	{
-		vec<ref<t>, v> result;
+		return rows[index];
+	}
+
+	void set_row(int r, vector<t, h> m)
+	{
+		rows[r] = m;
+	}
+
+	vector<t, h> row(int r) const
+	{
+		vector<t, h> result;
+		for (int i = 0; i < h; i++)
+			result[i] = rows[r][i];
+		return result;
+	}
+
+	template <int s2>
+	void set_row(int a, int b, matrix<t, s2, h> m)
+	{
+		for (int i = a; i < b; i++)
+			rows[i] = m.rows[i-a];
+	}
+
+	matrix<t,v,h> row(int a, int b) const
+	{
+		matrix<t, v, h> result;
+		for (int i = a; i < b; i++)
+			for (int j = 0; j < h; j++)
+				result.rows[i-a][j] = rows[i][j];
+
+		for (int i = b-a; i < v; i++)
+			for (int j = 0; j < h; j++)
+				result.rows[i][j] = 0;
+
+		return result;
+	}
+
+	void set_col(int c, vector<t, v> m)
+	{
+		for (int i = 0; i < v; i++)
+			rows[i][c] = m[i];
+	}
+
+	vector<t, v> col(int c) const
+	{
+		vector<t, v> result;
 
 		for (int i = 0; i < v; i++)
-			result[i].value = &(data[i][index]);
+			result[i] = rows[i][c];
 
 		return result;
 	}
 
-	mat<ref<t>,v,h> operator()(int a, int b)
+	template <int s2>
+	void set_col(int a, int b, matrix<t, s2, v> m)
 	{
-		mat<ref<t>, v, h> result;
-
-		for (int i = a; i <= b; i++)
-			result.data[i-a] = data[i];
-		return result;
+		for (int i = a; i < b; i++)
+			for (int j = 0; j < v; j++)
+				rows[j][i] = m.rows[i-a][j];
 	}
 
-	mat<ref<t>,v,h> operator()(int a, int b, int c, int d)
+	matrix<t,v,h> col(int a, int b) const
 	{
-		mat<ref<t>, v, h> result;
+		matrix<t, v, h> result;
 
-		for (int i = a; i <= b; i++)
-			result.data[i-a] = data[i](c, d);
-		return result;
-	}
+		for (int i = 0; i < v; i++)
+			for (int j = a; j < b; j++)
+				result.rows[i][j-a] = rows[i][j];
 
-	mat<t, v-1, h-1> remove(int y, int x)
-	{
-		mat<t, v-1, h-1> result;
-		int i, j, a, b;
-
-		for (i = 0, a = 0; i < v; i == y ? i+=2 : i++, a++)
-			for (j = 0, b = 0; j < h; j == x ? j+=2 : i++, b++)
-				result[a][b] = data[i][j];
+		for (int i = 0; i < v; i++)
+			for (int j = b-a; j < h; j++)
+				result.rows[i][j] = 0;
 
 		return result;
 	}
 
-	mat<t, v, h> &swapr(int a, int b)
+	template <int v2, int h2>
+	void set(int va, int vb, int ha, int hb, matrix<t, v2, h2> m)
 	{
-		vec<t, h> temp = data[a];
-		data[a] = data[b];
-		data[b] = temp;
+		for (int i = va; i < vb; i++)
+			for (int j = ha; j < hb; j++)
+				rows[i][j] = m.rows[i-va][j-ha];
+	}
+
+	matrix<t, v, h> operator()(int va, int vb, int ha, int hb) const
+	{
+		matrix<t, v, h> result;
+		for (int i = va; i < vb; i++)
+			for (int j = ha; j < hb; j++)
+				result.rows[i-va][j-ha] = rows[i][j];
+
+		for (int i = vb-va; i < v; i++)
+			for (int j = 0; j < h; j++)
+				result.rows[i][j] = 0;
+
+		for (int i = 0; i < v; i++)
+			for (int j = hb-ha; j < h; j++)
+				result.rows[i][j] = 0;
+
+		return result;
+	}
+
+	matrix<t, v-1, h-1> remove(int y, int x)
+	{
+		matrix<t, v-1, h-1> result;
+
+		for (int i = 0; i < v-1; i++)
+			for (int j = 0; j < h-1; j++)
+				result[i][j] = rows[i + (i >= y)][j + (j >= x)];
+
+		return result;
+	}
+
+	matrix<t, v, h> &swapr(int a, int b)
+	{
+		vector<t, h> temp = rows[a];
+		rows[a] = rows[b];
+		rows[b] = temp;
 		return *this;
 	}
 
-	mat<t, v, h> &swapc(int a, int b)
+	matrix<t, v, h> &swapc(int a, int b)
 	{
 		t temp;
 		for (int i = 0; i < h; i++)
 		{
-			temp = data[i].data[a];
-			data[i].data[a] = data[i].data[b];
-			data[i].data[b] = temp;
+			temp = rows[i].rows[a];
+			rows[i].rows[a] = rows[i].rows[b];
+			rows[i].rows[b] = temp;
 		}
 		return *this;
 	}
 
+	bool is_orthogonal()
+	{
+		for (int j = 0; j < h; j++)
+			for (int i = 0; i < h; i++)
+			{
+				t total = 0;
+				for (int k = 0; k < v; k++)
+					total += *this[j][k] * *this[k][i];
 
+				if (total != (t)(i == j))
+					return false;
+			}
+
+		return true;
+	}
+
+	t *data()
+	{
+		return (t*)rows;
+	}
 };
 
 template <class t, int v, int h>
-file &operator<<(file &f, mat<t, v, h> m)
+file &operator<<(file &f, matrix<t, v, h> m)
 {
 	for (int i = 0; i < v; i++)
 		f << m[i] << endl;
@@ -237,9 +352,9 @@ file &operator<<(file &f, mat<t, v, h> m)
 }
 
 template <class t, int v, int h>
-mat<t, v, h> operator-(mat<t, v, h> m)
+matrix<t, v, h> operator-(matrix<t, v, h> m)
 {
-	mat<t, v, h> result;
+	matrix<t, v, h> result;
 	for (int i = 0; i < v; i++)
 		result[i] = -m[i];
 
@@ -247,9 +362,9 @@ mat<t, v, h> operator-(mat<t, v, h> m)
 }
 
 template <class t1, class t2, int v, int h>
-mat<t1, v, h> operator+(mat<t1, v, h> m1, mat<t2, v, h> m2)
+matrix<t1, v, h> operator+(matrix<t1, v, h> m1, matrix<t2, v, h> m2)
 {
-	mat<t1, v, h> result;
+	matrix<t1, v, h> result;
 	for (int i = 0; i < v; i++)
 		result[i] = m1[i] + m2[i];
 
@@ -257,9 +372,9 @@ mat<t1, v, h> operator+(mat<t1, v, h> m1, mat<t2, v, h> m2)
 }
 
 template <class t1, class t2, int v, int h>
-mat<t1, v, h> operator-(mat<t1, v, h> m1, mat<t2, v, h> m2)
+matrix<t1, v, h> operator-(matrix<t1, v, h> m1, matrix<t2, v, h> m2)
 {
-	mat<t1, v, h> result;
+	matrix<t1, v, h> result;
 	for (int i = 0; i < v; i++)
 		result[i] = m1[i] - m2[i];
 
@@ -267,17 +382,15 @@ mat<t1, v, h> operator-(mat<t1, v, h> m1, mat<t2, v, h> m2)
 }
 
 template <class t1, class t2, int a, int b, int c>
-mat<t1, a, c> operator*(mat<t1, a, b> m1, mat<t2, b, c> m2)
+matrix<t1, a, c> operator*(matrix<t1, a, b> m1, matrix<t2, b, c> m2)
 {
-	mat<t1, a, c> result;
-	vec<t1, c> row;
-	int i, j, k;
+	matrix<t1, a, c> result;
 
-	for (j = 0; j < a; j++)
-		for (i = 0; i < c; i++)
+	for (int j = 0; j < a; j++)
+		for (int i = 0; i < c; i++)
 		{
 			result[j][i] = 0;
-			for (k = 0; k < b; k++)
+			for (int k = 0; k < b; k++)
 				result[j][i] += m1[j][k] * m2[k][i];
 		}
 
@@ -285,85 +398,106 @@ mat<t1, a, c> operator*(mat<t1, a, b> m1, mat<t2, b, c> m2)
 }
 
 template <class t1, class t2, int v, int h>
-mat<t1, v, h> operator/(mat<t1, v, h> v1, mat<t2, v, v> v2)
+matrix<t1, v, h> operator/(matrix<t1, v, h> v1, matrix<t2, v, v> v2)
 {
 	return rref(v2)*v1;
 }
 
-template <class t1, class t2, int v, int h>
-mat<t1, v, h> operator+(t1 f, mat<t2, v, h> m)
+template <class t, int v, int h>
+matrix<t, v, h> operator+(t f, matrix<t, v, h> m)
 {
-	mat<t1, v, h> result;
+	matrix<t, v, h> result;
 	for (int i = 0; i < v; i++)
 		result[i] = f + m[i];
 
 	return result;
 }
 
-template <class t1, class t2, int v, int h>
-mat<t1, v, h> operator-(t1 f, mat<t2, v, h> m)
+template <class t, int v, int h>
+matrix<t, v, h> operator-(t f, matrix<t, v, h> m)
 {
-	mat<t1, v, h> result;
+	matrix<t, v, h> result;
 	for (int i = 0; i < v; i++)
 		result[i] = f - m[i];
 
 	return result;
 }
 
-template <class t1, class t2, int v, int h>
-mat<t1, v, h> operator*(t1 f, mat<t2, v, h> m)
+template <class t, int v, int h>
+matrix<t, v, h> operator*(t f, matrix<t, v, h> m)
 {
-	mat<t1, v, h> result;
+	matrix<t, v, h> result;
 	for (int i = 0; i < v; i++)
 		result[i] = f * m[i];
 
 	return result;
 }
 
-template <class t1, class t2, int s>
-mat<t1, s, s> operator/(t1 f, mat<t2, s, s> m)
+template <class t, int s>
+matrix<t, s, s> operator/(t f, matrix<t, s, s> m)
 {
 	return rref(m)*f;
 }
 
-template <class t1, class t2, int v, int h>
-mat<t1, v, h> operator+(mat<t1, v, h> m, t2 f)
+template <class t, int v, int h>
+matrix<t, v, h> operator+(matrix<t, v, h> m, t f)
 {
-	mat<t1, v, h> result;
+	matrix<t, v, h> result;
 	for (int i = 0; i < v; i++)
 		result[i] = m[i] + f;
 
 	return result;
 }
 
-template <class t1, class t2, int v, int h>
-mat<t1, v, h> operator-(mat<t1, v, h> m, t2 f)
+template <class t, int v, int h>
+matrix<t, v, h> operator-(matrix<t, v, h> m, t f)
 {
-	mat<t1, v, h> result;
+	matrix<t, v, h> result;
 	for (int i = 0; i < v; i++)
 		result[i] = m[i] - f;
 
 	return result;
 }
 
-template <class t1, class t2, int v, int h>
-mat<t1, v, h> operator*(mat<t1, v, h> m, t2 f)
+template <class t, int v, int h>
+matrix<t, v, h> operator*(matrix<t, v, h> m, t f)
 {
-	mat<t1, v, h> result;
+	matrix<t, v, h> result;
 	for (int i = 0; i < v; i++)
 		result[i] = m[i] * f;
 
 	return result;
 }
 
-template <class t1, class t2, int v, int h>
-mat<t1, v, h> operator/(mat<t1, v, h> m, t2 f)
+template <class t, int v, int h>
+matrix<t, v, h> operator/(matrix<t, v, h> m, t f)
 {
-	mat<t1, v, h> result;
+	matrix<t, v, h> result;
 	for (int i = 0; i < v; i++)
 		result[i] = m[i] / f;
 
 	return result;
+}
+
+template <class t1, class t2, int a, int b>
+vector<t1, a> operator*(matrix<t1, a, b> m1, vector<t2, b> v)
+{
+	vector<t1, a> result;
+
+	for (int j = 0; j < a; j++)
+	{
+		result[j] = 0;
+		for (int k = 0; k < b; k++)
+			result[j] += m1[j][k] * v[k];
+	}
+
+	return result;
+}
+
+template <class t1, class t2, int a, int b>
+vector<t1, a> operator/(vector<t2, b> v, matrix<t1, a, b> m1)
+{
+	return inverse(m1)*v;
 }
 
 /* trace
@@ -371,12 +505,11 @@ mat<t1, v, h> operator/(mat<t1, v, h> m, t2 f)
  * Calculates the trace of the matrix m.
  */
 template <class t, int s>
-t trace(mat<t, s, s> m)
+t trace(matrix<t, s, s> m)
 {
 	t result;
-	int i;
 
-	for (i = 0; i < s; i++)
+	for (int i = 0; i < s; i++)
 		result += m[i][i];
 
 	return result;
@@ -387,7 +520,7 @@ t trace(mat<t, s, s> m)
  * Calculates the determinant of an s x s matrix.
  */
 template <class t, int s>
-t determinant(mat<t, s, s> m)
+t determinant(matrix<t, s, s> m)
 {
 	int i, j;
 	t result = 0;
@@ -402,7 +535,7 @@ t determinant(mat<t, s, s> m)
  * Calculates the determinant of a 1 x 1 matrix.
  */
 template <class t>
-t determinant(mat<t, 1, 1> m)
+t determinant(matrix<t, 1, 1> m)
 {
 	return m[0][0];
 }
@@ -412,7 +545,7 @@ t determinant(mat<t, 1, 1> m)
  * Calculates the determinant of a 2 x 2 matrix.
  */
 template <class t>
-t determinant(mat<t, 2, 2> m)
+t determinant(matrix<t, 2, 2> m)
 {
 	return m[0][0]*m[1][1] - m[0][1]*m[1][0];
 }
@@ -422,7 +555,7 @@ t determinant(mat<t, 2, 2> m)
  * Calculates the determinant of a 3 x 3 matrix.
  */
 template <class t>
-t determinant(mat<t, 3, 3> m)
+t determinant(matrix<t, 3, 3> m)
 {
 	return m[0][0]*(m[1][1]*m[2][2] - m[1][2]*m[2][1]) +
 		   m[0][1]*(m[1][2]*m[2][0] - m[1][0]*m[2][2]) +
@@ -434,13 +567,12 @@ t determinant(mat<t, 3, 3> m)
  * Calculates the adjugate matrix of the matrix m.
  */
 template <class t, int s>
-mat<t, s, s> adjugate(mat<t, s, s> m)
+matrix<t, s, s> adjugate(matrix<t, s, s> m)
 {
-	mat<t, s, s> result;
-	int i, j, k, l;
+	matrix<t, s, s> result;
 
-	for (i = 0, k = 1; i < s; i++, k*=-1)
-		for (j = 0, l = 1; j < s; j++, l*=-1)
+	for (int i = 0, k = 1; i < s; i++, k*=-1)
+		for (int j = 0, l = 1; j < s; j++, l*=-1)
 			result[i][j] = (t)(k*l)*determinant(m.remove(i, j));
 
 	return result;
@@ -451,13 +583,12 @@ mat<t, s, s> adjugate(mat<t, s, s> m)
  * Returns the transpose of the matrix m.
  */
 template <class t, int v, int h>
-mat<t, h, v> transpose(mat<t, v, h> m)
+matrix<t, h, v> transpose(matrix<t, v, h> m)
 {
-	mat<t, h, v> result;
-	int i, j;
+	matrix<t, h, v> result;
 
-	for (i = 0; i < v; i++)
-		for (j = 0; j < h; j++)
+	for (int i = 0; i < v; i++)
+		for (int j = 0; j < h; j++)
 			result[i][j] = m[j][i];
 
 	return result;
@@ -468,13 +599,13 @@ mat<t, h, v> transpose(mat<t, v, h> m)
  * Returns a v,h-dimensional identity matrix.
  */
 template <class t, int v, int h>
-mat<t, v, h> identity()
+matrix<t, v, h> identity()
 {
-	mat<t, v, h> result;
-	int i;
+	matrix<t, v, h> result;
 
-	for (i = 0; i < v && i < h; i++)
-		result[i][i] = (t)1;
+	for (int i = 0; i < v; i++)
+		for (int j = 0; j < h; j++)
+			result[i][j] = (i == j);
 
 	return result;
 }
@@ -491,7 +622,7 @@ mat<t, v, h> identity()
  * last rows of the matrix.
  */
 template <class t, int v, int h>
-mat<t, v, h> rref(mat<t, v, h> m)
+matrix<t, v, h> rref(matrix<t, v, h> m)
 {
 	int i = 0, j = 0;
 	while (i < v && j < h)
@@ -542,9 +673,9 @@ mat<t, v, h> rref(mat<t, v, h> m)
  * last rows of the matrix.
  */
 template <class t, int v, int h>
-mat<t, v, h> inverse(mat<t, v, h> m)
+matrix<t, v, h> inverse(matrix<t, v, h> m)
 {
-	mat<t, v, h> result = identity<t, v, h>();
+	matrix<t, v, h> result = identity<t, v, h>();
 	int i = 0, j = 0;
 	while (i < v && j < h)
 	{
@@ -592,7 +723,7 @@ mat<t, v, h> inverse(mat<t, v, h> m)
  * A matrix m is invertible if it is square (v = h) and determinant(m) != 0
  */
 template <class t, int v, int h>
-bool invertible(mat<t, v, h> m)
+bool invertible(matrix<t, v, h> m)
 {
 	if (v != h)
 		return false;
@@ -608,10 +739,10 @@ bool invertible(mat<t, v, h> m)
  * returns the number of linearly independent columns
  */
 template <class t, int v, int h>
-int rank(mat<t, v, h> m)
+int rank(matrix<t, v, h> m)
 {
 	int count = 0;
-	mat<t, v, h> check = rref(m);
+	matrix<t, v, h> check = rref(m);
 	for (int i = 0; i < v; i++)
 		for (int j = 0; j < h; j++)
 			if (check[i][j] != 0)
@@ -627,20 +758,21 @@ int rank(mat<t, v, h> m)
  * Creates an s x s rotation matrix using the vector v
  * as the rotation components.
  */
-template <class t, int s>
-mat<t, s, s> rotate(vec<t, s> v)
+template <class t>
+matrix<t, 4, 4> rotate(vector<t, 3> v, t a)
 {
-	perror("Error: Function \"rotate\" not yet implemented.\n");
-}
+	t c = cos(a);
+	t o = 1-c;
+	t s = sin(a);
+	t l = mag2(v);
 
-/* unrotate
- *
- * The inverse of the rotate function.
- */
-template <class t, int s>
-mat<t, s, s> unrotate(vec<t, s> v)
-{
-	perror("Error: Function \"rotate\" not yet implemented.\n");
+	if (l != 1)
+		v /= sqrt(l);
+
+	return matrix<t, 4, 4>(v[0]*v[0]*o + c,      v[0]*v[1]*o - v[2]*s, v[0]*v[2]*o + v[1]*s, 0,
+			               v[1]*v[0]*o + v[2]*s, v[1]*v[1]*o + c,      v[1]*v[2]*o - v[0]*s, 0,
+						   v[0]*v[2]*o - v[1]*s, v[1]*v[2]*o + v[0]*s, v[2]*v[2]*o + c,      0,
+						   0,                    0,                    0,                    1);
 }
 
 /* translate
@@ -649,9 +781,9 @@ mat<t, s, s> unrotate(vec<t, s> v)
  * as the translation components.
  */
 template <class t, int s>
-mat<t, s, s> translate(vec<t, s-1> v)
+matrix<t, s, s> translate(vector<t, s-1> v)
 {
-	mat<t, s, s> result;
+	matrix<t, s, s> result;
 	int i;
 
 	for (i = 0; i < s-1; i++)
@@ -665,36 +797,15 @@ mat<t, s, s> translate(vec<t, s-1> v)
 	return result;
 }
 
-/* untranslate
- *
- * The inverse of the translate function.
- */
-template <class t, int s>
-mat<t, s, s> untranslate(vec<t, s-1> v)
-{
-	mat<t, s, s> result;
-	int i;
-
-	for (i = 0; i < s-1; i++)
-	{
-		result[i][i] = (t)1;
-		result[i][s-1] = -v[i];
-	}
-
-	result[s-1][s-1] = (t)1;
-
-	return result;
-}
-
 /* scale
  *
  * Creates an s x s scaling matrix using the vector v
  * as the set of scales in the {x, y, z, ...} directions.
  */
 template <class t, int s>
-mat<t, s, s> scale(vec<t, s-1> v)
+matrix<t, s, s> scale(vector<t, s-1> v)
 {
-	mat<t, s, s> result;
+	matrix<t, s, s> result;
 	int i;
 
 	for (i = 0; i < s-1; i++)
@@ -705,43 +816,36 @@ mat<t, s, s> scale(vec<t, s-1> v)
 	return result;
 }
 
-/* unscale
- *
- * The inverse of the scale function.
- */
-template <class t, int s>
-mat<t, s, s> unscale(vec<t, s-1> v)
-{
-	mat<t, s, s> result;
-	int i;
-
-	for (i = 0; i < s-1; i++)
-		result[i][i] = ((t)1)/v[i];
-
-	result[s-1][s-1] = (t)1;
-
-	return result;
-}
-
-/* project
+/* frustum
  *
  * Creates an (s+1) x (s+1) matrix for s-dimensional
  * perspective projection.
  */
-template <class t, int s>
-mat<t, s+1, s+1> project(mat<t, 2, s> d)
+template <class t>
+matrix<t, 4, 4> frustum(t left, t right, t bottom, t top, t front, t back)
 {
-	perror("Error: Function \"project\" not yet implemented.\n");
+	return matrix<t, 4, 4>(2*front/(right-left), 0,                   (right+left)/(right-left), 0,
+			               0,                   2*front/(top-bottom), (top+bottom)/(top-bottom), 0,
+						   0,                   0,                   (back+front)/(back-front),     -2*back*front/(back-front),
+						   0,                   0,                   -1,                        0);
 }
 
-/* unproject
+/* ortho
  *
- * The inverse of the project function.
  */
-template <class t, int s>
-mat<t, s+1, s+1> unproject(mat<t, 2, s> d)
+template <class t>
+matrix<t, 4, 4> ortho(t left, t right, t bottom, t top, t front, t back)
 {
-	perror("Error: Function \"unproject\" not yet implemented.\n");
+	return matrix<t, 4, 4>(2/(right-left), 0,               0,             (right+left)/(right-left),
+			               0,              2/(top-bottom),  0,             (top+bottom)/(top-bottom),
+						   0,              0,               -2/(back-front), (back+front)/(back-front),
+						   0,              0,               0,             1);
+}
+
+template <class t>
+matrix<t, 3, 3> normal(matrix<t, 4, 4> modelview)
+{
+	return transpose(inverse(modelview));
 }
 
 }

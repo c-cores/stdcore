@@ -18,14 +18,12 @@ namespace core
 
 struct file
 {
-private:
-	FILE *ptr;
-
-public:
 	file();
 	file(FILE *f);
 	file(string filename, string options);
 	~file();
+
+	FILE *ptr;
 
 	int size();
 	bool eof();
@@ -70,7 +68,7 @@ file &operator<<(file &fout, double i);
 template <class container>
 file &operator<<(file &f, const container &c)
 {
-	boundary<typename container::const_iterator> b = c.bound();
+	slice<typename container::const_iterator> b = c.bound();
 	f << "{";
 	for (typename container::const_iterator i = b.left; i != b.right+1; i++)
 	{

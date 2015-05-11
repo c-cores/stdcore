@@ -128,12 +128,12 @@ simple_poly simple_poly::operator()(simple_poly x, simple_poly y, simple_poly z,
 	return result;
 }
 
-simple_poly simple_poly::operator()(vec<simple_poly, 4> f)
+simple_poly simple_poly::operator()(vector<simple_poly, 4> f)
 {
 	simple_poly result;
 	for (int i = 0; i < terms.size(); i++)
-		result += (terms[i].coeff * f.data[0].exponentiate(terms[i].a) * f.data[1].exponentiate(terms[i].b) *
-									f.data[2].exponentiate(terms[i].c) * f.data[3].exponentiate(terms[i].d));
+		result += (terms[i].coeff * f[0].exponentiate(terms[i].a) * f[1].exponentiate(terms[i].b) *
+									f[2].exponentiate(terms[i].c) * f[3].exponentiate(terms[i].d));
 
 	return result;
 }
@@ -552,16 +552,16 @@ poly poly::operator()(poly x, poly y, poly z, poly w)
 	return n/d;
 }
 
-poly poly::operator()(vec<poly, 4> f)
+poly poly::operator()(vector<poly, 4> f)
 {
 	poly n, d;
 	for (int i = 0; i < numerator.terms.size(); i++)
-		n = n + (numerator.terms[i].coeff * f.data[0].exponentiate(numerator.terms[i].a) * f.data[1].exponentiate(numerator.terms[i].b) *
-										 f.data[2].exponentiate(numerator.terms[i].c) * f.data[3].exponentiate(numerator.terms[i].d));
+		n = n + (numerator.terms[i].coeff * f[0].exponentiate(numerator.terms[i].a) * f[1].exponentiate(numerator.terms[i].b) *
+										 f[2].exponentiate(numerator.terms[i].c) * f[3].exponentiate(numerator.terms[i].d));
 
 	for (int i = 0; i < denominator.terms.size(); i++)
-		d = d + (denominator.terms[i].coeff * f.data[0].exponentiate(denominator.terms[i].a) * f.data[1].exponentiate(denominator.terms[i].b) *
-										   f.data[2].exponentiate(denominator.terms[i].c) * f.data[3].exponentiate(denominator.terms[i].d));
+		d = d + (denominator.terms[i].coeff * f[0].exponentiate(denominator.terms[i].a) * f[1].exponentiate(denominator.terms[i].b) *
+										   f[2].exponentiate(denominator.terms[i].c) * f[3].exponentiate(denominator.terms[i].d));
 
 	return n/d;
 }

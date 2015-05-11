@@ -144,9 +144,10 @@ bool operator<(Real f1, Real f2);
 bool operator>=(Real f1, Real f2);
 bool operator<=(Real f1, Real f2);
 
-/*Real sqrt(Real f);
+Real abs(Real f);
 Real pow(Real f, int p);
-Real abs(Real f);*/
+Real sqrt(Real f);
+Real root(Real f, int r);
 
 }
 

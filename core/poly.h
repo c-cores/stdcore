@@ -51,7 +51,7 @@ struct simple_poly
 	simple_poly operator()(simple_poly x, simple_poly y, simple_poly z, simple_poly w);
 
 	template <class type>
-	type operator()(vec<type, 4> f)
+	type operator()(vector<type, 4> f)
 	{
 		type result = 0;
 		for (size_t i = 0; i < terms.size(); i++)
@@ -59,7 +59,7 @@ struct simple_poly
 		return result;
 	}
 
-	simple_poly operator()(vec<simple_poly, 4> f);
+	simple_poly operator()(vector<simple_poly, 4> f);
 };
 
 file &operator<<(file &fout, simple_poly p);
@@ -122,7 +122,7 @@ struct poly
 	poly operator()(poly x, poly y, poly z, poly w);
 
 	template <class type>
-	type operator()(vec<type, 4> f)
+	type operator()(vector<type, 4> f)
 	{
 		type n = 0, d = 0;
 		for (size_t i = 0; i < numerator.terms.size(); i++)
@@ -133,7 +133,7 @@ struct poly
 		return n/d;
 	}
 
-	poly operator()(vec<poly, 4> f);
+	poly operator()(vector<poly, 4> f);
 };
 
 file &operator<<(file &fout, poly p);

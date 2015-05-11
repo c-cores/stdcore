@@ -118,7 +118,7 @@ string file::read_file()
 
 void file::write(string str)
 {
-	fprintf(ptr, "%s", str.c_str());
+	fputs(str.c_str(), ptr);
 }
 
 void file::writef(string format, ...)
@@ -172,88 +172,85 @@ file::operator string()
 
 file &operator<<(file &fout, const char *str)
 {
-	fout.write(str);
+	fputs(str, fout.ptr);
 	return fout;
 }
 
 file &operator<<(file &fout, char *str)
 {
-	fout.write(str);
+	fputs(str, fout.ptr);
 	return fout;
 }
 
 file &operator<<(file &fout, string str)
 {
-	fout.write(str);
+	fputs(str.c_str(), fout.ptr);
 	return fout;
 }
 
 file &operator<<(file &fout, char i)
 {
-	fout.writef("%c", i);
+	fputc(i, fout.ptr);
 	return fout;
 }
 
 file &operator<<(file &fout, unsigned char i)
 {
-	fout.writef("%c", i);
+	fputc(i, fout.ptr);
 	return fout;
 }
 
 file &operator<<(file &fout, bool i)
 {
-	if (i)
-		fout.write("true");
-	else
-		fout.write("false");
+	fputs(i ? "true" : "false", fout.ptr);
 	return fout;
 }
 
 file &operator<<(file &fout, int i)
 {
-	fout.writef("%d", i);
+	fprintf(fout.ptr, "%d", i);
 	return fout;
 }
 
 file &operator<<(file &fout, short i)
 {
-	fout.writef("%hd", i);
+	fprintf(fout.ptr, "%hd", i);
 	return fout;
 }
 
 file &operator<<(file &fout, long i)
 {
-	fout.writef("%ld", i);
+	fprintf(fout.ptr, "%ld", i);
 	return fout;
 }
 
 file &operator<<(file &fout, unsigned int i)
 {
-	fout.writef("%u", i);
+	fprintf(fout.ptr, "%u", i);
 	return fout;
 }
 
 file &operator<<(file &fout, unsigned short i)
 {
-	fout.writef("%hu", i);
+	fprintf(fout.ptr, "%hu", i);
 	return fout;
 }
 
 file &operator<<(file &fout, unsigned long i)
 {
-	fout.writef("%lu", i);
+	fprintf(fout.ptr, "%lu", i);
 	return fout;
 }
 
 file &operator<<(file &fout, float i)
 {
-	fout.writef("%f", i);
+	fprintf(fout.ptr, "%f", i);
 	return fout;
 }
 
 file &operator<<(file &fout, double i)
 {
-	fout.writef("%f", i);
+	fprintf(fout.ptr, "%f", i);
 	return fout;
 }
 

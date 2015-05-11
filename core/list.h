@@ -5,8 +5,13 @@
  *      Author: nbingham
  */
 
-#include "container.h"
-#include "memory.h"
+#include "slice.h"
+#include <memory.h>
+#include <stdlib.h>
+
+#ifndef NULL
+#define NULL 0
+#endif
 
 #ifndef list_h
 #define list_h
@@ -222,7 +227,7 @@ struct list
 		template <class container>
 		void merge(container &c)
 		{
-			boundary<typename container::iterator> b = c.bound();
+			slice<typename container::iterator> b = c.bound();
 			for (typename container::iterator i = b.left; i != b.right+1; i++)
 				push(*i);
 		}
@@ -272,7 +277,7 @@ struct list
 		template <class container>
 		void rmerge(container &c)
 		{
-			boundary<typename container::iterator> b = c.bound();
+			slice<typename container::iterator> b = c.bound();
 			for (typename container::iterator i = b.left; i != b.right+1; i++)
 				rpush(*i);
 		}
@@ -526,14 +531,14 @@ struct list
 		return const_iterator(this, &left);
 	}
 
-	boundary<iterator> bound()
+	slice<iterator> bound()
 	{
-		return boundary<iterator>(begin(), rbegin());
+		return slice<iterator>(begin(), rbegin());
 	}
 
-	boundary<const_iterator> bound() const
+	slice<const_iterator> bound() const
 	{
-		return boundary<const_iterator>(begin(), rbegin());
+		return slice<const_iterator>(begin(), rbegin());
 	}
 
 	void push_back(value_type t)

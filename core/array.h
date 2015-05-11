@@ -6,7 +6,7 @@
  */
 
 #include "memory.h"
-#include "container.h"
+#include "slice.h"
 #include "math.h"
 #include <csignal>
 #include "stdio.h"
@@ -46,7 +46,7 @@ struct array
 	}
 
 	/* Initialize this array with n elements each assigned the value t */
-	array(int n, value_type t)
+	array(int n, const value_type &t)
 	{
 		capacity = n + log2i(n);
 		data = new value_type[capacity];
@@ -215,7 +215,7 @@ struct array
 		template <class container>
 		void merge(const container &c)
 		{
-			boundary<typename container::const_iterator> b = c.bound();
+			slice<typename container::const_iterator> b = c.bound();
 			int n = (b.right+1) - b.left;
 			if (arr->count + n <= arr->capacity)
 				for (int i = arr->count + n - 1; i > offset+1; i--)
@@ -280,7 +280,7 @@ struct array
 		template <class container>
 		void rmerge(const container &c)
 		{
-			boundary<typename container::const_iterator> b = c.bound();
+			slice<typename container::const_iterator> b = c.bound();
 			int n = (b.right+1) - b.left;
 			if (arr->count + n <= arr->capacity)
 				for (int i = arr->count + n - 1; i > offset; i--)
@@ -538,14 +538,14 @@ struct array
 		return result;
 	}
 
-	boundary<iterator> bound()
+	slice<iterator> bound()
 	{
-		return boundary<iterator>(begin(), rbegin());
+		return slice<iterator>(begin(), rbegin());
 	}
 
-	boundary<const_iterator> bound() const
+	slice<const_iterator> bound() const
 	{
-		return boundary<const_iterator>(begin(), rbegin());
+		return slice<const_iterator>(begin(), rbegin());
 	}
 
 	template <class container>
@@ -694,7 +694,7 @@ struct array
 	template <class container>
 	array<value_type> &operator=(container &c)
 	{
-		boundary<typename container::iterator> b = c.bound();
+		slice<typename container::iterator> b = c.bound();
 		int n = (b.right+1) - b.left;
 		if (n > capacity)
 		{

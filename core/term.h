@@ -29,10 +29,10 @@ struct term
 	}
 
 	template <class type>
-	type operator()(vec<type, 4> f)
+	type operator()(vector<type, 4> f)
 	{
-		return coeff * fast_pow(f.data[0], a) * fast_pow(f.data[1], b) *
-					   fast_pow(f.data[2], c) * fast_pow(f.data[3], d);
+		return coeff * fast_pow(f[0], a) * fast_pow(f[1], b) *
+					   fast_pow(f[2], c) * fast_pow(f[3], d);
 	}
 
 	term exp(int e);

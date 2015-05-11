@@ -22,7 +22,6 @@
  */
 
 #include "math.h"
-#include "ref.h"
 #include "file.h"
 #include <stdarg.h>
 
@@ -33,241 +32,207 @@ namespace core
 {
 
 template <class t, int s>
-struct vec
+struct vector
 {
-	vec()
+	vector()
 	{
-	}
-
-	vec(const t v[s])
-	{
-		int i;
-
-		for (i = 0; i < s; i++)
-			this->data[i] = v[i];
-	}
-
-	template <class t2, int s2>
-	vec(vec<t2, s2> v)
-	{
-		for (int i = 0; i < min(s, s2); i++)
-			this->data[i] = (t)v.data[i];
-	}
-
-	vec(const char *str)
-	{
-		char num[32];
-		int j = 0, k = 0;
-		for (int i = 0; str[i] != '\0' && k < s; i++)
-		{
-			if ((str[i] >= '0' && str[i] <= '9') || str[i] == '.' || str[i] == '-' || str[i] == 'e' || str[i] == 'E')
-				num[j++] = str[i];
-			else if (j > 0)
-			{
-				num[j++] = '\0';
-				this->data[k++] = string(num).to_double();
-				j = 0;
-			}
-		}
-
-		if (j > 0)
-		{
-			num[j++] = '\0';
-			this->data[k++] = string(num).to_double();
-			j = 0;
-		}
-
-		for (; k < s; k++)
-			this->data[k] = 0.0;
 	}
 
 	template <class t2>
-	vec(t2 first, ...)
+	vector(const t2 v[s])
+	{
+		for (int i = 0; i < s; i++)
+			elems[i] = (t)v[i];
+	}
+
+	template <class t2, int s2>
+	vector(vector<t2, s2> v)
+	{
+		int m = min(s, s2);
+		for (int i = 0; i < m; i++)
+			elems[i] = (t)v.elems[i];
+		for (int i = m; i < s; i++)
+			elems[i] = 0;
+	}
+
+	template <class t2>
+	vector(t2 first, ...)
 	{
 		va_list arguments;
 		int i;
 
 		va_start(arguments, first);
-		this->data[0] = first;
+		this->elems[0] = first;
 		for (i = 1; i < s; i++)
-			this->data[i] = (t)va_arg(arguments, t2);
+			this->elems[i] = (t)va_arg(arguments, t2);
 		va_end(arguments);
 	}
 
-	vec(float first, ...)
+	vector(float first, ...)
 	{
 		va_list arguments;
 		int i;
 
 		va_start(arguments, first);
-		this->data[0] = first;
+		this->elems[0] = first;
 		for (i = 1; i < s; i++)
-			this->data[i] = (t)va_arg(arguments, double);
+			this->elems[i] = (t)va_arg(arguments, double);
 		va_end(arguments);
 	}
 
-	~vec()
+	~vector()
 	{
 	}
 
-	t data[s];
-
-	template <class t2, int s2>
-	vec<t, s> &operator=(vec<t2, s2> v)
-	{
-		int i;
-		for (i = 0; i < min(s, s2); i++)
-			this->data[i] = (t)v.data[i];
-		return *this;
-	}
-
-	template <class t2, int s2>
-	vec<t, s> &operator=(const t2 v[s2])
-	{
-		int i;
-		for (i = 0; i < min(s, s2); i++)
-			this->data[i] = v[i];
-		return *this;
-	}
+	t elems[s];
 
 	template <class t2>
-	vec<t, s> &operator+=(vec<t2, s> v)
+	operator vector<t2, s>()
 	{
-		*this = *this + v;
-		return *this;
-	}
-
-	template <class t2>
-	vec<t, s> &operator-=(vec<t2, s> v)
-	{
-		*this = *this - v;
-		return *this;
-	}
-
-	template <class t2>
-	vec<t, s> &operator*=(vec<t2, s> v)
-	{
-		*this = *this * v;
-		return *this;
-	}
-
-	template <class t2>
-	vec<t, s> &operator/=(vec<t2, s> v)
-	{
-		*this = *this / v;
-		return *this;
-	}
-
-	template <class t2>
-	vec<t, s> &operator+=(t2 f)
-	{
-		*this = *this + f;
-		return *this;
-	}
-
-	template <class t2>
-	vec<t, s> &operator-=(t2 f)
-	{
-		*this = *this - f;
-		return *this;
-	}
-
-	template <class t2>
-	vec<t, s> &operator*=(t2 f)
-	{
-		*this = *this * f;
-		return *this;
-	}
-
-	template <class t2>
-	vec<t, s> &operator/=(t2 f)
-	{
-		*this = *this / f;
-		return *this;
-	}
-
-	template <int s2>
-	operator vec<t, s2>()
-	{
-		vec<t, s2> ret;
-		for (int i = 0; i < min(s, s2); i++)
-			ret[i] = data[i];
+		vector<t2, s> ret;
+		for (int i = 0; i < s; i++)
+			ret[i] = (t2)elems[i];
 		return ret;
 	}
 
-	vec<ref<t>, s> operator()(const char *str)
+	template <class t2, int s2>
+	vector<t, s> &operator=(vector<t2, s2> v)
 	{
-		int indices[2];
+		int m = min(s, s2);
+		for (int i = 0; i < m; i++)
+			elems[i] = (t)v.elems[i];
+		for (int i = m; i < s; i++)
+			elems[i] = 0;
+		return *this;
+	}
 
-		char num[32];
-		int j = 0, k = 0;
-		for (int i = 0; str[i] != '\0' && k < 2; i++)
-		{
-			if ((str[i] >= '0' && str[i] <= '9') || str[i] == '-')
-				num[j++] = str[i];
-			else if (j > 0)
-			{
-				num[j++] = '\0';
-				indices[k++] = string(num).to_long();
-				j = 0;
-			}
-		}
+	template <class t2, int s2>
+	vector<t, s> &operator=(const t2 v[s2])
+	{
+		int m = min(s, s2);
+		for (int i = 0; i < m; i++)
+			elems[i] = v[i];
+		for (int i = m; i < s; i++)
+			elems[i] = 0;
+		return *this;
+	}
 
-		if (j > 0 && k < 2)
-		{
-			num[j++] = '\0';
-			indices[k++] = string(num).to_long();
-			j = 0;
-		}
+	template <class t2>
+	vector<t, s> &operator+=(vector<t2, s> v)
+	{
+		for (int i = 0; i < s; i++)
+			elems[i] += v[i];
+		return *this;
+	}
 
-		if (k < 2)
-			indices[1] = indices[0];
+	template <class t2>
+	vector<t, s> &operator-=(vector<t2, s> v)
+	{
+		for (int i = 0; i < s; i++)
+			elems[i] -= v[i];
+		return *this;
+	}
 
-		vec<ref<t>, s> result;
-		for (int i = indices[0]; i < min(s, indices[1]); i++)
-			result.data[i-indices[0]] = ref<t>(this->data[i]);
+	template <class t2>
+	vector<t, s> &operator*=(vector<t2, s> v)
+	{
+		for (int i = 0; i < s; i++)
+			elems[i] *= v[i];
+		return *this;
+	}
 
+	template <class t2>
+	vector<t, s> &operator/=(vector<t2, s> v)
+	{
+		for (int i = 0; i < s; i++)
+			elems[i] /= v[i];
+		return *this;
+	}
+
+	template <class t2>
+	vector<t, s> &operator+=(t2 f)
+	{
+		for (int i = 0; i < s; i++)
+			elems[i] += f;
+		return *this;
+	}
+
+	template <class t2>
+	vector<t, s> &operator-=(t2 f)
+	{
+		for (int i = 0; i < s; i++)
+			elems[i] -= f;
+		return *this;
+	}
+
+	template <class t2>
+	vector<t, s> &operator*=(t2 f)
+	{
+		for (int i = 0; i < s; i++)
+			elems[i] *= f;
+		return *this;
+	}
+
+	template <class t2>
+	vector<t, s> &operator/=(t2 f)
+	{
+		for (int i = 0; i < s; i++)
+			elems[i] /= f;
+		return *this;
+	}
+
+	vector<t, s> operator()(int a, int b) const
+	{
+		vector<t, s> result;
+		for (int i = a; i < b; i++)
+			result.elems[i-a] = elems[i];
+		for (int i = b-a; i < s; i++)
+			result[i] = 0;
 		return result;
 	}
 
-	vec<ref<t>,s> operator()(int start, int end)
+	template <int s2>
+	void set(int a, int b, vector<t, s2> v)
 	{
-		vec<ref<t>, s> result;
-		for (int i = start; i < min(s, end); i++)
-			result.data[i-start] = ref<t>(data[i]);
-		return result;
-	}
-
-	t &operator()(int index)
-	{
-		return data[index];
+		for (int i = a; i < b; i++)
+			elems[i] = v.elems[i-a];
 	}
 
 	t &operator[](int index)
 	{
-		return data[index];
+		return elems[index];
 	}
 
-	vec<t, s> &swap(int a, int b)
+	t operator[](int index) const
 	{
-		t temp = data[a];
-		data[a] = data[b];
-		data[b] = temp;
+		return elems[index];
+	}
+
+	vector<t, s> &swap(int a, int b)
+	{
+		t temp = elems[a];
+		elems[a] = elems[b];
+		elems[b] = temp;
 		return *this;
 	}
 
 	template <class t2>
-	void set(t2 v)
+	void fill(t2 v)
 	{
 		int i;
 
 		for (i = 0; i < s; i++)
-			this->data[i] = (t)v;
+			elems[i] = (t)v;
+	}
+
+	t *data()
+	{
+		return (t*)elems;
 	}
 };
 
 template <class t, int s>
-file &operator<<(file &f, vec<t, s> v)
+file &operator<<(file &f, vector<t, s> v)
 {
 	f << "[";
 	for (int i = 0; i < s; i++)
@@ -286,13 +251,12 @@ file &operator<<(file &f, vec<t, s> v)
  * the resulting vector.
  */
 template <class t, int s>
-vec<t, s> operator-(vec<t, s> v)
+vector<t, s> operator-(vector<t, s> v)
 {
-	vec<t, s> result;
-	int i;
+	vector<t, s> result;
 
-	for (i = 0; i < s; i++)
-		result.data[i] = -v.data[i];
+	for (int i = 0; i < s; i++)
+		result.elems[i] = -v.elems[i];
 
 	return result;
 }
@@ -304,13 +268,17 @@ vec<t, s> operator-(vec<t, s> v)
  * of v2.
  */
 template <class t1, class t2, int s1, int s2>
-vec<t1, s1> operator+(vec<t1, s1> v1, vec<t2, s2> v2)
+vector<t1, (s1 > s2 ? s1 : s2)> operator+(vector<t1, s1> v1, vector<t2, s2> v2)
 {
-	vec<t1, s1> result;
-	int i;
+	vector<t1, (s1 > s2 ? s1 : s2)> result;
 
-	for (i = 0; i < (s1 < s2 ? s1 : s2); i++)
-		result.data[i] = v1.data[i] + v2.data[i];
+	int m = min(s1, s2);
+	for (int i = 0; i < m; i++)
+		result.elems[i] = v1.elems[i] + v2.elems[i];
+	for (int i = m; i < s1; i++)
+		result.elems[i] = v1.elems[i];
+	for (int i = m; i < s2; i++)
+		result.elems[i] = v2.elems[i];
 
 	return result;
 }
@@ -322,31 +290,35 @@ vec<t1, s1> operator+(vec<t1, s1> v1, vec<t2, s2> v2)
  * of v1.
  */
 template <class t1, class t2, int s1, int s2>
-vec<t1, s1> operator-(vec<t1, s1> v1, vec<t2, s2> v2)
+vector<t1, (s1 > s2 ? s1 : s2)> operator-(vector<t1, s1> v1, vector<t2, s2> v2)
 {
-	vec<t1, s1> result;
-	int i;
+	vector<t1, (s1 > s2 ? s1 : s2)> result;
 
-	for (i = 0; i < (s1 < s2 ? s1 : s2); i++)
-		result.data[i] = v1.data[i] - v2.data[i];
+	int m = min(s1, s2);
+	for (int i = 0; i < (s1 < s2 ? s1 : s2); i++)
+		result.elems[i] = v1.elems[i] - v2.elems[i];
+	for (int i = m; i < s1; i++)
+		result.elems[i] = v1.elems[i];
+	for (int i = m; i < s2; i++)
+		result.elems[i] = -v2.elems[i];
 
 	return result;
 }
 
-/* vector division
+/* vector multiplication
  *
  * Returns the resulting vector generated by taking each of
  * v1's components and multiplying it by the corresponding component
  * of v2.
  */
 template <class t1, class t2, int s1, int s2>
-vec<t1, s1> operator*(vec<t1, s1> v1, vec<t2, s2> v2)
+vector<t1, (s1 < s2 ? s1 : s2)> operator*(vector<t1, s1> v1, vector<t2, s2> v2)
 {
-	vec<t1, s1> result;
-	int i;
+	vector<t1, (s1 < s2 ? s1 : s2)> result;
 
-	for (i = 0; i < (s1 < s2 ? s1 : s2); i++)
-		result.data[i] = v1.data[i] * v2.data[i];
+	int m = min(s1, s2);
+	for (int i = 0; i < m; i++)
+		result.elems[i] = v1.elems[i] * v2.elems[i];
 
 	return result;
 }
@@ -358,13 +330,13 @@ vec<t1, s1> operator*(vec<t1, s1> v1, vec<t2, s2> v2)
  * of v2.
  */
 template <class t1, class t2, int s1, int s2>
-vec<t1, s1> operator/(vec<t1, s1> v1, vec<t2, s2> v2)
+vector<t1, (s1 < s2 ? s1 : s2)> operator/(vector<t1, s1> v1, vector<t2, s2> v2)
 {
-	vec<t1, s1> result;
-	int i;
+	vector<t1, (s1 < s2 ? s1 : s2)> result;
+	int m = min(s1, s2);
 
-	for (i = 0; i < (s1 < s2 ? s1 : s2); i++)
-		result.data[i] = v1.data[i] / v2.data[i];
+	for (int i = 0; i < m; i++)
+		result.elems[i] = v1.elems[i] / v2.elems[i];
 
 	return result;
 }
@@ -375,13 +347,12 @@ vec<t1, s1> operator/(vec<t1, s1> v1, vec<t2, s2> v2)
  * corresponding component in the vector v.
  */
 template <class t, class t2, int s>
-vec<t, s> operator+(t2 f, vec<t, s> v)
+vector<t, s> operator+(t2 f, vector<t, s> v)
 {
-	vec<t, s> result;
-	int i;
+	vector<t, s> result;
 
-	for (i = 0; i < s; i++)
-		result.data[i] = f + v.data[i];
+	for (int i = 0; i < s; i++)
+		result.elems[i] = f + v.elems[i];
 
 	return result;
 }
@@ -392,13 +363,12 @@ vec<t, s> operator+(t2 f, vec<t, s> v)
  * corresponding component in the vector v.
  */
 template <class t, class t2, int s>
-vec<t, s> operator-(t2 f, vec<t, s> v)
+vector<t, s> operator-(t2 f, vector<t, s> v)
 {
-	vec<t, s> result;
-	int i;
+	vector<t, s> result;
 
-	for (i = 0; i < s; i++)
-		result.data[i] = f - v.data[i];
+	for (int i = 0; i < s; i++)
+		result.elems[i] = f - v.elems[i];
 
 	return result;
 }
@@ -409,13 +379,12 @@ vec<t, s> operator-(t2 f, vec<t, s> v)
  * the corresponding component in the vector v.
  */
 template <class t, class t2, int s>
-vec<t, s> operator*(t2 f, vec<t, s> v)
+vector<t, s> operator*(t2 f, vector<t, s> v)
 {
-	vec<t, s> result;
-	int i;
+	vector<t, s> result;
 
-	for (i = 0; i < s; i++)
-		result.data[i] = f * v.data[i];
+	for (int i = 0; i < s; i++)
+		result.elems[i] = f * v.elems[i];
 
 	return result;
 }
@@ -426,13 +395,12 @@ vec<t, s> operator*(t2 f, vec<t, s> v)
  * corresponding component in the vector v.
  */
 template <class t, class t2, int s>
-vec<t, s> operator/(t2 f, vec<t, s> v)
+vector<t, s> operator/(t2 f, vector<t, s> v)
 {
-	vec<t, s> result;
-	int i;
+	vector<t, s> result;
 
-	for (i = 0; i < s; i++)
-		result.data[i] = f / v.data[i];
+	for (int i = 0; i < s; i++)
+		result.elems[i] = f / v.elems[i];
 
 	return result;
 }
@@ -442,13 +410,12 @@ vec<t, s> operator/(t2 f, vec<t, s> v)
  * Adds f to all of the components of v.
  */
 template <class t, class t2, int s>
-vec<t, s> operator+(vec<t, s> v, t2 f)
+vector<t, s> operator+(vector<t, s> v, t2 f)
 {
-	vec<t, s> result;
-	int i;
+	vector<t, s> result;
 
-	for (i = 0; i < s; i++)
-		result.data[i] = v.data[i] + f;
+	for (int i = 0; i < s; i++)
+		result.elems[i] = v.elems[i] + f;
 
 	return result;
 }
@@ -458,111 +425,70 @@ vec<t, s> operator+(vec<t, s> v, t2 f)
  * Subtracts f from all of the components of v.
  */
 template <class t, class t2, int s>
-vec<t, s> operator-(vec<t, s> v, t2 f)
+vector<t, s> operator-(vector<t, s> v, t2 f)
 {
-	vec<t, s> result;
-	int i;
+	vector<t, s> result;
 
-	for (i = 0; i < s; i++)
-		result.data[i] = v.data[i] - f;
+	for (int i = 0; i < s; i++)
+		result.elems[i] = v.elems[i] - f;
 
 	return result;
 }
 
 // vector-scalar multiplication
 template <class t, class t2, int s>
-vec<t, s> operator*(vec<t, s> v, t2 f)
+vector<t, s> operator*(vector<t, s> v, t2 f)
 {
-	vec<t, s> result;
-	int i;
+	vector<t, s> result;
 
-	for (i = 0; i < s; i++)
-		result.data[i] = v.data[i] * f;
+	for (int i = 0; i < s; i++)
+		result.elems[i] = v.elems[i] * f;
 
 	return result;
 }
 
 // vector-scalar division
 template <class t, class t2, int s>
-vec<t, s> operator/(vec<t, s> v, t2 f)
+vector<t, s> operator/(vector<t, s> v, t2 f)
 {
-	vec<t, s> result;
-	int i;
+	vector<t, s> result;
 
-	for (i = 0; i < s; i++)
-		result.data[i] = v.data[i] / f;
+	for (int i = 0; i < s; i++)
+		result.elems[i] = v.elems[i] / f;
 
 	return result;
 }
 
 // vector-vector comparison
-template <class t, class t2, int s>
-bool operator==(vec<t, s> v, vec<t2, s> v2)
+template <class t, class t2, int s, int s2>
+bool operator==(vector<t, s> v, vector<t2, s2> v2)
 {
 	bool result = true;
+	int m = min(s, s2);
 
-	for (int i = 0; i < s; i++)
+	for (int i = 0; i < m; i++)
 		result = result && v[i] == v2[i];
+	for (int i = m; i < s; i++)
+		result = result && v[i] == 0;
+	for (int i = m; i < s2; i++)
+		result = result && v2[i] == 0;
 
 	return result;
 }
 
 // vector-vector comparison
-template <class t, class t2, int s>
-bool operator!=(vec<t, s> v, vec<t2, s> v2)
+template <class t, class t2, int s, int s2>
+bool operator!=(vector<t, s> v, vector<t2, s2> v2)
 {
-	bool result = true;
+	bool result = false;
+	int m = min(s, s2);
 
-	for (int i = 0; i < s; i++)
-		result = result && v[i] != v2[i];
-
-	return result;
-}
-
-// vector-vector comparison
-template <class t, class t2, int s>
-bool operator<(vec<t, s> v, vec<t2, s> v2)
-{
-	bool result = true;
-
-	for (int i = 0; i < s; i++)
-		result = result && v[i] < v2[i];
-
-	return result;
-}
-
-// vector-vector comparison
-template <class t, class t2, int s>
-bool operator>(vec<t, s> v, vec<t2, s> v2)
-{
-	bool result = true;
-
-	for (int i = 0; i < s; i++)
-		result = result && v[i] > v2[i];
-
-	return result;
-}
-
-// vector-vector comparison
-template <class t, class t2, int s>
-bool operator<=(vec<t, s> v, vec<t2, s> v2)
-{
-	bool result = true;
-
-	for (int i = 0; i < s; i++)
-		result = result && v[i] <= v2[i];
-
-	return result;
-}
-
-// vector-vector comparison
-template <class t, class t2, int s>
-bool operator>=(vec<t, s> v, vec<t2, s> v2)
-{
-	bool result = true;
-
-	for (int i = 0; i < s; i++)
-		result = result && v[i] >= v2[i];
+	for (int i = 0; i < m; i++)
+		result = result || v[i] != v2[i];
+	for (int i = m; i < s; i++)
+		result = result || v[i] != 0;
+	for (int i = m; i < s2; i++)
+		result = result || v2[i] != 0;
 
 	return result;
 }
@@ -574,13 +500,12 @@ bool operator>=(vec<t, s> v, vec<t2, s> v2)
  * a vector and returns the result.
  */
 template <class t, int s>
-vec<t, s> abs(vec<t, s> v)
+vector<t, s> abs(vector<t, s> v)
 {
-	vec<t, s> result;
-	int i;
+	vector<t, s> result;
 
-	for (i = 0; i < s; i++)
-		result.data[i] = abs(v.data[i]);
+	for (int i = 0; i < s; i++)
+		result.elems[i] = abs(v.elems[i]);
 
 	return result;
 }
@@ -592,7 +517,7 @@ vec<t, s> abs(vec<t, s> v)
  * n = v/|v|
  */
 template <class t, int s>
-vec<t, s> norm(vec<t, s> v)
+vector<t, s> norm(vector<t, s> v)
 {
 	return v/mag(v);
 }
@@ -604,13 +529,13 @@ vec<t, s> norm(vec<t, s> v)
  * the resultant vector. (x, y, z)
  */
 template <class t1, class t2>
-vec<t1, 3> cross(vec<t1, 3> v1, vec<t2, 3> v2)
+vector<t1, 3> cross(vector<t1, 3> v1, vector<t2, 3> v2)
 {
-	vec<t1, 3> result;
+	vector<t1, 3> result;
 
-	result.data[0] = v1.data[1]*v2.data[2] - v1.data[2]*v2.data[1];
-	result.data[1] = v1.data[2]*v2.data[0] - v1.data[0]*v2.data[2];
-	result.data[2] = v1.data[0]*v2.data[1] - v1.data[1]*v2.data[0];
+	result.elems[0] = v1.elems[1]*v2.elems[2] - v1.elems[2]*v2.elems[1];
+	result.elems[1] = v1.elems[2]*v2.elems[0] - v1.elems[0]*v2.elems[2];
+	result.elems[2] = v1.elems[0]*v2.elems[1] - v1.elems[1]*v2.elems[0];
 
 	return result;
 }
@@ -622,14 +547,14 @@ vec<t1, 3> cross(vec<t1, 3> v1, vec<t2, 3> v2)
  * the resultant vector in homogeneous coordinates. (x, y, z, 1.0)
  */
 template <class t1, class t2>
-vec<t1, 4> cross(vec<t1, 4> v1, vec<t2, 4> v2)
+vector<t1, 4> cross(vector<t1, 4> v1, vector<t2, 4> v2)
 {
-	vec<t1, 4> result;
+	vector<t1, 4> result;
 
-	result.data[0] = v1.data[1]*v2.data[2] - v1.data[2]*v2.data[1];
-	result.data[1] = v1.data[2]*v2.data[0] - v1.data[0]*v2.data[2];
-	result.data[2] = v1.data[0]*v2.data[1] - v1.data[1]*v2.data[0];
-	result.data[3] = (t1)1;
+	result.elems[0] = v1.elems[1]*v2.elems[2] - v1.elems[2]*v2.elems[1];
+	result.elems[1] = v1.elems[2]*v2.elems[0] - v1.elems[0]*v2.elems[2];
+	result.elems[2] = v1.elems[0]*v2.elems[1] - v1.elems[1]*v2.elems[0];
+	result.elems[3] = (t1)1;
 
 	return result;
 }
@@ -641,14 +566,14 @@ vec<t1, 4> cross(vec<t1, 4> v1, vec<t2, 4> v2)
  * the resultant vector. (x, y, z, w)
  */
 template <class t1, class t2, class t3>
-vec<t1, 4> cross(vec<t1, 4> v1, vec<t2, 4> v2, vec<t3, 4> v3)
+vector<t1, 4> cross(vector<t1, 4> v1, vector<t2, 4> v2, vector<t3, 4> v3)
 {
-	vec<t1, 4> result;
+	vector<t1, 4> result;
 
-	result.data[0] =  v1.data[1]*(v2.data[2]*v3.data[3] - v3.data[2]*v2.data[3]) - v1.data[2]*(v2.data[1]*v3.data[3] - v3.data[1]*v2.data[3]) + v1.data[3]*(v2.data[1]*v3.data[2] - v3.data[1]*v2.data[2]);
-	result.data[1] = -v1.data[0]*(v2.data[2]*v3.data[3] - v3.data[2]*v2.data[3]) + v1.data[2]*(v2.data[0]*v3.data[3] - v3.data[0]*v2.data[3]) - v1.data[3]*(v2.data[0]*v3.data[2] - v3.data[0]*v2.data[2]);
-	result.data[2] =  v1.data[0]*(v2.data[1]*v3.data[3] - v3.data[1]*v2.data[3]) - v1.data[1]*(v2.data[0]*v3.data[3] - v3.data[0]*v2.data[3]) + v1.data[3]*(v2.data[0]*v3.data[1] - v3.data[0]*v2.data[1]);
-	result.data[3] = -v1.data[0]*(v2.data[1]*v3.data[2] - v3.data[1]*v2.data[2]) + v1.data[1]*(v2.data[0]*v3.data[2] - v3.data[0]*v2.data[2]) - v1.data[2]*(v2.data[0]*v3.data[1] - v3.data[0]*v2.data[1]);
+	result.elems[0] =  v1.elems[1]*(v2.elems[2]*v3.elems[3] - v3.elems[2]*v2.elems[3]) - v1.elems[2]*(v2.elems[1]*v3.elems[3] - v3.elems[1]*v2.elems[3]) + v1.elems[3]*(v2.elems[1]*v3.elems[2] - v3.elems[1]*v2.elems[2]);
+	result.elems[1] = -v1.elems[0]*(v2.elems[2]*v3.elems[3] - v3.elems[2]*v2.elems[3]) + v1.elems[2]*(v2.elems[0]*v3.elems[3] - v3.elems[0]*v2.elems[3]) - v1.elems[3]*(v2.elems[0]*v3.elems[2] - v3.elems[0]*v2.elems[2]);
+	result.elems[2] =  v1.elems[0]*(v2.elems[1]*v3.elems[3] - v3.elems[1]*v2.elems[3]) - v1.elems[1]*(v2.elems[0]*v3.elems[3] - v3.elems[0]*v2.elems[3]) + v1.elems[3]*(v2.elems[0]*v3.elems[1] - v3.elems[0]*v2.elems[1]);
+	result.elems[3] = -v1.elems[0]*(v2.elems[1]*v3.elems[2] - v3.elems[1]*v2.elems[2]) + v1.elems[1]*(v2.elems[0]*v3.elems[2] - v3.elems[0]*v2.elems[2]) - v1.elems[2]*(v2.elems[0]*v3.elems[1] - v3.elems[0]*v2.elems[1]);
 
 	return result;
 }
@@ -660,15 +585,15 @@ vec<t1, 4> cross(vec<t1, 4> v1, vec<t2, 4> v2, vec<t3, 4> v3)
  * the result in homogeneous coordinates. (x, y, z, w, 1.0)
  */
 template <class t1, class t2, class t3>
-vec<t1, 5> cross(vec<t1, 5> v1, vec<t2, 5> v2, vec<t3, 5> v3)
+vector<t1, 5> cross(vector<t1, 5> v1, vector<t2, 5> v2, vector<t3, 5> v3)
 {
-	vec<t1, 5> result;
+	vector<t1, 5> result;
 
-	result.data[0] =  v1.data[1]*(v2.data[2]*v3.data[3] - v3.data[2]*v2.data[3]) - v1.data[2]*(v2.data[1]*v3.data[3] - v3.data[1]*v2.data[3]) + v1.data[3]*(v2.data[1]*v3.data[2] - v3.data[1]*v2.data[2]);
-	result.data[1] = -v1.data[0]*(v2.data[2]*v3.data[3] - v3.data[2]*v2.data[3]) + v1.data[2]*(v2.data[0]*v3.data[3] - v3.data[0]*v2.data[3]) - v1.data[3]*(v2.data[0]*v3.data[2] - v3.data[0]*v2.data[2]);
-	result.data[2] =  v1.data[0]*(v2.data[1]*v3.data[3] - v3.data[1]*v2.data[3]) - v1.data[1]*(v2.data[0]*v3.data[3] - v3.data[0]*v2.data[3]) + v1.data[3]*(v2.data[0]*v3.data[1] - v3.data[0]*v2.data[1]);
-	result.data[3] = -v1.data[0]*(v2.data[1]*v3.data[2] - v3.data[1]*v2.data[2]) + v1.data[1]*(v2.data[0]*v3.data[2] - v3.data[0]*v2.data[2]) - v1.data[2]*(v2.data[0]*v3.data[1] - v3.data[0]*v2.data[1]);
-	result.data[4] = (t1)1;
+	result.elems[0] =  v1.elems[1]*(v2.elems[2]*v3.elems[3] - v3.elems[2]*v2.elems[3]) - v1.elems[2]*(v2.elems[1]*v3.elems[3] - v3.elems[1]*v2.elems[3]) + v1.elems[3]*(v2.elems[1]*v3.elems[2] - v3.elems[1]*v2.elems[2]);
+	result.elems[1] = -v1.elems[0]*(v2.elems[2]*v3.elems[3] - v3.elems[2]*v2.elems[3]) + v1.elems[2]*(v2.elems[0]*v3.elems[3] - v3.elems[0]*v2.elems[3]) - v1.elems[3]*(v2.elems[0]*v3.elems[2] - v3.elems[0]*v2.elems[2]);
+	result.elems[2] =  v1.elems[0]*(v2.elems[1]*v3.elems[3] - v3.elems[1]*v2.elems[3]) - v1.elems[1]*(v2.elems[0]*v3.elems[3] - v3.elems[0]*v2.elems[3]) + v1.elems[3]*(v2.elems[0]*v3.elems[1] - v3.elems[0]*v2.elems[1]);
+	result.elems[3] = -v1.elems[0]*(v2.elems[1]*v3.elems[2] - v3.elems[1]*v2.elems[2]) + v1.elems[1]*(v2.elems[0]*v3.elems[2] - v3.elems[0]*v2.elems[2]) - v1.elems[2]*(v2.elems[0]*v3.elems[1] - v3.elems[0]*v2.elems[1]);
+	result.elems[4] = (t1)1;
 
 	return result;
 }
@@ -684,12 +609,12 @@ vec<t1, 5> cross(vec<t1, 5> v1, vec<t2, 5> v2, vec<t3, 5> v3)
  * rotating around the z axis.
  */
 template <class t, int s>
-vec<t, s> rot(vec<t, s> v, double a, int i, int j)
+vector<t, s> rot(vector<t, s> v, double a, int i, int j)
 {
-	vec<t, s> result = v;
+	vector<t, s> result = v;
 
-	result.data[i] = v.data[i]*cos(a) - v.data[j]*sin(a);
-	result.data[j] = v.data[i]*sin(a) + v.data[j]*cos(a);
+	result.elems[i] = v.elems[i]*cos(a) - v.elems[j]*sin(a);
+	result.elems[j] = v.elems[i]*sin(a) + v.elems[j]*cos(a);
 
 	return result;
 }
@@ -704,17 +629,17 @@ vec<t, s> rot(vec<t, s> v, double a, int i, int j)
  * x, y, z, ...
  */
 template <class t, class at, int s>
-vec<t, s> ror(vec<t, s> v, vec <at, s> a)
+vector<t, s> ror(vector<t, s> v, vector <at, s> a)
 {
-	vec<t, s> result = v;
-	vec<t, s> temp = v;
+	vector<t, s> result = v;
+	vector<t, s> temp = v;
 
 	int ai = 0;
 	for (int i = s-1; i >= 0; i--)
 		for (int j = i-1; j >= 0; j--)
 		{
-			temp.data[i] = result.data[i]*cos(a[ai]) - result.data[j]*sin(a[ai]);
-			temp.data[j] = result.data[i]*sin(a[ai]) + result.data[j]*cos(a[ai]);
+			temp.elems[i] = result.elems[i]*cos(a[ai]) - result.elems[j]*sin(a[ai]);
+			temp.elems[j] = result.elems[i]*sin(a[ai]) + result.elems[j]*cos(a[ai]);
 			result = temp;
 			ai++;
 		}
@@ -731,17 +656,17 @@ vec<t, s> ror(vec<t, s> v, vec <at, s> a)
  * ..., z, y, x
  */
 template <class t, class at, int s>
-vec<t, s> rol(vec<t, s> v, vec <at, s> a)
+vector<t, s> rol(vector<t, s> v, vector <at, s> a)
 {
-	vec<t, s> result = v;
-	vec<t, s> temp = v;
+	vector<t, s> result = v;
+	vector<t, s> temp = v;
 
 	int ai = s-1;
 	for (int i = 0; i >= s-2; i--)
 		for (int j = i+1; j >= s-1; j--)
 		{
-			temp.data[i] = result.data[i]*cos(a[ai]) - result.data[j]*sin(a[ai]);
-			temp.data[j] = result.data[i]*sin(a[ai]) + result.data[j]*cos(a[ai]);
+			temp.elems[i] = result.elems[i]*cos(a[ai]) - result.elems[j]*sin(a[ai]);
+			temp.elems[j] = result.elems[i]*sin(a[ai]) + result.elems[j]*cos(a[ai]);
 			result = temp;
 			ai--;
 		}
@@ -759,22 +684,22 @@ vec<t, s> rol(vec<t, s> v, vec <at, s> a)
  * x, y, z, ...
  */
 template <class t, class at, int s>
-vec<t, s> ror3(vec<t, s> v, vec<at, s> a)
+vector<t, s> ror3(vector<t, s> v, vector<at, s> a)
 {
-	vec<t, s> x = v;
-	vec<t, s> y;
+	vector<t, s> x = v;
+	vector<t, s> y;
 
-	y.data[1] = x.data[1]*cos(a.data[0]) - x.data[2]*sin(a.data[0]);
-	y.data[2] = x.data[1]*sin(a.data[0]) + x.data[2]*cos(a.data[0]);
-	y.data[0] = x.data[0];
+	y.elems[1] = x.elems[1]*cos(a.elems[0]) - x.elems[2]*sin(a.elems[0]);
+	y.elems[2] = x.elems[1]*sin(a.elems[0]) + x.elems[2]*cos(a.elems[0]);
+	y.elems[0] = x.elems[0];
 
-	x.data[2] = y.data[2]*cos(a.data[1]) - y.data[0]*sin(a.data[1]);
-	x.data[0] = y.data[2]*sin(a.data[1]) + y.data[0]*cos(a.data[1]);
-	x.data[1] = y.data[1];
+	x.elems[2] = y.elems[2]*cos(a.elems[1]) - y.elems[0]*sin(a.elems[1]);
+	x.elems[0] = y.elems[2]*sin(a.elems[1]) + y.elems[0]*cos(a.elems[1]);
+	x.elems[1] = y.elems[1];
 
-	y.data[0] = x.data[0]*cos(a.data[2]) - x.data[1]*sin(a.data[2]);
-	y.data[1] = x.data[0]*sin(a.data[2]) + x.data[1]*cos(a.data[2]);
-	y.data[2] = x.data[2];
+	y.elems[0] = x.elems[0]*cos(a.elems[2]) - x.elems[1]*sin(a.elems[2]);
+	y.elems[1] = x.elems[0]*sin(a.elems[2]) + x.elems[1]*cos(a.elems[2]);
+	y.elems[2] = x.elems[2];
 
 	return y;
 }
@@ -788,22 +713,22 @@ vec<t, s> ror3(vec<t, s> v, vec<at, s> a)
  * ..., z, y, x
  */
 template <class t, class at, int s>
-vec<t, s> rol3(vec<t, s> v, vec <at, s> a)
+vector<t, s> rol3(vector<t, s> v, vector <at, s> a)
 {
-	vec<t, s> x = v;
-	vec<t, s> y;
+	vector<t, s> x = v;
+	vector<t, s> y;
 
-	y.data[0] = x.data[0]*cos(a[2]) - x.data[1]*sin(a[2]);
-	y.data[1] = x.data[0]*sin(a[2]) + x.data[1]*cos(a[2]);
-	y.data[2] = x.data[2];
+	y.elems[0] = x.elems[0]*cos(a[2]) - x.elems[1]*sin(a[2]);
+	y.elems[1] = x.elems[0]*sin(a[2]) + x.elems[1]*cos(a[2]);
+	y.elems[2] = x.elems[2];
 
-	x.data[2] = y.data[2]*cos(a[1]) - y.data[0]*sin(a[1]);
-	x.data[0] = y.data[2]*sin(a[1]) + y.data[0]*cos(a[1]);
-	x.data[1] = y.data[1];
+	x.elems[2] = y.elems[2]*cos(a[1]) - y.elems[0]*sin(a[1]);
+	x.elems[0] = y.elems[2]*sin(a[1]) + y.elems[0]*cos(a[1]);
+	x.elems[1] = y.elems[1];
 
-	y.data[1] = x.data[1]*cos(a[0]) - x.data[2]*sin(a[0]);
-	y.data[2] = x.data[1]*sin(a[0]) + x.data[2]*cos(a[0]);
-	y.data[0] = x.data[0];
+	y.elems[1] = x.elems[1]*cos(a[0]) - x.elems[2]*sin(a[0]);
+	y.elems[2] = x.elems[1]*sin(a[0]) + x.elems[2]*cos(a[0]);
+	y.elems[0] = x.elems[0];
 
 	return y;
 }
@@ -816,11 +741,11 @@ vec<t, s> rol3(vec<t, s> v, vec <at, s> a)
  * v2.
  */
 template <class t, int s>
-vec<t, s> slerp(vec<t, s> v1, vec<t, s> v2, t p)
+vector<t, s> slerp(vector<t, s> v1, vector<t, s> v2, t p)
 {
 	double omega = acos((double)dot(v1, v2));
 	double somega = sin(omega);
-	vec <t, s> ret = v1*sin(omega - p*omega) + v2*sin(p*omega);
+	vector <t, s> ret = v1*sin(omega - p*omega) + v2*sin(p*omega);
 	return ret/somega;
 }
 
@@ -831,7 +756,7 @@ vec<t, s> slerp(vec<t, s> v1, vec<t, s> v2, t p)
  * |v| = sqrt(v夫)
  */
 template <class t, int s>
-t mag(vec<t, s> v)
+t mag(vector<t, s> v)
 {
 	return sqrt(mag2(v));
 }
@@ -843,11 +768,11 @@ t mag(vec<t, s> v)
  * |v|^2 = v夫
  */
 template <class t, int s>
-t mag2(vec<t, s> v)
+t mag2(vector<t, s> v)
 {
 	t m = 0;
 	for (int i = 0; i < s; i++)
-		m += v.data[i]*v.data[i];
+		m += v.elems[i]*v.elems[i];
 	return m;
 }
 
@@ -858,9 +783,9 @@ t mag2(vec<t, s> v)
  * |v|^2 = v夫
  */
 template <class t>
-t mag2(vec<t, 2> v)
+t mag2(vector<t, 2> v)
 {
-	return v.data[0]*v.data[0] + v.data[1]*v.data[1];
+	return v.elems[0]*v.elems[0] + v.elems[1]*v.elems[1];
 }
 
 /* mag2
@@ -870,9 +795,9 @@ t mag2(vec<t, 2> v)
  * |v|^2 = v夫
  */
 template <class t>
-t mag2(vec<t, 3> v)
+t mag2(vector<t, 3> v)
 {
-	return v.data[0]*v.data[0] + v.data[1]*v.data[1] + v.data[2]*v.data[2];
+	return v.elems[0]*v.elems[0] + v.elems[1]*v.elems[1] + v.elems[2]*v.elems[2];
 }
 
 /* mag2
@@ -882,9 +807,9 @@ t mag2(vec<t, 3> v)
  * |v|^2 = v夫
  */
 template <class t>
-t mag2(vec<t, 4> v)
+t mag2(vector<t, 4> v)
 {
-	return v.data[0]*v.data[0] + v.data[1]*v.data[1] + v.data[2]*v.data[2] + v.data[3]*v.data[3];
+	return v.elems[0]*v.elems[0] + v.elems[1]*v.elems[1] + v.elems[2]*v.elems[2] + v.elems[3]*v.elems[3];
 }
 
 /* dot
@@ -893,15 +818,15 @@ t mag2(vec<t, 4> v)
  * Calculates the dot product of two vectors v1 and v2
  * v1夫2 = (v1.x*v2.x + v1.y*v2.y + v1.z*v2.z + ...)
  */
-template <class t1, class t2, int s>
-t1 dot(vec<t1, s> v1, vec<t2, s> v2)
+template <class t1, class t2, int s1, int s2>
+t1 dot(vector<t1, s1> v1, vector<t2, s2> v2)
 {
-	t1 m = 0;
-	int i;
+	t1 result = 0;
 
-	for (i = 0; i < s; i++)
-		m += v1.data[i]*v2.data[i];
-	return m;
+	int m = min(s1, s2);
+	for (int i = 0; i < m; i++)
+		result += v1.elems[i]*v2.elems[i];
+	return result;
 }
 
 /* dist
@@ -911,7 +836,7 @@ t1 dot(vec<t1, s> v1, vec<t2, s> v2)
  * |v2 - v1| = sqrt((v2.x - v1.x)^2 + (v2.y - v1.y)^2 + (v2.z - v1.z)^2 + ...)
  */
 template <class t1, class t2, int s>
-t1 dist(vec<t1, s> v1, vec<t2, s> v2)
+t1 dist(vector<t1, s> v1, vector<t2, s> v2)
 {
 	return mag(v2 - v1);
 }
@@ -923,7 +848,7 @@ t1 dist(vec<t1, s> v1, vec<t2, s> v2)
  * |v2 - v1|^2 = ((v2.x - v1.x)^2 + (v2.y - v1.y)^2 + (v2.z - v1.z)^2 + ...)
  */
 template <class t1, class t2, int s>
-t1 dist2(vec<t1, s> v1, vec<t2, s> v2)
+t1 dist2(vector<t1, s> v1, vector<t2, s> v2)
 {
 	return mag2(v2 - v1);
 }
@@ -935,9 +860,27 @@ t1 dist2(vec<t1, s> v1, vec<t2, s> v2)
  * (v2 - v1)/|v2 - v1|
  */
 template <class t1, class t2, int s>
-vec<t1, s> dir(vec<t1, s> v1, vec<t2, s> v2)
+vector<t1, s> dir(vector<t1, s> v1, vector<t2, s> v2)
 {
 	return (v2 - v1)/mag(v2 - v1);
+}
+
+/* clamp
+ * (clamp)
+ *
+ * Clamp all values in the vector to within the range [low,high].
+ */
+template <class t, int s>
+vector<t, s> clamp(vector<t, s> v, t low, t high)
+{
+	for (int i = 0; i < s; i++)
+	{
+		if (v[i] < low)
+			v[i] = low;
+		else if (v[i] > high)
+			v[i] = high;
+	}
+	return v;
 }
 
 }

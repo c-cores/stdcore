@@ -1,43 +1,44 @@
 /*
- * container.h
+ * slice.h
  *
  *  Created on: Oct 13, 2014
  *      Author: nbingham
  */
 
-#ifndef container_h
-#define container_h
+#ifndef slice_h
+#define slice_h
 
 namespace core
 {
 
 template <class iterator_type>
-struct boundary
+struct slice
 {
 	typedef iterator_type iterator;
 
-	boundary() {}
-	boundary(iterator l, iterator r)
+	slice() {}
+	slice(iterator l, iterator r)
 	{
 		left = l;
 		right = r;
 	}
-	~boundary() {}
+
+	~slice() {}
 
 	iterator left, right;
 
-	boundary<iterator> sub(int i, int j)
+	slice<iterator> sub(int i, int j)
 	{
-		return boundary<iterator>(left + i, left + j);
+		return slice<iterator>(left + i, left + j);
 	}
 
-	boundary<iterator> &bound()
+	slice<iterator> &bound()
 	{
 		return *this;
 	}
 
 	template <class iterator2>
-	int compare(boundary<iterator2> a) const
+	int compare(slice<iterator2> a) const
 	{
 		iterator i = left;
 		iterator2 j = a.left;
@@ -59,37 +60,37 @@ struct boundary
 };
 
 template <class iterator1, class iterator2>
-bool operator==(boundary<iterator1> s1, boundary<iterator2> s2)
+bool operator==(slice<iterator1> s1, slice<iterator2> s2)
 {
 	return (s1.compare(s2) == 0);
 }
 
 template <class iterator1, class iterator2>
-bool operator!=(boundary<iterator1> s1, boundary<iterator2> s2)
+bool operator!=(slice<iterator1> s1, slice<iterator2> s2)
 {
 	return (s1.compare(s2) != 0);
 }
 
 template <class iterator1, class iterator2>
-bool operator<(boundary<iterator1> s1, boundary<iterator2> s2)
+bool operator<(slice<iterator1> s1, slice<iterator2> s2)
 {
 	return (s1.compare(s2) < 0);
 }
 
 template <class iterator1, class iterator2>
-bool operator>(boundary<iterator1> s1, boundary<iterator2> s2)
+bool operator>(slice<iterator1> s1, slice<iterator2> s2)
 {
 	return (s1.compare(s2) > 0);
 }
 
 template <class iterator1, class iterator2>
-bool operator<=(boundary<iterator1> s1, boundary<iterator2> s2)
+bool operator<=(slice<iterator1> s1, slice<iterator2> s2)
 {
 	return (s1.compare(s2) <= 0);
 }
 
 template <class iterator1, class iterator2>
-bool operator>=(boundary<iterator1> s1, boundary<iterator2> s2)
+bool operator>=(slice<iterator1> s1, slice<iterator2> s2)
 {
 	return (s1.compare(s2) >= 0);
 }

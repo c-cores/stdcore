@@ -360,7 +360,7 @@ Integer operator+(Integer i1, Integer i2)
 		result.sign = 0x7FFFFFFF;
 	}
 
-	while (result.data.back() == result.sign)
+	while (result.data.size() > 0 && result.data.back() == result.sign)
 		result.data.pop_back();
 
 	return result;
@@ -408,7 +408,7 @@ Integer operator-(Integer i1, Integer i2)
 		result.sign = 0x7FFFFFFF;
 	}
 
-	while (result.data.back() == result.sign)
+	while (result.data.size() > 0 && result.data.back() == result.sign)
 		result.data.pop_back();
 
 	return result;
@@ -495,7 +495,7 @@ Integer operator*(Integer i1, Integer i2)
 			partial_products.push_back(array<int>(1, carry));
 	}
 
-	while (result.data.back() == result.sign)
+	while (result.data.size() > 0 && result.data.back() == result.sign)
 		result.data.pop_back();
 
 	return result;
@@ -788,7 +788,7 @@ Integer operator<<(Integer i1, int i2)
 			result.data[i] = 0;
 		result.sign = i1.sign;
 
-		while (result.data.back() == result.sign)
+		while (result.data.size() > 0 && result.data.back() == result.sign)
 			result.data.pop_back();
 
 		return result;
@@ -815,7 +815,7 @@ Integer operator>>(Integer i1, int i2)
 			result.data.push_back(((i1.data.back() >> b) | (i1.sign << (31 - b))) & 0x7FFFFFFF);
 			result.sign = i1.sign;
 
-			while (result.data.back() == result.sign)
+			while (result.data.size() > 0 && result.data.back() == result.sign)
 				result.data.pop_back();
 		}
 
@@ -846,14 +846,36 @@ Integer pow(Integer f, int p)
 
 Integer sqrt(Integer f)
 {
-	// TODO
-	return Integer();
+	Integer xn[2];
+	int i = 0;
+
+	xn[1-i] = Integer(1);
+
+	do
+	{
+		xn[i] = (xn[1-i] + f/xn[1-i]) >> 1;
+		i = 1-i;
+	} while (xn[0] != xn[1]);
+
+	return xn[1-i];
 }
 
 Integer root(Integer f, int r)
 {
-	// TODO
-	return Integer();
+	Integer xn[2];
+	int i = 0;
+
+	xn[1-i] = Integer(1);
+
+	Integer R(r), R1(r-1);
+
+	do
+	{
+		xn[i] = (R1*xn[1-i] + f/pow(xn[1-i], r-1))/R;
+		i = 1-i;
+	} while (xn[0] != xn[1]);
+
+	return xn[1-i];
 }
 
 Real::Real()
@@ -1193,25 +1215,59 @@ bool operator<=(Real f1, Real f2)
 	return (f1.num <= f2.num);
 }
 
-/*Real sqrt(Real f)
+Real abs(Real i)
 {
-	Real result(0, f.prec());
-	mpf_sqrt(result.value, f.value);
-	return result;
+	i.num = abs(i.num);
+	return i;
 }
 
 Real pow(Real f, int p)
 {
-	Real result(0, f.prec());
-	mpf_pow_ui(result.value, f.value, p);
+	Real result;
+	while (p > 0)
+	{
+		if ((p & 1) != 0)
+			result += f;
+		p >>= 1;
+		f *= f;
+	}
 	return result;
 }
 
-Real abs(Real f)
+Real sqrt(Real f)
 {
-	Real result(0, f.prec());
-	mpf_abs(result.value, f.value);
-	return result;
-}*/
+	Real xn[2];
+	int i = 0;
+
+	xn[1-i] = Real(1);
+
+	Real two(2);
+
+	for (int j = 0; j < 30; j++)
+	{
+		xn[i] = (xn[1-i] + f/xn[1-i])/two;
+		i = 1-i;
+	}
+
+	return xn[1-i];
+}
+
+Real root(Real f, int r)
+{
+	Real xn[2];
+	int i = 0;
+
+	xn[1-i] = Real(1);
+
+	Real R(r), R1(r-1);
+
+	for (int j = 0; j < 30; j++)
+	{
+		xn[i] = (R1*xn[1-i] + f/pow(xn[1-i], r-1))/R;
+		i = 1-i;
+	}
+
+	return xn[1-i];
+}
 
 }

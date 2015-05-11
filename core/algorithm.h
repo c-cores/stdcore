@@ -5,7 +5,7 @@
  *      Author: nbingham
  */
 
-#include "container.h"
+#include "slice.h"
 
 #ifndef algorithm_h
 #define algorithm_h
@@ -40,7 +40,7 @@ type median_iterator(type t1, type t2, type t3)
 template <class container>
 container &sort_selection(container &c)
 {
-	boundary<typename container::iterator> b = c.bound();
+	slice<typename container::iterator> b = c.bound();
 	for (typename container::iterator i = b.left; i != b.right+1; i++)
 	{
 		typename container::iterator max_j = i;
@@ -57,7 +57,7 @@ container &sort_selection(container &c)
 template <class container>
 container &sort_quick(container &c)
 {
-	boundary<typename container::iterator> b = c.bound();
+	slice<typename container::iterator> b = c.bound();
 	int size = (b.right + 1) - b.left;
 	if (size > 2)
 	{
@@ -76,8 +76,8 @@ container &sort_quick(container &c)
 
 		store.swap(b.right);
 
-		boundary<typename container::iterator> small(b.left, store-1);
-		boundary<typename container::iterator> big(store+1, b.right);
+		slice<typename container::iterator> small(b.left, store-1);
+		slice<typename container::iterator> big(store+1, b.right);
 
 		sort_quick(small);
 		sort_quick(big);
@@ -92,7 +92,7 @@ container &sort_quick(container &c)
 template <class container>
 bool is_sorted(container &c)
 {
-	boundary<typename container::iterator> b = c.bound();
+	slice<typename container::iterator> b = c.bound();
 	for (typename container::iterator i = b.left; i != b.right-1; i++)
 		if (*(i+1) < *i)
 			return false;
@@ -103,7 +103,7 @@ bool is_sorted(container &c)
 template <class container>
 bool is_rsorted(container &c)
 {
-	boundary<typename container::iterator> b = c.bound();
+	slice<typename container::iterator> b = c.bound();
 	for (typename container::iterator i = b.left; i != b.right-1; i++)
 		if (*(i+1) > *i)
 			return false;
@@ -114,7 +114,7 @@ bool is_rsorted(container &c)
 template <class container>
 container &reverse(container &c)
 {
-	boundary<typename container::iterator> b = c.bound();
+	slice<typename container::iterator> b = c.bound();
 	for (typename container::iterator i = b.left, j = b.right; i != j && i != j+1; i++, j--)
 		i.swap(j);
 	return c;
@@ -124,7 +124,7 @@ container &reverse(container &c)
 template <class container>
 typename container::iterator find(container &c, const typename container::iterator::type &t)
 {
-	boundary<typename container::iterator> b = c.bound();
+	slice<typename container::iterator> b = c.bound();
 	for (typename container::iterator i = b.left; i != b.right+1; i++)
 		if (*i == t)
 			return i;
@@ -135,19 +135,19 @@ typename container::iterator find(container &c, const typename container::iterat
 template <class container>
 bool contains(container &c, const typename container::iterator::type &t)
 {
-	boundary<typename container::iterator> b = c.bound();
+	slice<typename container::iterator> b = c.bound();
 	return (find(b, t) != b.right+1);
 }
 
 template <class container>
 typename container::iterator search_tree(container &c, const typename container::iterator::type &t, int radix = 2)
 {
-	boundary<typename container::iterator> b = c.bound();
+	slice<typename container::iterator> b = c.bound();
 	int size = b.right - b.left + 1;
 	if (size > 0)
 	{
 		int step = size/radix;
-		boundary<typename container::iterator> pivot(b.left, b.left + (step-1));
+		slice<typename container::iterator> pivot(b.left, b.left + (step-1));
 		for (int i = 0; i < radix-1; i++)
 		{
 			if (*pivot.right < t)
@@ -168,7 +168,7 @@ typename container::iterator search_tree(container &c, const typename container:
 template <class container>
 container &collapse(container &c)
 {
-	boundary<typename container::iterator> b = c.bound();
+	slice<typename container::iterator> b = c.bound();
 	typename container::iterator i = b.left, j = b.left+1;
 	for (; j != b.right+1; j++)
 		if (!(*i == *j) && ++i != j)
@@ -183,7 +183,7 @@ container &collapse(container &c)
 template <class container>
 container &unique(container &c)
 {
-	boundary<typename container::iterator> b = c.bound();
+	slice<typename container::iterator> b = c.bound();
 	for (typename container::iterator i = b.left; i != b.right+1; i++)
 		for (typename container::iterator j = i+1; j != b.right+1;)
 		{

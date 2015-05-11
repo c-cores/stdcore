@@ -41,7 +41,7 @@ type powi(type base, int exp)
 int log2i(unsigned long long value);
 
 template <class type>
-type &abs(type &t)
+type abs(type &t)
 {
 	return (t < 0 ? -t : t);
 }
