@@ -92,8 +92,7 @@ container &sort_quick(container &c)
 template <class container>
 bool is_sorted(container &c)
 {
-	slice<typename container::iterator> b = c.bound();
-	for (typename container::iterator i = b.left; i != b.right-1; i++)
+	for (typename container::iterator i = c.begin(); i != c.rbegin(); i++)
 		if (*(i+1) < *i)
 			return false;
 
@@ -103,8 +102,7 @@ bool is_sorted(container &c)
 template <class container>
 bool is_rsorted(container &c)
 {
-	slice<typename container::iterator> b = c.bound();
-	for (typename container::iterator i = b.left; i != b.right-1; i++)
+	for (typename container::iterator i = c.begin(); i != c.rbegin(); i++)
 		if (*(i+1) > *i)
 			return false;
 
@@ -114,8 +112,7 @@ bool is_rsorted(container &c)
 template <class container>
 container &reverse(container &c)
 {
-	slice<typename container::iterator> b = c.bound();
-	for (typename container::iterator i = b.left, j = b.right; i != j && i != j+1; i++, j--)
+	for (typename container::iterator i = c.begin(), j = c.rbegin(); i != j && i != j+1; i++, j--)
 		i.swap(j);
 	return c;
 }
@@ -124,53 +121,59 @@ container &reverse(container &c)
 template <class container>
 typename container::iterator find(container &c, const typename container::iterator::type &t)
 {
-	slice<typename container::iterator> b = c.bound();
-	for (typename container::iterator i = b.left; i != b.right+1; i++)
+	for (typename container::iterator i = c.begin(); i != c.end(); i++)
 		if (*i == t)
 			return i;
 
-	return b.right+1;
+	return c.end();
 }
 
 template <class container>
 bool contains(container &c, const typename container::iterator::type &t)
 {
-	slice<typename container::iterator> b = c.bound();
-	return (find(b, t) != b.right+1);
+	return (find(c, t) != c.end());
 }
 
 template <class container>
 typename container::iterator search_tree(container &c, const typename container::iterator::type &t, int radix = 2)
 {
-	slice<typename container::iterator> b = c.bound();
-	int size = b.right - b.left + 1;
-	if (size > 0)
+	int size = c.end() - c.begin();
+	if (size >= radix)
 	{
-		int step = size/radix;
-		slice<typename container::iterator> pivot(b.left, b.left + (step-1));
-		for (int i = 0; i < radix-1; i++)
+		int D = 2*radix - size;
+		slice<typename container::iterator> pivot(c.begin(), c.begin());
+		while (pivot.right != c.end())
 		{
-			if (*pivot.right < t)
-				return search_tree(pivot, t, radix);
+			if (D > 0)
+			{
+				if (t <= *pivot.right)
+					return search_tree(pivot, t, radix);
+				pivot.left = pivot.right+1;
+				D += 2*radix - 2*size;
+			}
+			else
+				D += 2*radix;
 
-			pivot.left = pivot.right+1;
-			pivot.right = pivot.left + (step-1);
+			pivot.right++;
 		}
 
-		pivot.right = b.right;
 		return search_tree(pivot, t, radix);
 	}
 	else
-		return b.left;
+	{
+		typename container::iterator i = c.begin();
+		while (i != c.end() && *i < t)
+			i++;
+		return i;
+	}
 }
 
 // Duplicate Removal
 template <class container>
 container &collapse(container &c)
 {
-	slice<typename container::iterator> b = c.bound();
-	typename container::iterator i = b.left, j = b.left+1;
-	for (; j != b.right+1; j++)
+	typename container::iterator i = c.begin(), j = c.begin()+1;
+	for (; j != c.end(); j++)
 		if (!(*i == *j) && ++i != j)
 			*i = *j;
 
@@ -183,9 +186,8 @@ container &collapse(container &c)
 template <class container>
 container &unique(container &c)
 {
-	slice<typename container::iterator> b = c.bound();
-	for (typename container::iterator i = b.left; i != b.right+1; i++)
-		for (typename container::iterator j = i+1; j != b.right+1;)
+	for (typename container::iterator i = c.begin(); i != c.end(); i++)
+		for (typename container::iterator j = i+1; j != c.end();)
 		{
 			if (*i == *j)
 				j.pop();

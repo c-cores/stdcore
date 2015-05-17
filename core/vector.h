@@ -62,7 +62,7 @@ struct vector
 		int i;
 
 		va_start(arguments, first);
-		this->elems[0] = first;
+		this->elems[0] = (t)first;
 		for (i = 1; i < s; i++)
 			this->elems[i] = (t)va_arg(arguments, t2);
 		va_end(arguments);

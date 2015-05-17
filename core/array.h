@@ -129,7 +129,7 @@ struct array
 			return *this;
 		}
 
-		iterator operator+(int n)
+		iterator operator+(int n) const
 		{
 			iterator result;
 			result.arr = arr;
@@ -137,7 +137,7 @@ struct array
 			return result;
 		}
 
-		iterator operator-(int n)
+		iterator operator-(int n) const
 		{
 			iterator result;
 			result.arr = arr;
@@ -152,32 +152,32 @@ struct array
 			return *this;
 		}
 
-		bool operator==(iterator i)
+		bool operator==(iterator i) const
 		{
 			return arr == i.arr && offset == i.offset;
 		}
 
-		bool operator!=(iterator i)
+		bool operator!=(iterator i) const
 		{
 			return arr != i.arr || offset != i.offset;
 		}
 
-		int operator-(iterator i)
+		int operator-(iterator i) const
 		{
 			return offset - i.offset;
 		}
 
-		bool operator==(const_iterator i)
+		bool operator==(const_iterator i) const
 		{
 			return arr == i.arr && offset == i.offset;
 		}
 
-		bool operator!=(const_iterator i)
+		bool operator!=(const_iterator i) const
 		{
 			return arr != i.arr || offset != i.offset;
 		}
 
-		int operator-(const_iterator i)
+		int operator-(const_iterator i) const
 		{
 			return offset - i.offset;
 		}
@@ -382,7 +382,7 @@ struct array
 			return *this;
 		}
 
-		const_iterator operator+(int n)
+		const_iterator operator+(int n) const
 		{
 			const_iterator result;
 			result.arr = arr;
@@ -390,7 +390,7 @@ struct array
 			return result;
 		}
 
-		const_iterator operator-(int n)
+		const_iterator operator-(int n) const
 		{
 			const_iterator result;
 			result.arr = arr;
@@ -405,17 +405,17 @@ struct array
 			return *this;
 		}
 
-		bool operator==(const_iterator i)
+		bool operator==(const_iterator i) const
 		{
 			return arr == i.arr && offset == i.offset;
 		}
 
-		bool operator!=(const_iterator i)
+		bool operator!=(const_iterator i) const
 		{
 			return arr != i.arr || offset != i.offset;
 		}
 
-		int operator-(const_iterator i)
+		int operator-(const_iterator i) const
 		{
 			return offset - i.offset;
 		}
@@ -427,17 +427,17 @@ struct array
 			return *this;
 		}
 
-		bool operator==(iterator i)
+		bool operator==(iterator i) const
 		{
 			return arr == i.arr && offset == i.offset;
 		}
 
-		bool operator!=(iterator i)
+		bool operator!=(iterator i) const
 		{
 			return arr != i.arr || offset != i.offset;
 		}
 
-		int operator-(iterator i)
+		int operator-(iterator i) const
 		{
 			return offset - i.offset;
 		}
@@ -691,23 +691,19 @@ struct array
 		count = 0;
 	}
 
-	template <class container>
-	array<value_type> &operator=(container &c)
+	array<value_type> &operator=(const array<value_type> &c)
 	{
-		slice<typename container::iterator> b = c.bound();
-		int n = (b.right+1) - b.left;
-		if (n > capacity)
+		if (c.count > capacity)
 		{
 			if (data != NULL)
 				delete [] data;
 
-			capacity = n + log2i(n);
+			capacity = c.count + log2i(c.count);
 			data = new value_type[capacity];
 		}
 
-		typename container::iterator i = b.left;
-		for (count = 0; count < n && i != b.right+1; count++, i++)
-			data[count] = *i;
+		for (count = 0; count < c.count; count++)
+			data[count] = c.data[count];
 
 		return *this;
 	}

@@ -37,7 +37,9 @@ Integer::Integer()
 
 Integer::Integer(int i)
 {
-	data.push_back(i & 0x7FFFFFFF);
+	if (i != 0 && i != -1)
+		data.push_back(i & 0x7FFFFFFF);
+
 	if (i < 0)
 		sign = 0x7FFFFFFF;
 	else
@@ -295,7 +297,7 @@ Integer &Integer::operator>>=(Integer i)
 
 file &operator<<(file &f, Integer i)
 {
-	f << (double)i << " " << i.data << " " << i.sign;
+	f << (double)i << " " << to_hex(i.data) << " " << i.sign;
 	return f;
 }
 
@@ -309,12 +311,13 @@ Integer operator-(Integer i)
 		i.data[j] &= 0x7FFFFFFF;
 	}
 
-	i.sign = ~i.sign & 0x7FFFFFFF;
-
-	if (i.sign == 0x7FFFFFFF)
-		i.sign = (i.sign + carry) & 0x7FFFFFFF;
+	i.sign = ~i.sign;
+	if (i.sign == -1)
+		i.sign += carry;
 	else if (carry > 0)
 		i.data.push_back(1);
+
+	i.sign &= 0x7FFFFFFF;
 
 	return i;
 }
@@ -417,11 +420,11 @@ Integer operator-(Integer i1, Integer i2)
 Integer operator*(Integer i1, Integer i2)
 {
 	array<array<int> > partial_products;
-	partial_products.extend(i1.data.size() + i2.data.size()+1);
+	partial_products.extend(i1.data.size() + i2.data.size()+2);
 
 	int vali, valj;
 
-	for (int i = 0; i < i1.data.size()*2; i++)
+	for (int i = 0; i <= i1.data.size() + i2.data.size(); i++)
 	{
 		if (i < i1.data.size())
 			vali = i1.data[i];
@@ -429,14 +432,14 @@ Integer operator*(Integer i1, Integer i2)
 			vali = i1.sign;
 
 		if (vali != 0)
-			for (int j = 0; j < i2.data.size()*2; j++)
+			for (int j = 0; j <= i1.data.size() + i2.data.size(); j++)
 			{
 				if (j < i2.data.size())
 					valj = i2.data[j];
 				else
 					valj = i2.sign;
 
-				if (i+j < i1.data.size() + i2.data.size())
+				if (i+j <= i1.data.size() + i2.data.size())
 				{
 					int i00, i01, i10, i11;
 					i00 = (vali & 0x0000FFFF) * (valj & 0x0000FFFF);
@@ -456,11 +459,11 @@ Integer operator*(Integer i1, Integer i2)
 
 	Integer result;
 	result.data.reserve(partial_products.size());
-	result.sign = i1.sign ^ i2.sign;
 
+	int carry;
 	for (int i = 0; i < partial_products.size()-1; i++)
 	{
-		int carry = 0;
+		carry = 0;
 		if (partial_products[i].size() > 0 && partial_products[i].back() < 0)
 		{
 			carry++;
@@ -494,6 +497,8 @@ Integer operator*(Integer i1, Integer i2)
 		else if (carry > 0)
 			partial_products.push_back(array<int>(1, carry));
 	}
+
+	result.sign = result.data.back();
 
 	while (result.data.size() > 0 && result.data.back() == result.sign)
 		result.data.pop_back();
@@ -805,7 +810,8 @@ Integer operator>>(Integer i1, int i2)
 		int b = i2%31;
 
 		Integer result;
-		if (i1.data.size() > a + 1)
+		result.sign = i1.sign;
+		if (i1.data.size() > a)
 		{
 			result.data.reserve(i1.data.size() - a);
 
@@ -813,7 +819,6 @@ Integer operator>>(Integer i1, int i2)
 				result.data.push_back(((i1.data[i+a] >> b) | (i1.data[i+a+1] << (31 - b))) & 0x7FFFFFFF);
 
 			result.data.push_back(((i1.data.back() >> b) | (i1.sign << (31 - b))) & 0x7FFFFFFF);
-			result.sign = i1.sign;
 
 			while (result.data.size() > 0 && result.data.back() == result.sign)
 				result.data.pop_back();
@@ -910,26 +915,39 @@ Real::Real(unsigned long long f) : num(f)
 
 Real::Real(float f)
 {
-	double sig = frexp(f, &exp);
-	int *fi = (int*)&sig;
-	num.data.push_back(*fi & 0x7FFFFFFF);
-	num.data.push_back(((*(fi+1) & 0x000FFFFF) << 1) | ((*fi & 0x80000000) >> 31) | 0x00200000);
-	exp -= 53;
-	if ((*fi & 0x80000000) != 0)
-		num = -num;
-	limit = 5;
+	if (f == 0.0)
+	{
+		exp = 0;
+		limit = 5;
+	}
+	else
+	{
+		int *fi = (int*)&f;
+		num.data.push_back((*fi & 0x007FFFFF) | 0x00800000);
+		exp = ((*fi & 0x7F800000) >> 23) - 150;
+		if ((*fi & 0x80000000) != 0)
+			num = -num;
+		limit = 5;
+	}
 }
 
 Real::Real(double f)
 {
-	double sig = frexp(f, &exp);
-	int *fi = (int*)&sig;
-	num.data.push_back(*fi & 0x7FFFFFFF);
-	num.data.push_back(((*(fi+1) & 0x000FFFFF) << 1) | ((*fi & 0x80000000) >> 31) | 0x00200000);
-	exp -= 53;
-	if ((*(fi+1) & 0x80000000) != 0)
-		num = -num;
-	limit = 5;
+	if (f == 0.0)
+	{
+		exp = 0;
+		limit = 5;
+	}
+	else
+	{
+		int *fi = (int*)&f;
+		num.data.push_back(*fi & 0x7FFFFFFF);
+		num.data.push_back(((*(fi+1) & 0x000FFFFF) << 1) | ((*fi & 0x80000000) >> 31) | 0x00200000);
+		exp = ((*(fi+1) & 0x7FF00000) >> 20) - 1075;
+		if ((*(fi+1) & 0x80000000) != 0)
+			num = -num;
+		limit = 5;
+	}
 }
 
 Real::~Real()
@@ -940,6 +958,25 @@ Real::~Real()
 Real::operator double()
 {
 	return (double)num*::pow(2.0, (double)exp);
+}
+
+void Real::realign()
+{
+	while (num.data.size() > 0 && num.data[0] == 0)
+	{
+		num.data.pop_front();
+		exp += 31;
+	}
+
+	int shift = 30;
+	while (num.data.size() > 0 && (num.data[0] & (0x7FFFFFFF >> (31 - shift))) != 0)
+		shift--;
+
+	if (shift != 0 && num.data.size() > 0 && num.data[0] == 4096)
+	{
+		num >>= shift;
+		exp += shift;
+	}
 }
 
 Real &Real::operator=(Real f)
@@ -975,7 +1012,7 @@ Real &Real::operator/=(Real f)
 
 file &operator<<(file &fout, Real f)
 {
-	fout << (double)f;
+	fout << (double)f << " " << f.exp << " " << f.num;
 	return fout;
 }
 
@@ -1001,6 +1038,9 @@ Real operator+(Real f1, Real f2)
 	}
 
 	result.num = f1.num + f2.num;
+
+	result.realign();
+
 	return result;
 }
 
@@ -1020,6 +1060,9 @@ Real operator-(Real f1, Real f2)
 	}
 
 	result.num = f1.num - f2.num;
+
+	result.realign();
+
 	return result;
 }
 
@@ -1028,6 +1071,9 @@ Real operator*(Real f1, Real f2)
 	Real result;
 	result.num = f1.num*f2.num;
 	result.exp = f1.exp + f2.exp;
+
+	result.realign();
+
 	return result;
 }
 
@@ -1114,9 +1160,11 @@ Real operator/(Real f1, Real f2)
 	}
 
 	if (neg)
-		return -quotient;
-	else
-		return quotient;
+		quotient = -quotient;
+
+	quotient.realign();
+
+	return quotient;
 }
 
 bool operator==(Real f1, Real f2)

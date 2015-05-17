@@ -118,6 +118,8 @@ struct Real
 		return (t)((double)*this);
 	}
 
+	void realign();
+
 	Real &operator=(Real f);
 
 	Real &operator=(double f);

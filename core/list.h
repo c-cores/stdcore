@@ -28,12 +28,25 @@ struct list
 		right.prev = &left;
 	}
 
+	list(const list<value_type> &l)
+	{
+		left.next = &right;
+		right.prev = &left;
+		for (list<value_type>::const_iterator i = l.begin(); i != l.end(); i++)
+			push_back(*i);
+	}
+
 	list(const value_type &t, int n = 1)
 	{
 		left.next = &right;
 		right.prev = &left;
 		for (int i = 0; i < n; i++)
 			push_back(t);
+	}
+
+	~list()
+	{
+		clear();
 	}
 
 	struct node
@@ -144,7 +157,7 @@ struct list
 			return *this;
 		}
 
-		iterator operator+(int n)
+		iterator operator+(int n) const
 		{
 			iterator result(*this);
 			for (int i = 0; i < n; i++)
@@ -153,7 +166,7 @@ struct list
 			return result;
 		}
 
-		iterator operator-(int n)
+		iterator operator-(int n) const
 		{
 			iterator result(*this);
 			for (int i = 0; i < n; i++)
@@ -169,17 +182,17 @@ struct list
 			return *this;
 		}
 
-		bool operator==(iterator i)
+		bool operator==(iterator i) const
 		{
 			return lst == i.lst && pos == i.pos;
 		}
 
-		bool operator!=(iterator i)
+		bool operator!=(iterator i) const
 		{
 			return lst != i.lst || pos != i.pos;
 		}
 
-		int operator-(iterator i)
+		int operator-(iterator i) const
 		{
 			int count = 0;
 			for (iterator j = i; j.pos != pos && j.pos != &j.lst->right; j++)
@@ -187,17 +200,17 @@ struct list
 			return count;
 		}
 
-		bool operator==(const_iterator i)
+		bool operator==(const_iterator i) const
 		{
 			return lst == i.lst && pos == i.pos;
 		}
 
-		bool operator!=(const_iterator i)
+		bool operator!=(const_iterator i) const
 		{
 			return lst != i.lst || pos != i.pos;
 		}
 
-		int operator-(const_iterator i)
+		int operator-(const_iterator i) const
 		{
 			int count = 0;
 			for (const_iterator j = i; j.pos != pos && j.pos != &j.lst->right; j++)
@@ -397,7 +410,7 @@ struct list
 			return *this;
 		}
 
-		const_iterator operator+(int n)
+		const_iterator operator+(int n) const
 		{
 			const_iterator result(*this);
 			for (int i = 0; i < n; i++)
@@ -406,7 +419,7 @@ struct list
 			return result;
 		}
 
-		const_iterator operator-(int n)
+		const_iterator operator-(int n) const
 		{
 			const_iterator result(*this);
 			for (int i = 0; i < n; i++)
@@ -422,17 +435,17 @@ struct list
 			return *this;
 		}
 
-		bool operator==(const_iterator i)
+		bool operator==(const_iterator i) const
 		{
 			return lst == i.lst && pos == i.pos;
 		}
 
-		bool operator!=(const_iterator i)
+		bool operator!=(const_iterator i) const
 		{
 			return lst != i.lst || pos != i.pos;
 		}
 
-		int operator-(const_iterator i)
+		int operator-(const_iterator i) const
 		{
 			int count = 0;
 			for (const_iterator j = i; j.pos != pos && j.pos != &j.lst->right; j++)
@@ -447,17 +460,17 @@ struct list
 			return *this;
 		}
 
-		bool operator==(iterator i)
+		bool operator==(iterator i) const
 		{
 			return lst == i.lst && pos == i.pos;
 		}
 
-		bool operator!=(iterator i)
+		bool operator!=(iterator i) const
 		{
 			return lst != i.lst || pos != i.pos;
 		}
 
-		int operator-(iterator i)
+		int operator-(iterator i) const
 		{
 			int count = 0;
 			for (const_iterator j = i; j.pos != pos && j.pos != &j.lst->right; j++)
@@ -466,17 +479,17 @@ struct list
 		}
 	};
 
-	int size()
+	int size() const
 	{
 		return end() - begin();
 	}
 
-	value_type &at(int i)
+	value_type &at(int i) const
 	{
 		return ((item*)(begin() + i))->data;
 	}
 
-	value_type &operator[](int i)
+	value_type &operator[](int i) const
 	{
 		return ((item*)(begin() + i))->data;
 	}
@@ -586,10 +599,13 @@ struct list
 		right.prev = &left;
 	}
 
-	list<value_type> &operator=(list<value_type> a)
+	list<value_type> &operator=(const list<value_type> &c)
 	{
 		clear();
-		push_back(a.bound());
+
+		typename list<value_type>::const_iterator i;
+		for (i = c.begin(); i != c.end(); i++)
+			push_back(*i);
 		return *this;
 	}
 };

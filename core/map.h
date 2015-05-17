@@ -90,7 +90,7 @@ struct map : list<implier<ktype, vtype> >
 	iterator find(ktype key)
 	{
 		iterator pos = search_tree(*this, implier<ktype, vtype>(key, vtype()));
-		if (pos->key == key)
+		if (pos != end() && pos->key == key)
 			return pos;
 		else
 			return end();
@@ -106,12 +106,12 @@ struct map : list<implier<ktype, vtype> >
 	vtype &operator[](ktype key)
 	{
 		iterator pos = search_tree(*this, implier<ktype, vtype>(key, vtype()));
-		if (pos->key == key)
-			return pos->second;
+		if (pos != end() && pos->key == key)
+			return pos->value;
 		else
 		{
 			pos.rpush(implier<ktype, vtype>(key, vtype()));
-			return (pos-1)->second;
+			return (pos-1)->value;
 		}
 	}
 };

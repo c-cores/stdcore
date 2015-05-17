@@ -5,8 +5,6 @@
  *      Author: nbingham
  */
 
-#include "file.h"
-
 #ifndef pair_h
 #define pair_h
 
@@ -33,13 +31,6 @@ struct pair
 	type1 first;
 	type2 second;
 };
-
-template <class type1, class type2>
-file &operator<<(file &f, const pair<type1, type2> &p)
-{
-	f << "(" << p.first << ", " << p.second << ")";
-	return f;
-}
 
 template <class type1, class type2>
 bool operator==(pair<type1, type2> p1, pair<type1, type2> p2)

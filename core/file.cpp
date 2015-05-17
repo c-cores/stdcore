@@ -254,4 +254,91 @@ file &operator<<(file &fout, double i)
 	return fout;
 }
 
+file &operator<<(file &fout, file::hex<const char *> str)
+{
+	while (*str.value != '\0')
+		fprintf(fout.ptr, "%02X ", *str.value++);
+	return fout;
+}
+
+file &operator<<(file &fout, file::hex<char *> str)
+{
+	while (*str.value != '\0')
+		fprintf(fout.ptr, "%02X ", *str.value++);
+	return fout;
+}
+
+file &operator<<(file &fout, file::hex<string> str)
+{
+	for (int i = 0; i < str.value.size(); i++)
+		fprintf(fout.ptr, "%02X ", str.value[i]);
+	return fout;
+}
+
+file &operator<<(file &fout, file::hex<char> i)
+{
+	fprintf(fout.ptr, "%02X", i.value);
+	return fout;
+}
+
+file &operator<<(file &fout, file::hex<unsigned char> i)
+{
+	fprintf(fout.ptr, "%02X", i.value);
+	return fout;
+}
+
+file &operator<<(file &fout, file::hex<bool> i)
+{
+	fprintf(fout.ptr, "%01X", i.value);
+	return fout;
+}
+
+file &operator<<(file &fout, file::hex<int> i)
+{
+	fprintf(fout.ptr, "%08X", i.value);
+	return fout;
+}
+
+file &operator<<(file &fout, file::hex<short> i)
+{
+	fprintf(fout.ptr, "%04hX", i.value);
+	return fout;
+}
+
+file &operator<<(file &fout, file::hex<long> i)
+{
+	fprintf(fout.ptr, "%08lX", i.value);
+	return fout;
+}
+
+file &operator<<(file &fout, file::hex<unsigned int> i)
+{
+	fprintf(fout.ptr, "%08X", i.value);
+	return fout;
+}
+
+file &operator<<(file &fout, file::hex<unsigned short> i)
+{
+	fprintf(fout.ptr, "%04hX", i.value);
+	return fout;
+}
+
+file &operator<<(file &fout, file::hex<unsigned long> i)
+{
+	fprintf(fout.ptr, "%08lX", i.value);
+	return fout;
+}
+
+file &operator<<(file &fout, file::hex<float> i)
+{
+	fprintf(fout.ptr, "%08X", *(int*)(&i.value));
+	return fout;
+}
+
+file &operator<<(file &fout, file::hex<double> i)
+{
+	fprintf(fout.ptr, "%08X%08X", *(int*)((&i.value) + 1), *(int*)(&i.value));
+	return fout;
+}
+
 }

@@ -27,15 +27,35 @@ struct slice
 
 	iterator left, right;
 
-	slice<iterator> sub(int i, int j)
+	iterator begin() const
 	{
-		return slice<iterator>(left + i, left + j);
+		return left;
+	}
+
+	iterator end() const
+	{
+		return right+1;
+	}
+
+	iterator rbegin() const
+	{
+		return right;
+	}
+
+	iterator rend() const
+	{
+		return left-1;
 	}
 
 	slice<iterator> &bound()
 	{
 		return *this;
 	}
+
+	//slice<iterator> sub(int i, int j)
+	//{
+	//	return slice<iterator>(left + i, left + j);
+	//}
 
 	template <class iterator2>
 	int compare(slice<iterator2> a) const
