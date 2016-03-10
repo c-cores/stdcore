@@ -127,7 +127,8 @@ complex<t> operator*(complex<t> a, complex<t> b)
 template <class t>
 complex<t> operator/(complex<t> a, complex<t> b)
 {
-	return complex<t>((a.a*b.a - a.b*b.b)/(b.a*b.a + b.b*b.b), (a.b*b.a - a.a*b.b)/(b.a*b.a + b.b*b.b));
+	t m = (b.a*b.a + b.b*b.b);
+	return complex<t>((a.a*b.a - a.b*b.b)/m, (a.b*b.a - a.a*b.b)/m);
 }
 
 template <class t>

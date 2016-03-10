@@ -496,12 +496,12 @@ struct list
 
 	value_type &front() const
 	{
-		return *left;
+		return *begin();
 	}
 
 	value_type &back() const
 	{
-		return *right;
+		return *rbegin();
 	}
 
 	iterator begin()

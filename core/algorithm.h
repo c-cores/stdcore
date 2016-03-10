@@ -14,6 +14,14 @@ namespace core
 {
 
 template <class type>
+void swap(type &t1, type &t2)
+{
+	type temp = t1;
+	t1 = t2;
+	t2 = temp;
+}
+
+template <class type>
 type median_iterator(type t1, type t2, type t3)
 {
 	if (*t1 < *t2)

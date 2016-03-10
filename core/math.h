@@ -47,12 +47,6 @@ type abs(type &t)
 }
 
 template <class type>
-type clamp(type t, type left, type right)
-{
-	return max(min(t, right), left);
-}
-
-template <class type>
 type min(type t1, type t2)
 {
 	return (t1 < t2 ? t1 : t2);
@@ -62,6 +56,14 @@ template <class type>
 type max(type t1, type t2)
 {
 	return (t1 < t2 ? t2 : t1);
+}
+
+using ::sqrt;
+
+template <class type>
+type clamp(type t, type left, type right)
+{
+	return max(min(t, right), left);
 }
 
 template <class type>

@@ -15,6 +15,7 @@ template <class iterator_type>
 struct slice
 {
 	typedef iterator_type iterator;
+	typedef iterator_type const_iterator;
 
 	slice() {}
 	slice(iterator l, iterator r)
@@ -48,6 +49,11 @@ struct slice
 	}
 
 	slice<iterator> &bound()
+	{
+		return *this;
+	}
+
+	slice<iterator> bound() const
 	{
 		return *this;
 	}

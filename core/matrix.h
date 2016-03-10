@@ -24,6 +24,7 @@
 #include "big.h"
 #include "vector.h"
 #include "file.h"
+#include "math.h"
 
 #ifndef matrix_h
 #define matrix_h
@@ -63,16 +64,27 @@ struct matrix
 				rows[i][j] = 0;
 	}
 
-	template <class t2>
-	matrix(t2 first, ...)
+	matrix(int first, ...)
 	{
 		va_list arguments;
 
 		va_start(arguments, first);
-		rows[0][0] = first;
+		rows[0][0] = (t)first;
 		for (int i = 0; i < v; i++)
 			for (int j = (i == 0 ? 1 : 0); j < h; j++)
-				rows[i][j] = (t)va_arg(arguments, t2);
+				rows[i][j] = (t)va_arg(arguments, int);
+		va_end(arguments);
+	}
+
+	matrix(double first, ...)
+	{
+		va_list arguments;
+
+		va_start(arguments, first);
+		rows[0][0] = (t)first;
+		for (int i = 0; i < v; i++)
+			for (int j = (i == 0 ? 1 : 0); j < h; j++)
+				rows[i][j] = (t)va_arg(arguments, double);
 		va_end(arguments);
 	}
 
@@ -81,7 +93,7 @@ struct matrix
 		va_list arguments;
 
 		va_start(arguments, first);
-		rows[0][0] = first;
+		rows[0][0] = (t)first;
 		for (int i = 0; i < v; i++)
 			for (int j = (i == 0 ? 1 : 0); j < h; j++)
 				rows[i][j] = (t)va_arg(arguments, double);
@@ -131,21 +143,17 @@ struct matrix
 		return *this;
 	}
 
-	template <class t2>
-	matrix<t, v, h> &operator*=(matrix<t2, h, v> m)
+	template <class t1>
+	matrix<t, v, h> &operator*=(matrix<t1, v, v> m1)
 	{
-		for (int i = 0; i < v; i++)
-			for (int j = 0; j < h; j++)
-				rows[i].rows[j] *= m.rows[i].rows[j];
+		*this = *this * m1;
 		return *this;
 	}
 
-	template <class t2>
-	matrix<t, v, h> &operator/=(matrix<t2, h, v> m)
+	template <class t1>
+	matrix<t, v, h> &operator/=(matrix<t1, v, v> m1)
 	{
-		for (int i = 0; i < v; i++)
-			for (int j = 0; j < h; j++)
-				rows[i].rows[j] /= m.rows[i].rows[j];
+		*this = *this * rref(m1);
 		return *this;
 	}
 
@@ -759,7 +767,7 @@ int rank(matrix<t, v, h> m)
  * as the rotation components.
  */
 template <class t>
-matrix<t, 4, 4> rotate(vector<t, 3> v, t a)
+matrix<t, 4, 4> rotate(t a, vector<t, 3> v)
 {
 	t c = cos(a);
 	t o = 1-c;
@@ -769,10 +777,60 @@ matrix<t, 4, 4> rotate(vector<t, 3> v, t a)
 	if (l != 1)
 		v /= sqrt(l);
 
-	return matrix<t, 4, 4>(v[0]*v[0]*o + c,      v[0]*v[1]*o - v[2]*s, v[0]*v[2]*o + v[1]*s, 0,
-			               v[1]*v[0]*o + v[2]*s, v[1]*v[1]*o + c,      v[1]*v[2]*o - v[0]*s, 0,
-						   v[0]*v[2]*o - v[1]*s, v[1]*v[2]*o + v[0]*s, v[2]*v[2]*o + c,      0,
-						   0,                    0,                    0,                    1);
+	return matrix<t, 4, 4>(v[0]*v[0]*o + c,      v[0]*v[1]*o - v[2]*s, v[0]*v[2]*o + v[1]*s, 0.0f,
+			               v[1]*v[0]*o + v[2]*s, v[1]*v[1]*o + c,      v[1]*v[2]*o - v[0]*s, 0.0f,
+						   v[0]*v[2]*o - v[1]*s, v[1]*v[2]*o + v[0]*s, v[2]*v[2]*o + c,      0.0f,
+						   0.0f,                 0.0f,                 0.0f,                 1.0f);
+}
+
+/* rotate_x
+ *
+ * Creates an s x s rotation matrix about the x axis.
+ */
+template <class t>
+matrix<t, 4, 4> rotate(t a, int i, int j)
+{
+	t c = cos(a);
+	t s = sin(a);
+	matrix<t, 4, 4> result(1.0f, 0.0f, 0.0f, 0.0f,
+						   0.0f, 1.0f, 0.0f, 0.0f,
+						   0.0f, 0.0f, 1.0f, 0.0f,
+						   0.0f, 0.0f, 0.0f, 1.0f);
+	result[i][i] = c;
+	result[i][j] = -s;
+	result[j][i] = s;
+	result[j][j] = c;
+	return result;
+}
+
+template <class t>
+matrix<t, 4, 4> rotate_x(t a)
+{
+	return rotate(a, 1, 2);
+}
+
+template <class t>
+matrix<t, 4, 4> rotate_y(t a)
+{
+	return rotate(a, 2, 0);
+}
+
+template <class t>
+matrix<t, 4, 4> rotate_z(t a)
+{
+	return rotate(a, 0, 1);
+}
+
+template <class t>
+matrix<t, 4, 4> rotate_xyz(vector<t, 3> a)
+{
+	return rotate_x(a[0])*rotate_y(a[1])*rotate_z(a[2]);
+}
+
+template <class t>
+matrix<t, 4, 4> rotate_zyx(vector<t, 3> a)
+{
+	return rotate_z(a[2])*rotate_y(a[1])*rotate_x(a[0]);
 }
 
 /* translate
@@ -781,18 +839,16 @@ matrix<t, 4, 4> rotate(vector<t, 3> v, t a)
  * as the translation components.
  */
 template <class t, int s>
-matrix<t, s, s> translate(vector<t, s-1> v)
+matrix<t, s+1, s+1> translate(vector<t, s> v)
 {
-	matrix<t, s, s> result;
-	int i;
+	matrix<t, s+1, s+1> result;
 
-	for (i = 0; i < s-1; i++)
-	{
-		result[i][i] = (t)1;
-		result[i][s-1] = v[i];
-	}
+	for (int i = 0; i < s+1; i++)
+		for (int j = 0; j < s+1; j++)
+			result[i][j] = (i == j);
 
-	result[s-1][s-1] = (t)1;
+	for (int i = 0; i < s; i++)
+		result[i][s] = v[i];
 
 	return result;
 }
@@ -803,15 +859,18 @@ matrix<t, s, s> translate(vector<t, s-1> v)
  * as the set of scales in the {x, y, z, ...} directions.
  */
 template <class t, int s>
-matrix<t, s, s> scale(vector<t, s-1> v)
+matrix<t, s+1, s+1> scale(vector<t, s> v)
 {
-	matrix<t, s, s> result;
-	int i;
+	matrix<t, s+1, s+1> result;
 
-	for (i = 0; i < s-1; i++)
+	for (int i = 0; i < s+1; i++)
+		for (int j = 0; j < s+1; j++)
+			result[i][j] = 0;
+
+	for (int i = 0; i < s; i++)
 		result[i][i] = v[i];
 
-	result[s-1][s-1] = (t)1;
+	result[s][s] = 1;
 
 	return result;
 }
@@ -824,10 +883,10 @@ matrix<t, s, s> scale(vector<t, s-1> v)
 template <class t>
 matrix<t, 4, 4> frustum(t left, t right, t bottom, t top, t front, t back)
 {
-	return matrix<t, 4, 4>(2*front/(right-left), 0,                   (right+left)/(right-left), 0,
-			               0,                   2*front/(top-bottom), (top+bottom)/(top-bottom), 0,
-						   0,                   0,                   (back+front)/(back-front),     -2*back*front/(back-front),
-						   0,                   0,                   -1,                        0);
+	return matrix<t, 4, 4>(2.0f*front/(right-left), 0.0f,                   (right+left)/(right-left), 0.0f,
+			               0.0f,                   2.0f*front/(top-bottom), (top+bottom)/(top-bottom), 0.0f,
+						   0.0f,                   0.0f,                   -(back+front)/(back-front),     -2.0f*back*front/(back-front),
+						   0.0f,                   0.0f,                   -1.0f,                        0.0f);
 }
 
 /* ortho
@@ -845,7 +904,11 @@ matrix<t, 4, 4> ortho(t left, t right, t bottom, t top, t front, t back)
 template <class t>
 matrix<t, 3, 3> normal(matrix<t, 4, 4> modelview)
 {
-	return transpose(inverse(modelview));
+	t det = determinant(modelview);
+	if (det*det == 1)
+		return modelview;
+	else
+		return transpose(inverse(modelview));
 }
 
 }

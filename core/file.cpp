@@ -33,8 +33,6 @@ file::file(string filename, string options)
 
 file::~file()
 {
-	fclose(ptr);
-	ptr = NULL;
 }
 
 int file::size()
@@ -64,7 +62,8 @@ bool file::open(string filename, string options)
 
 void file::close()
 {
-	fclose(ptr);
+	if (ptr != NULL)
+		fclose(ptr);
 	ptr = NULL;
 }
 

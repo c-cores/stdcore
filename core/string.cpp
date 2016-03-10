@@ -1004,21 +1004,13 @@ string &string::operator=(char *str)
 
 string &string::operator+=(const char *str)
 {
-	array<const char> temp;
-	temp.data = str;
-	temp.count = strlen(str);
-	temp.capacity = temp.count;
-	array<char>::merge_back(temp);
+	array<char>::merge_back(slice<const char*>(str, str+strlen(str)-1));
 	return *this;
 }
 
 string &string::operator+=(char *str)
 {
-	array<const char> temp;
-	temp.data = str;
-	temp.count = strlen(str);
-	temp.capacity = temp.count;
-	array<char>::merge_back(temp);
+	array<char>::merge_back(slice<char*>(str, str+strlen(str)-1));
 	return *this;
 }
 

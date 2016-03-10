@@ -55,8 +55,7 @@ struct vector
 			elems[i] = 0;
 	}
 
-	template <class t2>
-	vector(t2 first, ...)
+	vector(int first, ...)
 	{
 		va_list arguments;
 		int i;
@@ -64,7 +63,19 @@ struct vector
 		va_start(arguments, first);
 		this->elems[0] = (t)first;
 		for (i = 1; i < s; i++)
-			this->elems[i] = (t)va_arg(arguments, t2);
+			this->elems[i] = (t)va_arg(arguments, int);
+		va_end(arguments);
+	}
+
+	vector(double first, ...)
+	{
+		va_list arguments;
+		int i;
+
+		va_start(arguments, first);
+		this->elems[0] = (t)first;
+		for (i = 1; i < s; i++)
+			this->elems[i] = (t)va_arg(arguments, double);
 		va_end(arguments);
 	}
 
@@ -74,7 +85,7 @@ struct vector
 		int i;
 
 		va_start(arguments, first);
-		this->elems[0] = first;
+		this->elems[0] = (t)first;
 		for (i = 1; i < s; i++)
 			this->elems[i] = (t)va_arg(arguments, double);
 		va_end(arguments);
@@ -149,32 +160,28 @@ struct vector
 		return *this;
 	}
 
-	template <class t2>
-	vector<t, s> &operator+=(t2 f)
+	vector<t, s> &operator+=(t f)
 	{
 		for (int i = 0; i < s; i++)
 			elems[i] += f;
 		return *this;
 	}
 
-	template <class t2>
-	vector<t, s> &operator-=(t2 f)
+	vector<t, s> &operator-=(t f)
 	{
 		for (int i = 0; i < s; i++)
 			elems[i] -= f;
 		return *this;
 	}
 
-	template <class t2>
-	vector<t, s> &operator*=(t2 f)
+	vector<t, s> &operator*=(t f)
 	{
 		for (int i = 0; i < s; i++)
 			elems[i] *= f;
 		return *this;
 	}
 
-	template <class t2>
-	vector<t, s> &operator/=(t2 f)
+	vector<t, s> &operator/=(t f)
 	{
 		for (int i = 0; i < s; i++)
 			elems[i] /= f;
@@ -346,8 +353,8 @@ vector<t1, (s1 < s2 ? s1 : s2)> operator/(vector<t1, s1> v1, vector<t2, s2> v2)
  * This creates a vector who's components are f plus by the
  * corresponding component in the vector v.
  */
-template <class t, class t2, int s>
-vector<t, s> operator+(t2 f, vector<t, s> v)
+template <class t, int s>
+vector<t, s> operator+(t f, vector<t, s> v)
 {
 	vector<t, s> result;
 
@@ -362,8 +369,8 @@ vector<t, s> operator+(t2 f, vector<t, s> v)
  * This creates a vector who's components are f minus by the
  * corresponding component in the vector v.
  */
-template <class t, class t2, int s>
-vector<t, s> operator-(t2 f, vector<t, s> v)
+template <class t, int s>
+vector<t, s> operator-(t f, vector<t, s> v)
 {
 	vector<t, s> result;
 
@@ -378,8 +385,8 @@ vector<t, s> operator-(t2 f, vector<t, s> v)
  * This creates a vector who's components are f multiplied by
  * the corresponding component in the vector v.
  */
-template <class t, class t2, int s>
-vector<t, s> operator*(t2 f, vector<t, s> v)
+template <class t, int s>
+vector<t, s> operator*(t f, vector<t, s> v)
 {
 	vector<t, s> result;
 
@@ -394,8 +401,8 @@ vector<t, s> operator*(t2 f, vector<t, s> v)
  * This creates a vector who's components are f divided by the
  * corresponding component in the vector v.
  */
-template <class t, class t2, int s>
-vector<t, s> operator/(t2 f, vector<t, s> v)
+template <class t, int s>
+vector<t, s> operator/(t f, vector<t, s> v)
 {
 	vector<t, s> result;
 
@@ -409,8 +416,8 @@ vector<t, s> operator/(t2 f, vector<t, s> v)
  *
  * Adds f to all of the components of v.
  */
-template <class t, class t2, int s>
-vector<t, s> operator+(vector<t, s> v, t2 f)
+template <class t, int s>
+vector<t, s> operator+(vector<t, s> v, t f)
 {
 	vector<t, s> result;
 
@@ -424,8 +431,8 @@ vector<t, s> operator+(vector<t, s> v, t2 f)
  *
  * Subtracts f from all of the components of v.
  */
-template <class t, class t2, int s>
-vector<t, s> operator-(vector<t, s> v, t2 f)
+template <class t, int s>
+vector<t, s> operator-(vector<t, s> v, t f)
 {
 	vector<t, s> result;
 
@@ -436,8 +443,8 @@ vector<t, s> operator-(vector<t, s> v, t2 f)
 }
 
 // vector-scalar multiplication
-template <class t, class t2, int s>
-vector<t, s> operator*(vector<t, s> v, t2 f)
+template <class t, int s>
+vector<t, s> operator*(vector<t, s> v, t f)
 {
 	vector<t, s> result;
 
@@ -448,8 +455,8 @@ vector<t, s> operator*(vector<t, s> v, t2 f)
 }
 
 // vector-scalar division
-template <class t, class t2, int s>
-vector<t, s> operator/(vector<t, s> v, t2 f)
+template <class t, int s>
+vector<t, s> operator/(vector<t, s> v, t f)
 {
 	vector<t, s> result;
 
@@ -609,7 +616,7 @@ vector<t1, 5> cross(vector<t1, 5> v1, vector<t2, 5> v2, vector<t3, 5> v3)
  * rotating around the z axis.
  */
 template <class t, int s>
-vector<t, s> rot(vector<t, s> v, double a, int i, int j)
+vector<t, s> rotate(vector<t, s> v, double a, int i, int j)
 {
 	vector<t, s> result = v;
 
@@ -629,62 +636,7 @@ vector<t, s> rot(vector<t, s> v, double a, int i, int j)
  * x, y, z, ...
  */
 template <class t, class at, int s>
-vector<t, s> ror(vector<t, s> v, vector <at, s> a)
-{
-	vector<t, s> result = v;
-	vector<t, s> temp = v;
-
-	int ai = 0;
-	for (int i = s-1; i >= 0; i--)
-		for (int j = i-1; j >= 0; j--)
-		{
-			temp.elems[i] = result.elems[i]*cos(a[ai]) - result.elems[j]*sin(a[ai]);
-			temp.elems[j] = result.elems[i]*sin(a[ai]) + result.elems[j]*cos(a[ai]);
-			result = temp;
-			ai++;
-		}
-
-	return result;
-}
-
-/* rol
- * (rotate left)
- *
- * This rotates a vector by the given euler angles defined
- * in a. This rotates in the reverse order of ror.
- *
- * ..., z, y, x
- */
-template <class t, class at, int s>
-vector<t, s> rol(vector<t, s> v, vector <at, s> a)
-{
-	vector<t, s> result = v;
-	vector<t, s> temp = v;
-
-	int ai = s-1;
-	for (int i = 0; i >= s-2; i--)
-		for (int j = i+1; j >= s-1; j--)
-		{
-			temp.elems[i] = result.elems[i]*cos(a[ai]) - result.elems[j]*sin(a[ai]);
-			temp.elems[j] = result.elems[i]*sin(a[ai]) + result.elems[j]*cos(a[ai]);
-			result = temp;
-			ai--;
-		}
-
-	return result;
-}
-
-/* ror
- * (rotate right)
- *
- * This rotates a vector by the given euler angles defined
- * in a. First, it rotates around the x axis, then the y axis,
- * and so on.
- *
- * x, y, z, ...
- */
-template <class t, class at, int s>
-vector<t, s> ror3(vector<t, s> v, vector<at, s> a)
+vector<t, s> rotate_xyz(vector<t, s> v, vector<at, s> a)
 {
 	vector<t, s> x = v;
 	vector<t, s> y;
@@ -713,7 +665,7 @@ vector<t, s> ror3(vector<t, s> v, vector<at, s> a)
  * ..., z, y, x
  */
 template <class t, class at, int s>
-vector<t, s> rol3(vector<t, s> v, vector <at, s> a)
+vector<t, s> rotate_zyx(vector<t, s> v, vector <at, s> a)
 {
 	vector<t, s> x = v;
 	vector<t, s> y;
@@ -743,9 +695,11 @@ vector<t, s> rol3(vector<t, s> v, vector <at, s> a)
 template <class t, int s>
 vector<t, s> slerp(vector<t, s> v1, vector<t, s> v2, t p)
 {
-	double omega = acos((double)dot(v1, v2));
-	double somega = sin(omega);
-	vector <t, s> ret = v1*sin(omega - p*omega) + v2*sin(p*omega);
+	t omega = acos(dot(v1, v2));
+	if (abs(omega) < 0.000001)
+		return v1;
+	t somega = sin(omega);
+	vector <t, s> ret = v1*(t)sin(omega - p*omega) + v2*(t)sin(p*omega);
 	return ret/somega;
 }
 
@@ -838,7 +792,7 @@ t1 dot(vector<t1, s1> v1, vector<t2, s2> v2)
 template <class t1, class t2, int s>
 t1 dist(vector<t1, s> v1, vector<t2, s> v2)
 {
-	return mag(v2 - v1);
+	return mag(v1 - v2);
 }
 
 /* dist2
@@ -850,7 +804,7 @@ t1 dist(vector<t1, s> v1, vector<t2, s> v2)
 template <class t1, class t2, int s>
 t1 dist2(vector<t1, s> v1, vector<t2, s> v2)
 {
-	return mag2(v2 - v1);
+	return mag2(v1 - v2);
 }
 
 /* dir
@@ -862,7 +816,7 @@ t1 dist2(vector<t1, s> v1, vector<t2, s> v2)
 template <class t1, class t2, int s>
 vector<t1, s> dir(vector<t1, s> v1, vector<t2, s> v2)
 {
-	return (v2 - v1)/mag(v2 - v1);
+	return (-v1 + v2)/dist(v1, v2);
 }
 
 /* clamp
