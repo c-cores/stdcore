@@ -1,5 +1,5 @@
 CXXFLAGS	=  -O2 -g -Wall -fmessage-length=0
-SOURCES		:=  $(shell find stdcore -name '*.cpp')
+SOURCES		:=  $(shell find core -name '*.cpp')
 OBJECTS		:=  $(SOURCES:%.cpp=%.o)
 TARGET		= libstdcore.a
 
