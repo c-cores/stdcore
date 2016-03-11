@@ -100,60 +100,83 @@ struct array
 
 	struct iterator
 	{
+	private:
+		friend class array<value_type>;
+		friend class const_iterator;
+		array<value_type> *arr;
+		value_type *loc;
+	public:
+
 		typedef value_type type;
 		iterator()
 		{
 			arr = NULL;
-			offset = 0;
+			loc = NULL;
+		}
+
+		iterator(array<value_type> *arr, int offset)
+		{
+			this->arr = arr;
+			if (offset < 0)
+				this->loc = arr->data + arr->count - offset;
+			else
+				this->loc = arr->data + offset;
 		}
 
 		~iterator() {}
 
-		array<value_type> *arr;
-		int offset;
-
 		value_type &operator*()
 		{
-			return *(arr->data + offset);
+			return *loc;
 		}
 		value_type *operator->()
 		{
-			return arr->data + offset;
+			return loc;
+		}
+
+		value_type *pointer()
+		{
+			return loc;
+		}
+
+		value_type &value()
+		{
+			return *loc;
 		}
 
 		iterator &operator++(int)
 		{
-			offset++;
+			loc++;
 			return *this;
 		}
 
 		iterator &operator--(int)
 		{
-			offset--;
+			loc--;
 			return *this;
 		}
 
 		iterator &operator++()
 		{
-			++offset;
+			++loc;
 			return *this;
 		}
 
 		iterator &operator--()
 		{
-			--offset;
+			--loc;
 			return *this;
 		}
 
 		iterator &operator+=(int n)
 		{
-			offset += n;
+			loc += n;
 			return *this;
 		}
 
 		iterator &operator-=(int n)
 		{
-			offset -= n;
+			loc -= n;
 			return *this;
 		}
 
@@ -161,7 +184,7 @@ struct array
 		{
 			iterator result;
 			result.arr = arr;
-			result.offset = offset + n;
+			result.loc = loc + n;
 			return result;
 		}
 
@@ -169,66 +192,168 @@ struct array
 		{
 			iterator result;
 			result.arr = arr;
-			result.offset = offset - n;
+			result.loc = loc - n;
 			return result;
 		}
 
 		iterator &operator=(iterator i)
 		{
 			arr = i.arr;
-			offset = i.offset;
+			loc = i.loc;
 			return *this;
 		}
 
 		bool operator==(iterator i) const
 		{
-			return arr == i.arr && offset == i.offset;
+			return loc == i.loc;
 		}
 
 		bool operator!=(iterator i) const
 		{
-			return arr != i.arr || offset != i.offset;
+			return loc != i.loc;
 		}
 
 		int operator-(iterator i) const
 		{
-			return offset - i.offset;
+			return loc - i.loc;
 		}
 
 		bool operator==(const_iterator i) const
 		{
-			return arr == i.arr && offset == i.offset;
+			return loc == i.loc;
 		}
 
 		bool operator!=(const_iterator i) const
 		{
-			return arr != i.arr || offset != i.offset;
+			return loc != i.loc;
 		}
 
 		int operator-(const_iterator i) const
 		{
-			return offset - i.offset;
+			return loc - i.loc;
 		}
 
 		template <class iterator_type>
 		void swap(iterator_type i)
 		{
 			value_type temp;
-			memcpy(&temp, arr->data+offset, sizeof(value_type));
-			memcpy(arr->data+offset, &*i, sizeof(value_type));
-			memcpy(&*i, &temp, sizeof(value_type));
+			memcpy(&temp, loc, sizeof(value_type));
+			memcpy(loc, i.pointer(), sizeof(value_type));
+			memcpy(i.pointer(), &temp, sizeof(value_type));
+		}
+
+		/* Erase all elements in the range [this, this+n) */
+		void drop(int n = 1)
+		{
+			int offset = arr->data - loc;
+			if (n > 0)
+			{
+				n = min(offset + n, arr->count) - offset;
+				for (value_type *i = loc; i < loc+n; i++)
+					i->~value_type();
+				memmove(loc, loc+n, (arr->count-offset-n)*sizeof(value_type));
+				arr->count -= n;
+			}
+			else if (n < 0)
+			{
+				n = max(n, -offset);
+				for (value_type *i = loc+n; i < loc; i++)
+					i->~value_type();
+				memmove(loc+n, loc, (arr->count-offset)*sizeof(value_type));
+				arr->count += n;
+				loc += n;
+			}
+		}
+
+
+		/* Erase all elements in the range [this, this+n) */
+		array<value_type> pop(int n = 1)
+		{
+			array<value_type> result;
+
+			int offset = arr->data - loc;
+			if (n > 0)
+			{
+				n = min(offset + n, arr->count) - offset;
+				result.reserve(n);
+				memcpy(result.data, loc, n*sizeof(value_type));
+				result.count = n;
+				memmove(loc, loc+n, (arr->count-offset-n)*sizeof(value_type));
+				arr->count -= n;
+			}
+			else if (n < 0)
+			{
+				n = max(n, -offset);
+				result.reserve(-n);
+				memcpy(result.data, loc+n, -n*sizeof(value_type));
+				result.count = -n;
+				memmove(loc+n, loc, (arr->count-offset)*sizeof(value_type));
+				arr->count += n;
+				loc += n;
+			}
+
+			return result;
+		}
+
+		/* Erase all elements in the range [this, last) */
+		void drop(iterator &last)
+		{
+			int n = last.loc - loc;
+			if (n > 0)
+			{
+				int offset = last.loc - arr->data;
+				for (value_type *i = loc; i < last.loc; i++)
+					i->~value_type();
+				memmove(loc, last.loc, (arr->count-offset)*sizeof(value_type));
+				arr->count -= n;
+				last.loc = loc;
+			}
+			else if (n < 0)
+			{
+				int offset = loc - arr->data;
+				for (value_type *i = last.loc; i < loc; i++)
+					i->~value_type();
+				memmove(last.loc, loc, (arr->count-offset)*sizeof(value_type));
+				arr->count += n;
+				loc = last.loc;
+			}
+		}
+
+		/* Erase all elements in the range [this, last) */
+		array<value_type> pop(iterator &last)
+		{
+			array<value_type> result;
+
+			int n = last.loc - loc;
+			if (n > 0)
+			{
+				int offset = last.loc - arr->data;
+				result.reserve(n);
+				memcpy(result.data, loc, n*sizeof(value_type));
+				result.count = n;
+				memmove(loc, last.loc, (arr->count-offset)*sizeof(value_type));
+				arr->count -= n;
+				last.loc = loc;
+			}
+			else if (n < 0)
+			{
+				int offset = loc - arr->data;
+				result.reserve(-n);
+				memcpy(result.data, last.loc, -n*sizeof(value_type));
+				result.count = -n;
+				memmove(last.loc, loc, (arr->count-offset)*sizeof(value_type));
+				arr->count += n;
+				loc = last.loc;
+			}
+
+			return result;
 		}
 
 		void push(value_type v)
 		{
-			if (arr == NULL)
-			{
-				printf("Error: undefined parent array\n");
-				exit(1);
-			}
-
+			int offset = loc - arr->data;
 			if (arr->count > 0 && arr->count < arr->capacity)
-				memmove(arr->data+offset+2, arr->data+offset+1, (arr->count-offset-1)*sizeof(value_type));
+				memmove(loc+1, loc, (arr->count-offset)*sizeof(value_type));
 			else if (arr->count >= arr->capacity)
 			{
 				arr->capacity = arr->count + 1 + log2i(arr->count + 1);
@@ -236,15 +361,17 @@ struct array
 
 				if (arr->data != NULL)
 				{
-					memcpy(newdata, arr->data, (offset+1)*sizeof(value_type));
-					memcpy(newdata+offset+2, arr->data+offset+1, (arr->count-offset-1)*sizeof(value_type));
+					memcpy(newdata, arr->data, offset*sizeof(value_type));
+					memcpy(newdata+offset+1, loc, (arr->count-offset)*sizeof(value_type));
 					free(arr->data);
 				}
 				arr->data = newdata;
+				loc = arr->data + offset;
 			}
 
 			arr->count++;
-			new (arr->data+offset+1) value_type(v);
+			new (loc) value_type(v);
+			loc++;
 		}
 
 		template <class container>
@@ -252,102 +379,9 @@ struct array
 		{
 			slice<typename container::const_iterator> b = c.bound();
 			int n = (b.right+1) - b.left;
+			int offset = loc - arr->data;
 			if (arr->count > 0 && arr->count + n <= arr->capacity)
-				memmove(arr->data+offset+1+n, arr->data+offset+1, (arr->count-offset-1)*sizeof(value_type));
-			else if (arr->count + n > arr->capacity)
-			{
-				arr->capacity = arr->count + n + log2i(arr->count + n);
-				value_type *newdata = (value_type*)malloc(sizeof(value_type)*arr->capacity);
-
-				if (arr->data != NULL)
-				{
-					memcpy(newdata, arr->data, (offset+1)*sizeof(value_type));
-					memcpy(newdata+offset+1+n, arr->data+offset+1, (arr->count-offset-1)*sizeof(value_type));
-					free(arr->data);
-				}
-				arr->data = newdata;
-			}
-
-			arr->count += n;
-			int j = offset+1;
-			for (typename container::const_iterator i = b.left; i != b.right+1; i++, j++)
-				new (arr->data+j) value_type(*i);
-		}
-
-		/* Erase all elements in the range [this, this+n) */
-		void pop(int n = 1)
-		{
-			if (n > 0)
-			{
-				n = min(offset + n, arr->count) - offset;
-				for (int i = offset; i < offset+n; i++)
-					arr->data[i].~value_type();
-				memmove(arr->data+offset, arr->data+offset+n, (arr->count-offset-n)*sizeof(value_type));
-				arr->count -= n;
-			}
-			else if (n < 0)
-			{
-				n = max(n, -offset-1);
-				for (int i = offset+n+1; i < offset+1; i++)
-					arr->data[i].~value_type();
-				memmove(arr->data+offset+n+1, arr->data+offset+1, (arr->count-offset-1)*sizeof(value_type));
-				arr->count += n;
-				offset += n+1;
-			}
-		}
-
-		/* Erase all elements in the range [this, last) */
-		void pop(iterator &last)
-		{
-			int n = last.offset - offset;
-			if (n > 0)
-			{
-				for (int i = offset; i < last.offset; i++)
-					arr->data[i].~value_type();
-				memmove(arr->data+offset, arr->data+last.offset, (arr->count-last.offset)*sizeof(value_type));
-				arr->count -= n;
-				last.offset = offset;
-			}
-			else if (n < 0)
-			{
-				for (int i = last.offset+1; i < offset+1; i++)
-					arr->data[i].~value_type();
-				memmove(arr->data+last.offset+1, arr->data+offset+1, (arr->count-offset-1)*sizeof(value_type));
-				arr->count += n;
-				offset = last.offset+1;
-			}
-		}
-
-		void rpush(value_type v)
-		{
-			if (arr->count > 0 && arr->count < arr->capacity)
-				memmove(arr->data+offset+1, arr->data+offset, (arr->count-offset)*sizeof(value_type));
-			else if (arr->count >= arr->capacity)
-			{
-				arr->capacity = arr->count + 1 + log2i(arr->count + 1);
-				value_type *newdata = (value_type*)malloc(sizeof(value_type)*arr->capacity);
-
-				if (arr->data != NULL)
-				{
-					memcpy(newdata, arr->data, offset*sizeof(value_type));
-					memcpy(newdata+offset+1, arr->data+offset, (arr->count-offset)*sizeof(value_type));
-					free(arr->data);
-				}
-				arr->data = newdata;
-			}
-
-			arr->count++;
-			new (arr->data+offset) value_type(v);
-			offset++;
-		}
-
-		template <class container>
-		void rmerge(const container &c)
-		{
-			slice<typename container::const_iterator> b = c.bound();
-			int n = (b.right+1) - b.left;
-			if (arr->count > 0 && arr->count + n <= arr->capacity)
-				memmove(arr->data+offset+n, arr->data+offset, (arr->count-offset)*sizeof(value_type));
+				memmove(loc+n, loc, (arr->count-offset)*sizeof(value_type));
 			else if (arr->count + n > arr->capacity)
 			{
 				arr->capacity = arr->count + n + log2i(arr->count + n);
@@ -356,76 +390,99 @@ struct array
 				if (arr->data != NULL)
 				{
 					memcpy(newdata, arr->data, offset*sizeof(value_type));
-					memcpy(newdata+offset+n, arr->data+offset, (arr->count-offset)*sizeof(value_type));
+					memcpy(newdata+offset+n, loc, (arr->count-offset)*sizeof(value_type));
 					free(arr->data);
 				}
 				arr->data = newdata;
+				loc = arr->data + offset;
 			}
 
 			arr->count += n;
-			int j = offset;
+			value_type *j = loc;
 			for (typename container::const_iterator i = b.left; i != b.right+1; i++, j++)
-				new (arr->data+j) value_type(*i);
-			offset += n;
+				new (j) value_type(*i);
+			loc += n;
 		}
 	};
 
 	struct const_iterator
 	{
+	private:
+		friend class array<value_type>;
+		friend class iterator;
+		const array<value_type> *arr;
+		const value_type *loc;
+	public:
 		typedef value_type type;
 		const_iterator()
 		{
 			arr = NULL;
-			offset = 0;
+			loc = NULL;
+		}
+
+		const_iterator(const array<value_type> *arr, int offset)
+		{
+			this->arr = arr;
+			if (offset < 0)
+				this->loc = arr->data + arr->count - offset;
+			else
+				this->loc = arr->data + offset;
 		}
 
 		~const_iterator() {}
 
-		const array<value_type> *arr;
-		int offset;
-
 		const value_type &operator*()
 		{
-			return *(arr->data + offset);
+			return *loc;
 		}
 		const value_type *operator->()
 		{
-			return arr->data + offset;
+			return loc;
+		}
+
+		const value_type *pointer()
+		{
+			return loc;
+		}
+
+		const value_type &value()
+		{
+			return *loc;
 		}
 
 		const_iterator &operator++(int)
 		{
-			offset++;
+			loc++;
 			return *this;
 		}
 
 		const_iterator &operator--(int)
 		{
-			offset--;
+			loc--;
 			return *this;
 		}
 
 		const_iterator &operator++()
 		{
-			++offset;
+			++loc;
 			return *this;
 		}
 
 		const_iterator &operator--()
 		{
-			--offset;
+			--loc;
 			return *this;
 		}
 
 		const_iterator &operator+=(int n)
 		{
-			offset += n;
+			loc += n;
 			return *this;
 		}
 
 		const_iterator &operator-=(int n)
 		{
-			offset -= n;
+			loc -= n;
 			return *this;
 		}
 
@@ -433,7 +490,7 @@ struct array
 		{
 			const_iterator result;
 			result.arr = arr;
-			result.offset = offset + n;
+			result.loc = loc + n;
 			return result;
 		}
 
@@ -441,52 +498,52 @@ struct array
 		{
 			const_iterator result;
 			result.arr = arr;
-			result.offset = offset - n;
+			result.loc = loc - n;
 			return result;
 		}
 
 		const_iterator &operator=(const_iterator i)
 		{
 			arr = i.arr;
-			offset = i.offset;
+			loc = i.loc;
 			return *this;
 		}
 
 		bool operator==(const_iterator i) const
 		{
-			return arr == i.arr && offset == i.offset;
+			return loc == i.loc;
 		}
 
 		bool operator!=(const_iterator i) const
 		{
-			return arr != i.arr || offset != i.offset;
+			return loc != i.loc;
 		}
 
 		int operator-(const_iterator i) const
 		{
-			return offset - i.offset;
+			return loc - i.loc;
 		}
 
 		const_iterator &operator=(iterator i)
 		{
 			arr = i.arr;
-			offset = i.offset;
+			loc = i.loc;
 			return *this;
 		}
 
 		bool operator==(iterator i) const
 		{
-			return arr == i.arr && offset == i.offset;
+			return loc == i.loc;
 		}
 
 		bool operator!=(iterator i) const
 		{
-			return arr != i.arr || offset != i.offset;
+			return loc != i.loc;
 		}
 
 		int operator-(iterator i) const
 		{
-			return offset - i.offset;
+			return loc - i.loc;
 		}
 	};
 
@@ -495,7 +552,17 @@ struct array
 		return count;
 	}
 
-	value_type &at(int i) const
+	iterator at(int i)
+	{
+		return iterator(this, i);
+	}
+
+	const_iterator at(int i) const
+	{
+		return const_iterator(this, i);
+	}
+
+	value_type &get(int i) const
 	{
 		if (i < 0)
 			i += count;
@@ -513,76 +580,52 @@ struct array
 
 	value_type &front() const
 	{
-		return data[0];
+		return *data;
 	}
 
 	value_type &back() const
 	{
-		return data[count-1];
+		return *(data + count-1);
 	}
 
 	iterator begin()
 	{
-		iterator result;
-		result.arr = this;
-		result.offset = 0;
-		return result;
+		return iterator(this, 0);
 	}
 
 	iterator end()
 	{
-		iterator result;
-		result.arr = this;
-		result.offset = count;
-		return result;
+		return iterator(this, count);
 	}
 
 	iterator rbegin()
 	{
-		iterator result;
-		result.arr = this;
-		result.offset = count-1;
-		return result;
+		return iterator(this, -1);
 	}
 
 	iterator rend()
 	{
-		iterator result;
-		result.arr = this;
-		result.offset = -1;
-		return result;
+		return iterator(this, -count-1);
 	}
 
 	const_iterator begin() const
 	{
-		const_iterator result;
-		result.arr = this;
-		result.offset = 0;
-		return result;
+		return const_iterator(this, 0);
 	}
 
 	const_iterator end() const
 	{
-		const_iterator result;
-		result.arr = this;
-		result.offset = count;
-		return result;
+		return const_iterator(this, count);
 	}
 
 	const_iterator rbegin() const
 	{
-		const_iterator result;
-		result.arr = this;
-		result.offset = count-1;
-		return result;
+		return const_iterator(this, -1);
 	}
 
 	const_iterator rend() const
 	{
-		const_iterator result;
-		result.arr = this;
-		result.offset = -1;
-		return result;
+		return const_iterator(this, -count-1);
 	}
 
 	slice<iterator> bound()
@@ -598,49 +641,45 @@ struct array
 	template <class container>
 	void merge_back(const container &c)
 	{
-		rbegin().merge(c);
+		end().merge(c);
 	}
 
 	template <class container>
 	void merge_front(const container &c)
 	{
-		begin().rmerge(c);
+		begin().merge(c);
 	}
 
 	void push_back(value_type v)
 	{
-		rbegin().push(v);
+		end().push(v);
 	}
 
 	void push_front(value_type v)
 	{
-		begin().rpush(v);
+		begin().push(v);
 	}
 
-	void push(int i, value_type v)
+	array<value_type> pop_back(unsigned int n = 1)
 	{
-		(begin() + i).push(v);
+		return end().pop(-n);
 	}
 
-	void rpush(int i, value_type v)
+	array<value_type> pop_front(unsigned int n = 1)
 	{
-		(begin() + i).rpush(v);
+		return begin().pop(n);
 	}
 
-	void pop_back(unsigned int n = 1)
+	void drop_back(unsigned int n = 1)
 	{
-		rbegin().pop(-n);
+		return end().drop(-n);
 	}
 
-	void pop_front(unsigned int n = 1)
+	void drop_front(unsigned int n = 1)
 	{
-		begin().pop(n);
+		return begin().drop(n);
 	}
 
-	void pop(int i, int n = 1)
-	{
-		(begin() + i).pop(n);
-	}
 
 	/**
 	 * \fn void array<value_type>::reserve(int n)

@@ -30,19 +30,19 @@ string::string(bool b)
 	if (b)
 	{
 		array<char>::resize(4);
-		at(0) = 't';
-		at(1) = 'r';
-		at(2) = 'u';
-		at(3) = 'e';
+		get(0) = 't';
+		get(1) = 'r';
+		get(2) = 'u';
+		get(3) = 'e';
 	}
 	else
 	{
 		array<char>::resize(5);
-		at(0) = 'f';
-		at(1) = 'a';
-		at(2) = 'l';
-		at(3) = 's';
-		at(4) = 'e';
+		get(0) = 'f';
+		get(1) = 'a';
+		get(2) = 'l';
+		get(3) = 's';
+		get(4) = 'e';
 	}
 }
 
@@ -124,7 +124,7 @@ void string::resize(int n, char c)
 	int s = size();
 	array<char>::resize(n);
 	for (int i = s; i < size(); i++)
-		at(i) = c;
+		get(i) = c;
 }
 
 bool string::to_bool()
@@ -158,7 +158,7 @@ int string::find(const char *str, int pos)
 	for (int i = pos; i < size(); i++)
 	{
 		int j;
-		for (j = 0; i + j < size() && str[j] != '\0' && at(i+j) == str[j]; j++);
+		for (j = 0; i + j < size() && str[j] != '\0' && get(i+j) == str[j]; j++);
 
 		if (str[j] == '\0')
 			return i;
@@ -174,7 +174,7 @@ int string::find(string str, int pos)
 	for (int i = pos; i < size(); i++)
 	{
 		int j;
-		for (j = 0; i + j < size() && j < str.size() && at(i+j) == str[j]; j++);
+		for (j = 0; i + j < size() && j < str.size() && get(i+j) == str[j]; j++);
 
 		if (j >= str.size())
 			return i;
@@ -191,7 +191,7 @@ int string::find_l0(string str, string del, int pos)
 	for (int i = pos; i < size(); i++)
 	{
 		bool found = false;
-		if (stack.size() > 0 && at(i) == stack.back())
+		if (stack.size() > 0 && get(i) == stack.back())
 		{
 			stack.pop_back();
 			found = true;
@@ -200,14 +200,14 @@ int string::find_l0(string str, string del, int pos)
 		if (!found && stack.size() == 0)
 		{
 			int j;
-			for (j = 0; i + j < size() && j < str.size() && at(i+j) == str[j]; j++);
+			for (j = 0; i + j < size() && j < str.size() && get(i+j) == str[j]; j++);
 
 			if (j >= str.size())
 				return i;
 		}
 
 		for (int j = 0; !found && j < del.size(); j+=2)
-			if (at(i) == del[j])
+			if (get(i) == del[j])
 			{
 				stack.push_back(del[j+1]);
 				found = true;
@@ -226,7 +226,7 @@ int string::find_l0(const char *str, const char *del, int pos)
 	for (int i = pos; i < size(); i++)
 	{
 		bool found = false;
-		if (stack.size() > 0 && at(i) == stack.back())
+		if (stack.size() > 0 && get(i) == stack.back())
 		{
 			stack.pop_back();
 			found = true;
@@ -235,14 +235,14 @@ int string::find_l0(const char *str, const char *del, int pos)
 		if (!found && stack.size() == 0)
 		{
 			int j;
-			for (j = 0; i + j < size() && str[j] != '\0' && at(i+j) == str[j]; j++);
+			for (j = 0; i + j < size() && str[j] != '\0' && get(i+j) == str[j]; j++);
 
 			if (str[j] == '\0')
 				return i;
 		}
 
 		for (int j = 0; !found && del[j] != '\0'; j+=2)
-			if (at(i) == del[j])
+			if (get(i) == del[j])
 			{
 				stack.push_back(del[j+1]);
 				found = true;
@@ -260,7 +260,7 @@ int string::rfind(const char *str, int pos)
 	for (int i = pos; i >= 0; i--)
 	{
 		int j;
-		for (j = i; j < size() && str[j-i] != '\0' && at(j) == str[j-i]; j++);
+		for (j = i; j < size() && str[j-i] != '\0' && get(j) == str[j-i]; j++);
 
 		if (str[j-i] == '\0')
 			return i;
@@ -276,7 +276,7 @@ int string::rfind(string str, int pos)
 	for (int i = pos; i >= 0; i--)
 	{
 		int j;
-		for (j = i; j < size() && j-i < str.size() && at(j) == str[j-i]; j++);
+		for (j = i; j < size() && j-i < str.size() && get(j) == str[j-i]; j++);
 
 		if (j-i >= str.size())
 			return i;
@@ -293,7 +293,7 @@ int string::rfind_l0(string str, string del, int pos)
 	for (int i = pos; i >= 0; i--)
 	{
 		bool found = false;
-		if (stack.size() > 0 && at(i) == stack.back())
+		if (stack.size() > 0 && get(i) == stack.back())
 		{
 			stack.pop_back();
 			found = true;
@@ -302,14 +302,14 @@ int string::rfind_l0(string str, string del, int pos)
 		if (!found && stack.size() == 0)
 		{
 			int j;
-			for (j = 0; i + j < size() && j < str.size() && at(i+j) == str[j]; j++);
+			for (j = 0; i + j < size() && j < str.size() && get(i+j) == str[j]; j++);
 
 			if (j >= str.size())
 				return i;
 		}
 
 		for (int j = 1; !found && j-1 < del.size(); j+=2)
-			if (at(i) == del[j])
+			if (get(i) == del[j])
 			{
 				stack.push_back(del[j-1]);
 				found = true;
@@ -328,7 +328,7 @@ int string::rfind_l0(const char *str, const char *del, int pos)
 	for (int i = pos; i >= 0; i--)
 	{
 		bool found = false;
-		if (stack.size() > 0 && at(i) == stack.back())
+		if (stack.size() > 0 && get(i) == stack.back())
 		{
 			stack.pop_back();
 			found = true;
@@ -337,14 +337,14 @@ int string::rfind_l0(const char *str, const char *del, int pos)
 		if (!found && stack.size() == 0)
 		{
 			int j;
-			for (j = 0; i + j < size() && str[j] != '\0' && at(i+j) == str[j]; j++);
+			for (j = 0; i + j < size() && str[j] != '\0' && get(i+j) == str[j]; j++);
 
 			if (str[j] == '\0')
 				return i;
 		}
 
 		for (int j = 1; !found && del[j-1] != '\0'; j+=2)
-			if (at(i) == del[j])
+			if (get(i) == del[j])
 			{
 				stack.push_back(del[j-1]);
 				found = true;
@@ -361,7 +361,7 @@ int string::find_first_of(const char *str, int pos)
 
 	for (int i = pos; i < size(); i++)
 		for (int j = 0; str[j] != '\0'; j++)
-			if (at(i) == str[j])
+			if (get(i) == str[j])
 				return i;
 
 	return -1;
@@ -374,7 +374,7 @@ int string::find_first_of(string str, int pos)
 
 	for (int i = pos; i < size(); i++)
 		for (int j = 0; j < str.size(); j++)
-			if (at(i) == str[j])
+			if (get(i) == str[j])
 				return i;
 
 	return -1;
@@ -387,7 +387,7 @@ int string::find_last_of(const char *str, int pos)
 
 	for (int i = pos; i >= 0; i--)
 		for (int j = 0; str[j] != '\0'; j++)
-			if (at(i) == str[j])
+			if (get(i) == str[j])
 				return i;
 
 	return -1;
@@ -400,7 +400,7 @@ int string::find_last_of(string str, int pos)
 
 	for (int i = pos; i >= 0; i--)
 		for (int j = 0; j < str.size(); j++)
-			if (at(i) == str[j])
+			if (get(i) == str[j])
 				return i;
 
 	return -1;
@@ -415,7 +415,7 @@ int string::find_first_not_of(const char *str, int pos)
 	{
 		bool found = false;
 		for (int j = 0; !found && str[j] != '\0'; j++)
-			if (at(i) == str[j])
+			if (get(i) == str[j])
 				found = true;
 
 		if (!found)
@@ -434,7 +434,7 @@ int string::find_first_not_of(string str, int pos)
 	{
 		bool found = false;
 		for (int j = 0; !found && j < str.size(); j++)
-			if (at(i) == str[j])
+			if (get(i) == str[j])
 				found = true;
 
 		if (!found)
@@ -453,7 +453,7 @@ int string::find_last_not_of(const char *str, int pos)
 	{
 		bool found = false;
 		for (int j = 0; !found && str[j] != '\0'; j++)
-			if (at(i) == str[j])
+			if (get(i) == str[j])
 				found = true;
 
 		if (!found)
@@ -472,7 +472,7 @@ int string::find_last_not_of(string str, int pos)
 	{
 		bool found = false;
 		for (int j = 0; !found && j < str.size(); j++)
-			if (at(i) == str[j])
+			if (get(i) == str[j])
 				found = true;
 
 		if (!found)
@@ -491,7 +491,7 @@ int string::find_first_of_l0(const char *str, const char *del, int pos)
 	for (int i = pos; i < size(); i++)
 	{
 		bool found = false;
-		if (stack.size() > 0 && at(i) == stack.back())
+		if (stack.size() > 0 && get(i) == stack.back())
 		{
 			stack.pop_back();
 			found = true;
@@ -499,11 +499,11 @@ int string::find_first_of_l0(const char *str, const char *del, int pos)
 
 		if (!found && stack.size() == 0)
 			for (int j = 0; str[j] != '\0'; j++)
-				if (at(i) == str[j])
+				if (get(i) == str[j])
 					return i;
 
 		for (int j = 0; !found && del[j] != '\0'; j+=2)
-			if (at(i) == del[j])
+			if (get(i) == del[j])
 			{
 				stack.push_back(del[j+1]);
 				found = true;
@@ -522,7 +522,7 @@ int string::find_first_of_l0(string str, string del, int pos)
 	for (int i = pos; i < size(); i++)
 	{
 		bool found = false;
-		if (stack.size() > 0 && at(i) == stack.back())
+		if (stack.size() > 0 && get(i) == stack.back())
 		{
 			stack.pop_back();
 			found = true;
@@ -530,11 +530,11 @@ int string::find_first_of_l0(string str, string del, int pos)
 
 		if (!found && stack.size() == 0)
 			for (int j = 0; j < str.size(); j++)
-				if (at(i) == str[j])
+				if (get(i) == str[j])
 					return i;
 
 		for (int j = 0; !found && j < del.size(); j+=2)
-			if (at(i) == del[j])
+			if (get(i) == del[j])
 			{
 				stack.push_back(del[j+1]);
 				found = true;
@@ -553,7 +553,7 @@ int string::find_last_of_l0(const char *str, const char *del, int pos)
 	for (int i = pos; i >= 0; i--)
 	{
 		bool found = false;
-		if (stack.size() > 0 && at(i) == stack.back())
+		if (stack.size() > 0 && get(i) == stack.back())
 		{
 			stack.pop_back();
 			found = true;
@@ -561,11 +561,11 @@ int string::find_last_of_l0(const char *str, const char *del, int pos)
 
 		if (!found && stack.size() == 0)
 			for (int j = 0; str[j] != '\0'; j++)
-				if (at(i) == str[j])
+				if (get(i) == str[j])
 					return i;
 
 		for (int j = 1; !found && del[j-1] != '\0'; j+=2)
-			if (at(i) == del[j])
+			if (get(i) == del[j])
 			{
 				stack.push_back(del[j-1]);
 				found = true;
@@ -584,7 +584,7 @@ int string::find_last_of_l0(string str, string del, int pos)
 	for (int i = pos; i >= 0; i--)
 	{
 		bool found = false;
-		if (stack.size() > 0 && at(i) == stack.back())
+		if (stack.size() > 0 && get(i) == stack.back())
 		{
 			stack.pop_back();
 			found = true;
@@ -592,11 +592,11 @@ int string::find_last_of_l0(string str, string del, int pos)
 
 		if (!found && stack.size() == 0)
 			for (int j = 0; j < str.size(); j++)
-				if (at(i) == str[j])
+				if (get(i) == str[j])
 					return i;
 
 		for (int j = 1; !found && j < del.size(); j+=2)
-			if (at(i) == del[j])
+			if (get(i) == del[j])
 			{
 				stack.push_back(del[j-1]);
 				found = true;
@@ -615,7 +615,7 @@ int string::find_first_not_of_l0(const char *str, const char *del, int pos)
 	for (int i = pos; i < size(); i++)
 	{
 		bool found = false;
-		if (stack.size() > 0 && at(i) == stack.back())
+		if (stack.size() > 0 && get(i) == stack.back())
 		{
 			stack.pop_back();
 			found = true;
@@ -625,7 +625,7 @@ int string::find_first_not_of_l0(const char *str, const char *del, int pos)
 		{
 			bool subfound = false;
 			for (int j = 0; !subfound && str[j] != '\0'; j++)
-				if (at(i) == str[j])
+				if (get(i) == str[j])
 					subfound = true;
 
 			if (!subfound)
@@ -633,7 +633,7 @@ int string::find_first_not_of_l0(const char *str, const char *del, int pos)
 		}
 
 		for (int j = 0; !found && del[j] != '\0'; j+=2)
-			if (at(i) == del[j])
+			if (get(i) == del[j])
 			{
 				stack.push_back(del[j+1]);
 				found = true;
@@ -652,7 +652,7 @@ int string::find_first_not_of_l0(string str, string del, int pos)
 	for (int i = pos; i < size(); i++)
 	{
 		bool found = false;
-		if (stack.size() > 0 && at(i) == stack.back())
+		if (stack.size() > 0 && get(i) == stack.back())
 		{
 			stack.pop_back();
 			found = true;
@@ -662,7 +662,7 @@ int string::find_first_not_of_l0(string str, string del, int pos)
 		{
 			bool subfound = false;
 			for (int j = 0; !subfound && j < str.size(); j++)
-				if (at(i) == str[j])
+				if (get(i) == str[j])
 					subfound = true;
 
 			if (!subfound)
@@ -670,7 +670,7 @@ int string::find_first_not_of_l0(string str, string del, int pos)
 		}
 
 		for (int j = 0; !found && j < del.size(); j+=2)
-			if (at(i) == del[j])
+			if (get(i) == del[j])
 			{
 				stack.push_back(del[j+1]);
 				found = true;
@@ -689,7 +689,7 @@ int string::find_last_not_of_l0(const char *str, const char *del, int pos)
 	for (int i = pos; i >= 0; i--)
 	{
 		bool found = false;
-		if (stack.size() > 0 && at(i) == stack.back())
+		if (stack.size() > 0 && get(i) == stack.back())
 		{
 			stack.pop_back();
 			found = true;
@@ -699,7 +699,7 @@ int string::find_last_not_of_l0(const char *str, const char *del, int pos)
 		{
 			bool subfound = false;
 			for (int j = 0; !subfound && str[j] != '\0'; j++)
-				if (at(i) == str[j])
+				if (get(i) == str[j])
 					subfound = true;
 
 			if (!subfound)
@@ -707,7 +707,7 @@ int string::find_last_not_of_l0(const char *str, const char *del, int pos)
 		}
 
 		for (int j = 1; !found && del[j-1] != '\0'; j+=2)
-			if (at(i) == del[j])
+			if (get(i) == del[j])
 			{
 				stack.push_back(del[j-1]);
 				found = true;
@@ -726,7 +726,7 @@ int string::find_last_not_of_l0(string str, string del, int pos)
 	for (int i = pos; i >= 0; i--)
 	{
 		bool found = false;
-		if (stack.size() > 0 && at(i) == stack.back())
+		if (stack.size() > 0 && get(i) == stack.back())
 		{
 			stack.pop_back();
 			found = true;
@@ -736,7 +736,7 @@ int string::find_last_not_of_l0(string str, string del, int pos)
 		{
 			bool subfound = false;
 			for (int j = 0; !subfound && j < str.size(); j++)
-				if (at(i) == str[j])
+				if (get(i) == str[j])
 					subfound = true;
 
 			if (!subfound)
@@ -744,7 +744,7 @@ int string::find_last_not_of_l0(string str, string del, int pos)
 		}
 
 		for (int j = 1; !found && j < del.size(); j+=2)
-			if (at(i) == del[j])
+			if (get(i) == del[j])
 			{
 				stack.push_back(del[j-1]);
 				found = true;
@@ -762,9 +762,9 @@ void string::insert(int pos, const char *str)
 	int s = strlen(str);
 	array<char>::resize(s + size());
 	for (int i = size() - 1; i >= pos + s; i--)
-		at(i) = at(i - s);
+		get(i) = get(i - s);
 	for (int i = 0; str[i] != '\0'; i++)
-		at(i + pos) = str[i];
+		get(i + pos) = str[i];
 }
 
 void string::insert(int pos, string str)
@@ -774,9 +774,9 @@ void string::insert(int pos, string str)
 
 	array<char>::resize(str.size() + size());
 	for (int i = size() - 1; i >= pos + str.size(); i--)
-		at(i) = at(i - str.size());
+		get(i) = get(i - str.size());
 	for (int i = 0; str[i] != '\0'; i++)
-		at(i + pos) = str[i];
+		get(i + pos) = str[i];
 }
 
 string &string::replace(int s, int e, const char *r)
@@ -791,17 +791,17 @@ string &string::replace(int s, int e, const char *r)
 	{
 		array<char>::resize(size() + rs - (e - s));
 		for (int i = size()-1; i >= rs + s; i--)
-			at(i) = at(i - rs + e - s);
+			get(i) = get(i - rs + e - s);
 	}
 	else if (rs < e-s)
 	{
 		for (int i = rs + s; i < size(); i++)
-			at(i) = at(i + e - s - rs);
+			get(i) = get(i + e - s - rs);
 		array<char>::resize(size() + rs - (e - s));
 	}
 
 	for (int i = 0; r[i] != '\0'; i++)
-		at(i + s) = r[i];
+		get(i + s) = r[i];
 
 	return *this;
 }
@@ -818,17 +818,17 @@ string &string::replace(int s, int e, string r)
 	{
 		array<char>::resize(size() + r.size() - (e - s));
 		for (int i = size()-1; i >= r.size() + s; i--)
-			at(i) = at(i - r.size() + e - s);
+			get(i) = get(i - r.size() + e - s);
 	}
 	else if (r.size() < e-s)
 	{
 		for (int i = r.size() + s; i < size(); i++)
-			at(i) = at(i + e - s - r.size());
+			get(i) = get(i + e - s - r.size());
 		array<char>::resize(size() + r.size() - (e - s));
 	}
 
 	for (int i = 0; i < r.size(); i++)
-		at(i + s) = r[i];
+		get(i + s) = r[i];
 
 	return *this;
 }
@@ -902,7 +902,7 @@ string string::substr(int s, int e)
 		string result;
 		result.resize(e-s);
 		for (int i = s; i < e; i++)
-			result[i-s] = at(i);
+			result[i-s] = get(i);
 		return result;
 	}
 }
@@ -919,7 +919,7 @@ string string::substr(int s)
 		string result;
 		result.resize(size()-s);
 		for (int i = s; i < size(); i++)
-			result[i-s] = at(i);
+			result[i-s] = get(i);
 		return result;
 	}
 }
@@ -929,9 +929,9 @@ int string::compare(const char *str)
 	int i = 0;
 	for (i = 0; i < size() && str[i] != '\0'; i++)
 	{
-		if (at(i) < str[i])
+		if (get(i) < str[i])
 			return -1;
-		else if (at(i) > str[i])
+		else if (get(i) > str[i])
 			return 1;
 	}
 
@@ -948,9 +948,9 @@ int string::compare(string a)
 	int i = 0;
 	for (i = 0; i < size() && i < a.size(); i++)
 	{
-		if (at(i) < a[i])
+		if (get(i) < a[i])
 			return -1;
-		else if (at(i) > a[i])
+		else if (get(i) > a[i])
 			return 1;
 	}
 
@@ -964,27 +964,27 @@ int string::compare(string a)
 
 string &string::toupper(int i)
 {
-	at(i) = ::toupper(at(i));
+	get(i) = ::toupper(get(i));
 	return *this;
 }
 
 string &string::toupper()
 {
 	for (int i = 0; i < size(); i++)
-		at(i) = ::toupper(at(i));
+		get(i) = ::toupper(get(i));
 	return *this;
 }
 
 string &string::tolower(int i)
 {
-	at(i) = ::tolower(at(i));
+	get(i) = ::tolower(get(i));
 	return *this;
 }
 
 string &string::tolower()
 {
 	for (int i = 0; i < size(); i++)
-		at(i) = ::tolower(at(i));
+		get(i) = ::tolower(get(i));
 	return *this;
 }
 
@@ -1023,7 +1023,7 @@ string &string::operator+=(string str)
 char *string::c_str()
 {
 	reserve(size() + 1);
-	at(size()) = '\0';
+	get(size()) = '\0';
 
 	return data;
 }
