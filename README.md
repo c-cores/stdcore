@@ -1,4 +1,4 @@
-Core
+stdcore
 ====
 
 A library of core structures
