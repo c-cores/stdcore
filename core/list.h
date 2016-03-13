@@ -5,16 +5,16 @@
  *      Author: nbingham
  */
 
+#pragma once
+
 #include "slice.h"
 #include <memory.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #ifndef NULL
 #define NULL 0
 #endif
-
-#ifndef list_h
-#define list_h
 
 namespace core
 {
@@ -22,6 +22,40 @@ namespace core
 template <class value_type>
 struct list
 {
+	struct node
+	{
+		node()
+		{
+			next = this;
+			prev = this;
+		}
+	
+		virtual ~node()
+		{
+		}
+	
+		node *next;
+		node *prev;
+	};
+
+	struct item : node
+	{
+		item()
+		{
+		}
+
+		item(const value_type &d)
+		{
+			data = d;
+		}
+
+		~item()
+		{
+		}
+
+		value_type data;
+	};
+
 	list()
 	{
 		left.next = &right;
@@ -49,26 +83,6 @@ struct list
 		clear();
 	}
 
-	struct node
-	{
-		node()  { next = this; prev = this; }
-		virtual ~node() { }
-		virtual bool has_data() { return false; }
-
-		node *next;
-		node *prev;
-	};
-
-	struct item : node
-	{
-		item()  { }
-		item(const value_type &d) { data = d; }
-		~item() { }
-		bool has_data() { return true; }
-
-		value_type data;
-	};
-
 	node left;
 	node right;
 
@@ -77,82 +91,89 @@ struct list
 
 	struct iterator
 	{
+	private:
+		friend class list<value_type>;
+		friend class const_iterator;
+		list<value_type> *lst;
+		node *loc;
+	public:
 		typedef value_type type;
 
 		iterator()
 		{
 			lst = NULL;
-			pos = NULL;
+			loc = NULL;
 		}
 
-		iterator(list *l)
+		iterator(list<value_type> *l, node *n)
 		{
 			lst = l;
-			pos = &l->left;
-		}
-
-		iterator(list *l, node *n)
-		{
-			lst = l;
-			pos = n;
+			loc = n;
 		}
 
 		iterator(const iterator &i)
 		{
 			lst = i.lst;
-			pos = i.pos;
+			loc = i.loc;
 		}
 
 		~iterator() {}
 
-		list *lst;
-		node *pos;
-
 		value_type &operator*()
 		{
-			return ((item*)pos)->data;
+			return ((item*)loc)->data;
 		}
 		value_type *operator->()
 		{
-			return &((item*)pos)->data;
+			return &((item*)loc)->data;
+		}
+
+		value_type *pointer()
+		{
+			return &((item*)loc)->data;
+		}
+
+		value_type &value()
+		{
+			return ((item*)loc)->data;
 		}
 
 		iterator &operator++(int)
 		{
-			pos = pos->next;
+			loc = loc->next;
 			return *this;
 		}
 
 		iterator &operator--(int)
 		{
-			pos = pos->prev;
+			loc = loc->prev;
 			return *this;
 		}
 
 		iterator &operator++()
 		{
-			pos = pos->next;
+			loc = loc->next;
 			return *this;
 		}
 
 		iterator &operator--()
 		{
-			pos = pos->prev;
+			loc = loc->prev;
 			return *this;
 		}
 
 		iterator &operator+=(int n)
 		{
-			for (int i = 0; i < n; i++)
-				(*this)++;
+			for (int i = 0; i < n && loc != &lst->right; i++)
+				loc = loc->next;
 
 			return *this;
 		}
 
 		iterator &operator-=(int n)
 		{
-			for (int i = 0; i < n; i++)
-				(*this)--;
+			for (int i = 0; i < n && loc != &lst->left; i++)
+				loc = loc->prev;
 
 			return *this;
 		}
@@ -160,61 +181,77 @@ struct list
 		iterator operator+(int n) const
 		{
 			iterator result(*this);
-			for (int i = 0; i < n; i++)
-				result++;
-
+			result += n;
 			return result;
 		}
 
 		iterator operator-(int n) const
 		{
 			iterator result(*this);
-			for (int i = 0; i < n; i++)
-				result--;
-
+			result -= n;
 			return result;
 		}
 
 		iterator &operator=(iterator i)
 		{
 			lst = i.lst;
-			pos = i.pos;
+			loc = i.loc;
 			return *this;
 		}
 
 		bool operator==(iterator i) const
 		{
-			return lst == i.lst && pos == i.pos;
+			return loc == i.loc;
 		}
 
 		bool operator!=(iterator i) const
 		{
-			return lst != i.lst || pos != i.pos;
+			return loc != i.loc;
 		}
 
 		int operator-(iterator i) const
 		{
 			int count = 0;
-			for (iterator j = i; j.pos != pos && j.pos != &j.lst->right; j++)
+			while (i.loc != loc && i.loc != &i.lst->right)
+			{
 				count++;
+				i.loc = i.loc->next;
+			}
+
+			while (i.loc != loc && i.loc != &i.lst->left)
+			{
+				count--;
+				i.loc = i.loc->prev;
+			}
+
 			return count;
 		}
 
 		bool operator==(const_iterator i) const
 		{
-			return lst == i.lst && pos == i.pos;
+			return loc == i.loc;
 		}
 
 		bool operator!=(const_iterator i) const
 		{
-			return lst != i.lst || pos != i.pos;
+			return loc != i.loc;
 		}
 
 		int operator-(const_iterator i) const
 		{
 			int count = 0;
-			for (const_iterator j = i; j.pos != pos && j.pos != &j.lst->right; j++)
+			while (i.loc != loc && i.loc != &i.lst->right)
+			{
 				count++;
+				i.loc = i.loc->next;
+			}
+
+			while (i.loc != loc && i.loc != &i.lst->left)
+			{
+				count--;
+				i.loc = i.loc->prev;
+			}
+
 			return count;
 		}
 
@@ -222,109 +259,142 @@ struct list
 		void swap(iterator_type i)
 		{
 			value_type temp;
-			memcpy(&temp, &((item*)pos)->data, sizeof(value_type));
-			memcpy(&((item*)pos)->data, &*i, sizeof(value_type));
-			memcpy(&*i, &temp, sizeof(value_type));
+			memcpy(&temp, &((item*)loc)->data, sizeof(value_type));
+			memcpy(&((item*)loc)->data, &((item*)i.loc)->data, sizeof(value_type));
+			memcpy(&((item*)i.loc)->data, &temp, sizeof(value_type));
+		}
+
+		list<value_type> pop(int n = 1)
+		{
+			list<value_type> result;
+			node *start = loc;
+			for (int i = 0; i < n && loc != &lst->right; i++)
+				loc = loc->next;
+			for (int i = 0; i > n && start != &lst->left && start != lst->left.next; i--)
+				start = start->prev;
+
+			if (start != loc)
+			{
+				result.left.next = start;
+				result.right.prev = loc->prev;
+				start->prev->next = loc;
+				loc->prev = start->prev;
+				result.left.next->prev = &result.left;
+				result.right.prev->next = &result.right;
+			}
+
+			return result;
+		}
+
+		void drop(int n = 1)
+		{
+			if (n > 0)
+			{
+				node* start = loc->prev;
+				
+				for (int i = 0; i < n && loc != &lst->right; i++)
+				{
+					node *temp = loc->next;
+					delete loc;
+					loc = temp;
+				}
+					
+				start->next = loc;
+				loc->prev = start;
+			}
+			else if (n < 0)
+			{
+				node *start = loc->prev;
+				
+				for (int i = 0; i > n && start != &lst->left; i--)
+				{
+					node *temp = start->prev;
+					delete start;
+					start = temp;
+				}
+				
+				start->next = loc;
+				loc->prev = start;
+			}
+		}
+
+		list<value_type> pop(iterator last)
+		{
+			node *start = loc;
+			node *end = loc;
+
+			while (start != last->loc && start != &lst->left)
+				start = start->prev;
+
+			if (start != last->loc)
+				start = loc;
+
+			while (end != last->loc && start != &lst->right)
+				start = start->next;
+	
+			if (end != last->loc)
+				end = loc;
+
+			loc = end;
+
+			list<value_type> result;
+			if (start != end)
+			{
+				result.left.next = start;
+				result.right.prev = end;
+				start->prev->next = end->next;
+				end->next->prev = start->prev;
+				start->prev = &result.left;
+				end->next = &result.right;
+			}
+			return result;
+		}
+
+		void drop(iterator last)
+		{
+			node *start = loc;
+			node *end = loc;
+
+			while (start != last->loc && start != &lst->left)
+				start = start->prev;
+
+			if (start != last->loc)
+				start = loc;
+
+			while (end != last->loc && start != &lst->right)
+				start = start->next;
+	
+			if (end != last->loc)
+				end = loc;
+
+			loc = end;
+
+			start->prev->next = end;
+			end->prev = start->prev;
+			while (start != end)
+			{
+				node *temp = start->next;
+				delete start;
+				start = temp;
+			}
 		}
 
 		void push(value_type v)
 		{
 			node *result = new item(v);
 
-			result->next = pos->next;
-			result->prev = result->next->prev;
-			result->prev->next = result;
-			result->next->prev = result;
+			result->prev = loc->prev;
+			result->next = loc;
+			loc->prev->next = result;
+			loc->prev = result;
 		}
 
 		template <class container>
-		void merge(container &c)
+		void merge(const container &c)
 		{
-			slice<typename container::iterator> b = c.bound();
-			for (typename container::iterator i = b.left; i != b.right+1; i++)
+			slice<typename container::const_iterator> b = c.bound();
+			for (typename container::const_iterator i = b.left; i != b.right+1; i++)
 				push(*i);
-		}
-
-		void pop(int n = 1)
-		{
-			node *l = NULL;
-
-			for (int i = 0; i < n && pos->has_data(); i++)
-			{
-				l = pos->next;
-
-				pos->next->prev = pos->prev;
-				pos->prev->next = pos->next;
-
-				delete pos;
-				pos = l;
-			}
-		}
-
-		void pop(iterator last)
-		{
-			node *l = NULL;
-
-			while (pos != last.pos && pos->has_data())
-			{
-				l = pos->next;
-
-				pos->next->prev = pos->prev;
-				pos->prev->next = pos->next;
-
-				delete pos;
-				pos = l;
-			}
-		}
-
-		void rpush(value_type v)
-		{
-			node *result = new item(v);
-
-			result->prev = pos->prev;
-			result->next = result->prev->next;
-			result->next->prev = result;
-			result->prev->next = result;
-		}
-
-		template <class container>
-		void rmerge(container &c)
-		{
-			slice<typename container::iterator> b = c.bound();
-			for (typename container::iterator i = b.left; i != b.right+1; i++)
-				rpush(*i);
-		}
-
-		void rpop(int n = 1)
-		{
-			node *l = NULL;
-
-			for (int i = 0; i < n && pos->has_data(); i++)
-			{
-				l = pos->prev;
-
-				pos->next->prev = pos->prev;
-				pos->prev->next = pos->next;
-
-				delete pos;
-				pos = l;
-			}
-		}
-
-		void rpop(iterator last)
-		{
-			node *l = NULL;
-
-			while (pos != last && pos->has_data())
-			{
-				l = pos->prev;
-
-				pos->next->prev = pos->prev;
-				pos->prev->next = pos->next;
-
-				delete pos;
-				pos = l;
-			}
 		}
 	};
 
@@ -335,62 +405,62 @@ struct list
 		const_iterator()
 		{
 			lst = NULL;
-			pos = NULL;
+			loc = NULL;
 		}
 
 		const_iterator(const list *l)
 		{
 			lst = l;
-			pos = &l->left;
+			loc = &l->left;
 		}
 
 		const_iterator(const list *l, const node *n)
 		{
 			lst = l;
-			pos = n;
+			loc = n;
 		}
 
 		const_iterator(const const_iterator &i)
 		{
 			lst = i.lst;
-			pos = i.pos;
+			loc = i.loc;
 		}
 
 		~const_iterator() {}
 
 		const list *lst;
-		const node *pos;
+		const node *loc;
 
 		const value_type &operator*()
 		{
-			return ((const item*)pos)->data;
+			return ((const item*)loc)->data;
 		}
 		const value_type *operator->()
 		{
-			return &((const item*)pos)->data;
+			return &((const item*)loc)->data;
 		}
 
 		const_iterator &operator++(int)
 		{
-			pos = pos->next;
+			loc = loc->next;
 			return *this;
 		}
 
 		const_iterator &operator--(int)
 		{
-			pos = pos->prev;
+			loc = loc->prev;
 			return *this;
 		}
 
 		const_iterator &operator++()
 		{
-			pos = pos->next;
+			loc = loc->next;
 			return *this;
 		}
 
 		const_iterator &operator--()
 		{
-			pos = pos->prev;
+			loc = loc->prev;
 			return *this;
 		}
 
@@ -431,24 +501,24 @@ struct list
 		const_iterator &operator=(const_iterator i)
 		{
 			lst = i.lst;
-			pos = i.pos;
+			loc = i.loc;
 			return *this;
 		}
 
 		bool operator==(const_iterator i) const
 		{
-			return lst == i.lst && pos == i.pos;
+			return lst == i.lst && loc == i.loc;
 		}
 
 		bool operator!=(const_iterator i) const
 		{
-			return lst != i.lst || pos != i.pos;
+			return lst != i.lst || loc != i.loc;
 		}
 
 		int operator-(const_iterator i) const
 		{
 			int count = 0;
-			for (const_iterator j = i; j.pos != pos && j.pos != &j.lst->right; j++)
+			for (const_iterator j = i; j.loc != loc && j.loc != &j.lst->right; j++)
 				count++;
 			return count;
 		}
@@ -456,24 +526,24 @@ struct list
 		const_iterator &operator=(iterator i)
 		{
 			lst = i.lst;
-			pos = i.pos;
+			loc = i.loc;
 			return *this;
 		}
 
 		bool operator==(iterator i) const
 		{
-			return lst == i.lst && pos == i.pos;
+			return lst == i.lst && loc == i.loc;
 		}
 
 		bool operator!=(iterator i) const
 		{
-			return lst != i.lst || pos != i.pos;
+			return lst != i.lst || loc != i.loc;
 		}
 
 		int operator-(iterator i) const
 		{
 			int count = 0;
-			for (const_iterator j = i; j.pos != pos && j.pos != &j.lst->right; j++)
+			for (const_iterator j = i; j.loc != loc && j.loc != &j.lst->right; j++)
 				count++;
 			return count;
 		}
@@ -484,7 +554,17 @@ struct list
 		return end() - begin();
 	}
 
-	value_type &at(int i) const
+	iterator at(int i)
+	{
+		return begin() + i;
+	}
+
+	const_iterator at(int i) const
+	{
+		return begin() + i;
+	}
+
+	value_type &get(int i) const
 	{
 		return ((item*)(begin() + i))->data;
 	}
@@ -556,34 +636,44 @@ struct list
 
 	void push_back(value_type t)
 	{
-		rbegin().push(t);
+		end().push(t);
+	}
+	
+	void push_front(value_type t)
+	{
+		begin().push(t);
 	}
 
 	template <class container>
 	void merge_back(container &c)
 	{
-		rbegin().merge(c);
-	}
-
-	void push_front(value_type t)
-	{
-		begin().rpush(t);
+		end().merge(c);
 	}
 
 	template <class container>
 	void merge_front(container &c)
 	{
-		begin().rmerge(c);
+		begin().merge(c);
 	}
 
-	void pop_back(int n = 1)
+	list<value_type> pop_back(unsigned int n = 1)
 	{
-		rbegin().rpop(n);
+		return end().pop(-n);
 	}
 
-	void pop_front(int n = 1)
+	list<value_type> pop_front(unsigned int n = 1)
 	{
-		begin().pop(n);
+		return begin().pop(n);
+	}
+
+	void drop_front(unsigned int n = 1)
+	{
+		begin().drop(n);
+	}
+
+	void drop_back(unsigned int n = 1)
+	{
+		end().drop(-n);
 	}
 
 	void clear()
@@ -612,4 +702,3 @@ struct list
 
 }
 
-#endif

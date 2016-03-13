@@ -118,7 +118,7 @@ struct array
 		{
 			this->arr = arr;
 			if (offset < 0)
-				this->loc = arr->data + arr->count - offset;
+				this->loc = arr->data + arr->count + offset;
 			else
 				this->loc = arr->data + offset;
 		}
@@ -245,7 +245,7 @@ struct array
 		/* Erase all elements in the range [this, this+n) */
 		void drop(int n = 1)
 		{
-			int offset = arr->data - loc;
+			int offset = loc - arr->data;
 			if (n > 0)
 			{
 				n = min(offset + n, arr->count) - offset;
@@ -271,7 +271,7 @@ struct array
 		{
 			array<value_type> result;
 
-			int offset = arr->data - loc;
+			int offset = loc - arr->data;
 			if (n > 0)
 			{
 				n = min(offset + n, arr->count) - offset;
@@ -424,7 +424,7 @@ struct array
 		{
 			this->arr = arr;
 			if (offset < 0)
-				this->loc = arr->data + arr->count - offset;
+				this->loc = arr->data + arr->count + offset;
 			else
 				this->loc = arr->data + offset;
 		}

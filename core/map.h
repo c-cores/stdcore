@@ -99,7 +99,7 @@ struct map : list<implier<ktype, vtype> >
 	iterator insert(ktype key, vtype value)
 	{
 		iterator pos = search_tree(*this, implier<ktype, vtype>(key, vtype()));
-		pos.rpush(implier<ktype, vtype>(key, value));
+		pos.push(implier<ktype, vtype>(key, value));
 		return (pos-1);
 	}
 
@@ -110,7 +110,7 @@ struct map : list<implier<ktype, vtype> >
 			return pos->value;
 		else
 		{
-			pos.rpush(implier<ktype, vtype>(key, vtype()));
+			pos.push(implier<ktype, vtype>(key, vtype()));
 			return (pos-1)->value;
 		}
 	}
