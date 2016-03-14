@@ -60,22 +60,25 @@ struct list
 	{
 		left.next = &right;
 		right.prev = &left;
+		count = 0;
 	}
 
-	list(const list<value_type> &l)
+	template <class container>
+	list(const container &c)
 	{
 		left.next = &right;
 		right.prev = &left;
-		for (list<value_type>::const_iterator i = l.begin(); i != l.end(); i++)
-			push_back(*i);
+		count = 0;
+		for (typename container::const_iterator i = c.begin(); i != c.end(); i++)
+			end().push(*i);
 	}
 
 	list(const value_type &t, int n = 1)
 	{
 		left.next = &right;
 		right.prev = &left;
-		for (int i = 0; i < n; i++)
-			push_back(t);
+		count = 0;
+		end().push(t, n);
 	}
 
 	~list()
@@ -85,6 +88,7 @@ struct list
 
 	node left;
 	node right;
+	int count;
 
 	struct iterator;
 	struct const_iterator;
@@ -97,6 +101,7 @@ struct list
 		list<value_type> *lst;
 		node *loc;
 	public:
+		typedef list<value_type> container;
 		typedef value_type type;
 
 		iterator()
@@ -281,6 +286,10 @@ struct list
 				loc->prev = start->prev;
 				result.left.next->prev = &result.left;
 				result.right.prev->next = &result.right;
+				if (n > 0)
+					lst->count -= n;
+				else
+					lst->count += n;
 			}
 
 			return result;
@@ -301,6 +310,7 @@ struct list
 					
 				start->next = loc;
 				loc->prev = start;
+				lst->count -= n;
 			}
 			else if (n < 0)
 			{
@@ -315,91 +325,73 @@ struct list
 				
 				start->next = loc;
 				loc->prev = start;
+				lst->count += n;
 			}
 		}
 
-		list<value_type> pop(iterator last)
+		void push(value_type v, int n = 1)
 		{
-			node *start = loc;
-			node *end = loc;
-
-			while (start != last->loc && start != &lst->left)
-				start = start->prev;
-
-			if (start != last->loc)
-				start = loc;
-
-			while (end != last->loc && start != &lst->right)
-				start = start->next;
-	
-			if (end != last->loc)
-				end = loc;
-
-			loc = end;
-
-			list<value_type> result;
-			if (start != end)
+			node *start = loc->prev;
+			for (int i = 0; i < n; i++)
 			{
-				result.left.next = start;
-				result.right.prev = end;
-				start->prev->next = end->next;
-				end->next->prev = start->prev;
-				start->prev = &result.left;
-				end->next = &result.right;
-			}
-			return result;
-		}
-
-		void drop(iterator last)
-		{
-			node *start = loc;
-			node *end = loc;
-
-			while (start != last->loc && start != &lst->left)
-				start = start->prev;
-
-			if (start != last->loc)
-				start = loc;
-
-			while (end != last->loc && start != &lst->right)
+				start->next = new item(v);
+				start->next->prev = start;
 				start = start->next;
-	
-			if (end != last->loc)
-				end = loc;
-
-			loc = end;
-
-			start->prev->next = end;
-			end->prev = start->prev;
-			while (start != end)
-			{
-				node *temp = start->next;
-				delete start;
-				start = temp;
 			}
-		}
 
-		void push(value_type v)
-		{
-			node *result = new item(v);
-
-			result->prev = loc->prev;
-			result->next = loc;
-			loc->prev->next = result;
-			loc->prev = result;
+			start->next = loc;
+			loc->prev = start;
+			lst->count += n;
 		}
 
 		template <class container>
-		void merge(const container &c)
+		void push(const container &c)
 		{
-			slice<typename container::const_iterator> b = c.bound();
-			for (typename container::const_iterator i = b.left; i != b.right+1; i++)
+			for (typename container::const_iterator i = c.begin(); i != c.end(); i++)
 				push(*i);
+		}
+
+		void chop(bool forward = true)
+		{
+			if (forward)
+			{
+				node *ptr = loc;
+				loc = ptr->pev;
+				while (ptr != &lst->right)
+				{
+					node *temp = ptr->next;
+					delete ptr;
+					ptr = temp;
+					lst->count--;
+				}
+				loc->next = &lst->right;
+				lst->right->prev = loc;
+			}
+			else
+			{
+				node *ptr = lst->left.next;
+				while (ptr != loc)
+				{
+					node *temp = ptr->next;
+					delete ptr;
+					ptr = temp;
+					lst->count--;
+				}
+				lst->left.next = loc;
+				loc->prev = &lst->left;
+			}
 		}
 	};
 
 	struct const_iterator
 	{
+	private:
+		friend class list<value_type>;
+		friend class iterator;
+		const list<value_type> *lst;
+		const node *loc;
+	public:
+		typedef const list<value_type> container;
 		typedef value_type type;
 
 		const_iterator()
@@ -427,9 +419,6 @@ struct list
 		}
 
 		~const_iterator() {}
-
-		const list *lst;
-		const node *loc;
 
 		const value_type &operator*()
 		{
@@ -551,7 +540,7 @@ struct list
 
 	int size() const
 	{
-		return end() - begin();
+		return count;
 	}
 
 	iterator at(int i)
@@ -687,6 +676,7 @@ struct list
 		}
 		left.next = &right;
 		right.prev = &left;
+		count = 0;
 	}
 
 	list<value_type> &operator=(const list<value_type> &c)

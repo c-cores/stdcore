@@ -9,6 +9,8 @@
 #define math_h
 
 #include <math.h>
+#include <stdint.h>
+#include <stdlib.h>
 
 namespace core
 {
@@ -20,8 +22,8 @@ namespace core
 #define degtorad(a) m_pi*a/180.0
 #define radtodeg(a) 180.0*a/m_pi
 
-unsigned int count_ones(unsigned int x);
-unsigned int count_zeros(unsigned int x);
+uint32_t count_ones(uint32_t x);
+uint32_t count_zeros(uint32_t x);
 
 template <class type>
 type powi(type base, int exp)
@@ -38,7 +40,7 @@ type powi(type base, int exp)
     return result;
 }
 
-int log2i(unsigned long long value);
+int log2i(uint64_t value);
 
 template <class type>
 type abs(type &t)
@@ -91,6 +93,8 @@ type median(type t1, type t2, type t3)
 
 bool is_even(int i);
 bool is_odd(int i);
+
+uint32_t hash(const char *ptr, int len);
 
 }
 

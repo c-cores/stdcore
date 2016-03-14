@@ -5,8 +5,7 @@
  *      Author: nbingham
  */
 
-#ifndef slice_h
-#define slice_h
+#pragma once
 
 namespace core
 {
@@ -18,6 +17,7 @@ struct slice
 	typedef iterator_type const_iterator;
 
 	slice() {}
+	
 	slice(iterator l, iterator r)
 	{
 		left = l;
@@ -27,6 +27,11 @@ struct slice
 	~slice() {}
 
 	iterator left, right;
+
+	int size() const
+	{
+		return right - left + 1;
+	}
 
 	iterator begin() const
 	{
@@ -48,79 +53,67 @@ struct slice
 		return left-1;
 	}
 
-	slice<iterator> &bound()
+	slice<iterator> &bound() const
 	{
 		return *this;
-	}
-
-	slice<iterator> bound() const
-	{
-		return *this;
-	}
-
-	//slice<iterator> sub(int i, int j)
-	//{
-	//	return slice<iterator>(left + i, left + j);
-	//}
-
-	template <class iterator2>
-	int compare(slice<iterator2> a) const
-	{
-		iterator i = left;
-		iterator2 j = a.left;
-		for (; i != right+1 && j != a.right+1; i++, j++)
-		{
-			if (*i < *j)
-				return -1;
-			else if (*i > *j)
-				return 1;
-		}
-
-		if (j != a.right+1)
-			return -1;
-		else if (i != right+1)
-			return 1;
-		else
-			return 0;
 	}
 };
 
 template <class iterator1, class iterator2>
+int compare(slice<iterator1> a, slice<iterator2> b)
+{
+	iterator1 i = a.left;
+	iterator2 j = b.left;
+	for (; i != a.right+1 && j != b.right+1; i++, j++)
+	{
+		if (*i < *j)
+			return -1;
+		else if (*j < *i)
+			return 1;
+	}
+	if (j != b.right+1)
+		return -1;
+	else if (i != a.right+1)
+		return 1;
+	else
+		return 0;
+}
+
+template <class iterator1, class iterator2>
 bool operator==(slice<iterator1> s1, slice<iterator2> s2)
 {
-	return (s1.compare(s2) == 0);
+	return (compare(s1, s2) == 0);
 }
 
 template <class iterator1, class iterator2>
 bool operator!=(slice<iterator1> s1, slice<iterator2> s2)
 {
-	return (s1.compare(s2) != 0);
+	return (compare(s1, s2) != 0);
 }
 
 template <class iterator1, class iterator2>
 bool operator<(slice<iterator1> s1, slice<iterator2> s2)
 {
-	return (s1.compare(s2) < 0);
+	return (compare(s1, s2) < 0);
 }
 
 template <class iterator1, class iterator2>
 bool operator>(slice<iterator1> s1, slice<iterator2> s2)
 {
-	return (s1.compare(s2) > 0);
+	return (compare(s1, s2) > 0);
 }
 
 template <class iterator1, class iterator2>
 bool operator<=(slice<iterator1> s1, slice<iterator2> s2)
 {
-	return (s1.compare(s2) <= 0);
+	return (compare(s1, s2) <= 0);
 }
 
 template <class iterator1, class iterator2>
 bool operator>=(slice<iterator1> s1, slice<iterator2> s2)
 {
-	return (s1.compare(s2) >= 0);
+	return (compare(s1, s2) >= 0);
 }
 
 }
 
-#endif

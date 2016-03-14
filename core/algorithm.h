@@ -5,10 +5,9 @@
  *      Author: nbingham
  */
 
-#include "slice.h"
+#pragma once
 
-#ifndef algorithm_h
-#define algorithm_h
+#include "slice.h"
 
 namespace core
 {
@@ -185,8 +184,8 @@ container &collapse(container &c)
 		if (!(*i == *j) && ++i != j)
 			*i = *j;
 
-	if (++i != j)
-		i.pop(j);
+	if (++i != c.end())
+		i.chop();
 
 	return c;
 }
@@ -198,7 +197,7 @@ container &unique(container &c)
 		for (typename container::iterator j = i+1; j != c.end();)
 		{
 			if (*i == *j)
-				j.pop();
+				j.drop();
 			else
 				j++;
 		}
@@ -208,4 +207,3 @@ container &unique(container &c)
 
 }
 
-#endif

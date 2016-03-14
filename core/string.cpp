@@ -193,7 +193,7 @@ int string::find_l0(string str, string del, int pos)
 		bool found = false;
 		if (stack.size() > 0 && get(i) == stack.back())
 		{
-			stack.pop_back();
+			stack.drop_back();
 			found = true;
 		}
 
@@ -228,7 +228,7 @@ int string::find_l0(const char *str, const char *del, int pos)
 		bool found = false;
 		if (stack.size() > 0 && get(i) == stack.back())
 		{
-			stack.pop_back();
+			stack.drop_back();
 			found = true;
 		}
 
@@ -295,7 +295,7 @@ int string::rfind_l0(string str, string del, int pos)
 		bool found = false;
 		if (stack.size() > 0 && get(i) == stack.back())
 		{
-			stack.pop_back();
+			stack.drop_back();
 			found = true;
 		}
 
@@ -330,7 +330,7 @@ int string::rfind_l0(const char *str, const char *del, int pos)
 		bool found = false;
 		if (stack.size() > 0 && get(i) == stack.back())
 		{
-			stack.pop_back();
+			stack.drop_back();
 			found = true;
 		}
 
@@ -493,7 +493,7 @@ int string::find_first_of_l0(const char *str, const char *del, int pos)
 		bool found = false;
 		if (stack.size() > 0 && get(i) == stack.back())
 		{
-			stack.pop_back();
+			stack.drop_back();
 			found = true;
 		}
 
@@ -524,7 +524,7 @@ int string::find_first_of_l0(string str, string del, int pos)
 		bool found = false;
 		if (stack.size() > 0 && get(i) == stack.back())
 		{
-			stack.pop_back();
+			stack.drop_back();
 			found = true;
 		}
 
@@ -555,7 +555,7 @@ int string::find_last_of_l0(const char *str, const char *del, int pos)
 		bool found = false;
 		if (stack.size() > 0 && get(i) == stack.back())
 		{
-			stack.pop_back();
+			stack.drop_back();
 			found = true;
 		}
 
@@ -586,7 +586,7 @@ int string::find_last_of_l0(string str, string del, int pos)
 		bool found = false;
 		if (stack.size() > 0 && get(i) == stack.back())
 		{
-			stack.pop_back();
+			stack.drop_back();
 			found = true;
 		}
 
@@ -617,7 +617,7 @@ int string::find_first_not_of_l0(const char *str, const char *del, int pos)
 		bool found = false;
 		if (stack.size() > 0 && get(i) == stack.back())
 		{
-			stack.pop_back();
+			stack.drop_back();
 			found = true;
 		}
 
@@ -654,7 +654,7 @@ int string::find_first_not_of_l0(string str, string del, int pos)
 		bool found = false;
 		if (stack.size() > 0 && get(i) == stack.back())
 		{
-			stack.pop_back();
+			stack.drop_back();
 			found = true;
 		}
 
@@ -691,7 +691,7 @@ int string::find_last_not_of_l0(const char *str, const char *del, int pos)
 		bool found = false;
 		if (stack.size() > 0 && get(i) == stack.back())
 		{
-			stack.pop_back();
+			stack.drop_back();
 			found = true;
 		}
 
@@ -728,7 +728,7 @@ int string::find_last_not_of_l0(string str, string del, int pos)
 		bool found = false;
 		if (stack.size() > 0 && get(i) == stack.back())
 		{
-			stack.pop_back();
+			stack.drop_back();
 			found = true;
 		}
 
@@ -1004,19 +1004,19 @@ string &string::operator=(char *str)
 
 string &string::operator+=(const char *str)
 {
-	array<char>::merge_back(slice<const char*>(str, str+strlen(str)-1));
+	array<char>::push_back(slice<const char*>(str, str+strlen(str)-1));
 	return *this;
 }
 
 string &string::operator+=(char *str)
 {
-	array<char>::merge_back(slice<char*>(str, str+strlen(str)-1));
+	array<char>::push_back(slice<char*>(str, str+strlen(str)-1));
 	return *this;
 }
 
 string &string::operator+=(string str)
 {
-	array<char>::merge_back(str);
+	array<char>::push_back(str.bound());
 	return *this;
 }
 
