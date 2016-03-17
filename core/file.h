@@ -72,8 +72,8 @@ struct file
 	void close();
 	char get();
 	string read(int n);
-	void read(char *s, int n);
-	void read(unsigned char *s, int n);
+	int read(char *s, int n);
+	int read(unsigned char *s, int n);
 	string read_word();
 	string read_line();
 	string read_file();

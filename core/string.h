@@ -16,30 +16,18 @@ namespace core
 struct string : array<char>
 {
 	string();
-	string(char i);
-	string(bool b);
-	string(int i);
-	string(short i);
-	string(long i);
-	string(unsigned char c);
-	string(unsigned int i);
-	string(unsigned short i);
-	string(unsigned long i);
-	string(float f);
-	string(double d);
-	string(int num, char t);
+	string(char t, int n);
 	string(const char *str);
-	string(const string &str);
+	
+	template <class container>
+	string(const container &str) : array<char>(str)
+	{
+	}
+
 	~string();
 
 	using typename array<char>::iterator;
 	using typename array<char>::const_iterator;
-
-	void resize(int n, char c = '\0');
-
-	bool to_bool();
-	long to_long(int base = 10);
-	double to_double();
 
 	int length();
 	int find(string str, int pos = 0);
@@ -74,8 +62,7 @@ struct string : array<char>
 	string &replace(string s, string r);
 	string &rreplace(const char *s, const char *r);
 	string &rreplace(string s, string r);
-	string substr(int s, int e);
-	string substr(int s);
+	string substr(int s, int e = -1);
 	int compare(const char *str);
 	int compare(string str);
 
@@ -121,6 +108,24 @@ bool is_alpha(char c);
 bool is_numeric(char c);
 bool is_symbol(char c);
 bool is_whitespace(char c);
+
+string to_string(char i);
+string to_string(bool b);
+string to_string(int i);
+string to_string(short i);
+string to_string(long i);
+string to_string(unsigned char c);
+string to_string(unsigned int i);
+string to_string(unsigned short i);
+string to_string(unsigned long i);
+string to_string(float f);
+string to_string(double d);
+string to_string(char t, int num);
+string to_string(const char *str);
+
+bool to_bool(string s);
+long to_long(string s, int base = 10);
+double to_double(string s);
 
 }
 

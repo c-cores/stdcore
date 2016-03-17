@@ -19,130 +19,17 @@ string::string()
 
 }
 
-string::string(char i)
+string::string(char t, int n) : array<char>(t, n)
 {
-	array<char>::reserve(5);
-	array<char>::resize(snprintf(data, 5, "%hd", i));
+	
 }
 
-string::string(bool b)
-{
-	if (b)
-	{
-		array<char>::resize(4);
-		get(0) = 't';
-		get(1) = 'r';
-		get(2) = 'u';
-		get(3) = 'e';
-	}
-	else
-	{
-		array<char>::resize(5);
-		get(0) = 'f';
-		get(1) = 'a';
-		get(2) = 'l';
-		get(3) = 's';
-		get(4) = 'e';
-	}
-}
-
-string::string(int i)
-{
-	array<char>::reserve(12);
-	array<char>::resize(snprintf(data, 12, "%d", i));
-}
-
-string::string(short i)
-{
-	array<char>::reserve(7);
-	array<char>::resize(snprintf(data, 7, "%hd", i));
-}
-
-string::string(long i)
-{
-	array<char>::reserve(21);
-	array<char>::resize(snprintf(data, 21, "%ld", i));
-}
-
-string::string(unsigned char i)
-{
-	array<char>::reserve(5);
-	array<char>::resize(snprintf(data, 5, "%hu", i));
-}
-
-string::string(unsigned int i)
-{
-	array<char>::reserve(12);
-	array<char>::resize(snprintf(data, 12, "%u", i));
-}
-
-string::string(unsigned short i)
-{
-	array<char>::reserve(7);
-	array<char>::resize(snprintf(data, 7, "%hu", i));
-}
-
-string::string(unsigned long i)
-{
-	array<char>::reserve(21);
-	array<char>::resize(snprintf(data, 21, "%lu", i));
-}
-
-string::string(float f)
-{
-	array<char>::reserve(32);
-	array<char>::resize(snprintf(data, 32, "%f", f));
-}
-
-string::string(double d)
-{
-	array<char>::reserve(32);
-	array<char>::resize(snprintf(data, 32, "%f", d));
-}
-
-string::string(int num, char t) : array<char>(num, t)
-{
-
-}
-
-string::string(const char *str)
-{
-	array<char>::resize(strlen(str));
-	memcpy(data, str, size()*sizeof(char));
-}
-
-string::string(const string &str) : array<char>(str)
+string::string(const char *str) : array<char>(slice<const char*>(str, strlen(str)))
 {
 }
 
 string::~string()
 {
-}
-
-void string::resize(int n, char c)
-{
-	int s = size();
-	array<char>::resize(n);
-	for (int i = s; i < size(); i++)
-		get(i) = c;
-}
-
-bool string::to_bool()
-{
-	if (compare("true") == 0 || compare("1") == 0)
-		return true;
-	else
-		return false;
-}
-
-long string::to_long(int base)
-{
-	return strtol(data, NULL, base);
-}
-
-double string::to_double()
-{
-	return strtod(data, NULL);
 }
 
 int string::length()
@@ -756,80 +643,23 @@ int string::find_last_not_of_l0(string str, string del, int pos)
 
 void string::insert(int pos, const char *str)
 {
-	while (size() > 0 && pos < 0)
-		pos += size();
-
-	int s = strlen(str);
-	array<char>::resize(s + size());
-	for (int i = size() - 1; i >= pos + s; i--)
-		get(i) = get(i - s);
-	for (int i = 0; str[i] != '\0'; i++)
-		get(i + pos) = str[i];
+	at(pos).push(slice<const char*>(str, strlen(str)));
 }
 
 void string::insert(int pos, string str)
 {
-	while (size() > 0 && pos < 0)
-		pos += size();
-
-	array<char>::resize(str.size() + size());
-	for (int i = size() - 1; i >= pos + str.size(); i--)
-		get(i) = get(i - str.size());
-	for (int i = 0; str[i] != '\0'; i++)
-		get(i + pos) = str[i];
+	at(pos).push(str);
 }
 
 string &string::replace(int s, int e, const char *r)
 {
-	while (size() > 0 && s < 0)
-		s += size();
-	while (size() > 0 && e < 0)
-		e += size();
-
-	int rs = strlen(r);
-	if (rs > e-s)
-	{
-		array<char>::resize(size() + rs - (e - s));
-		for (int i = size()-1; i >= rs + s; i--)
-			get(i) = get(i - rs + e - s);
-	}
-	else if (rs < e-s)
-	{
-		for (int i = rs + s; i < size(); i++)
-			get(i) = get(i + e - s - rs);
-		array<char>::resize(size() + rs - (e - s));
-	}
-
-	for (int i = 0; r[i] != '\0'; i++)
-		get(i + s) = r[i];
-
+	at(s).replace(e-s, slice<const char*>(r, strlen(r)));
 	return *this;
 }
 
 string &string::replace(int s, int e, string r)
 {
-	while (size() > 0 && s < 0)
-		s += size();
-	while (size() > 0 && e < 0)
-		e += size();
-
-	array<char>::resize(size() + r.size() - (e - s));
-	if (r.size() > e-s)
-	{
-		array<char>::resize(size() + r.size() - (e - s));
-		for (int i = size()-1; i >= r.size() + s; i--)
-			get(i) = get(i - r.size() + e - s);
-	}
-	else if (r.size() < e-s)
-	{
-		for (int i = r.size() + s; i < size(); i++)
-			get(i) = get(i + e - s - r.size());
-		array<char>::resize(size() + r.size() - (e - s));
-	}
-
-	for (int i = 0; i < r.size(); i++)
-		get(i + s) = r[i];
-
+	at(s).replace(e-s, r);
 	return *this;
 }
 
@@ -887,41 +717,7 @@ string &string::rreplace(string s, string r)
 
 string string::substr(int s, int e)
 {
-	while (size() > 0 && s < 0)
-		s += size();
-	while (size() > 0 && e < s)
-		e += size();
-
-	if (e > size())
-		e = size();
-
-	if (s > size())
-		return string();
-	else
-	{
-		string result;
-		result.resize(e-s);
-		for (int i = s; i < e; i++)
-			result[i-s] = get(i);
-		return result;
-	}
-}
-
-string string::substr(int s)
-{
-	while (size() > 0 && s < 0)
-		s += size();
-
-	if (s > size())
-		return string();
-	else
-	{
-		string result;
-		result.resize(size()-s);
-		for (int i = s; i < size(); i++)
-			result[i-s] = get(i);
-		return result;
-	}
+	return string(sub(s, e));
 }
 
 int string::compare(const char *str)
@@ -990,15 +786,13 @@ string &string::tolower()
 
 string &string::operator=(const char *str)
 {
-	array<char>::resize(strlen(str));
-	memcpy(data, str, size()*sizeof(char));
+	array<char>::operator=(slice<const char *>(str, strlen(str)));
 	return *this;
 }
 
 string &string::operator=(char *str)
 {
-	array<char>::resize(strlen(str));
-	memcpy(data, str, size()*sizeof(char));
+	array<char>::operator=(slice<char*>(str, strlen(str)));
 	return *this;
 }
 
@@ -1016,7 +810,7 @@ string &string::operator+=(char *str)
 
 string &string::operator+=(string str)
 {
-	array<char>::push_back(str.bound());
+	array<char>::push_back(str);
 	return *this;
 }
 
@@ -1031,9 +825,9 @@ char *string::c_str()
 string operator+(string s1, string s2)
 {
 	string result;
-	result.array<char>::resize(s1.size() + s2.size());
-	memcpy(result.data, s1.data, s1.size()*sizeof(char));
-	memcpy(result.data+s1.size(), s2.data, s2.size()*sizeof(char));
+	result.reserve(s1.size() + s2.size());
+	result.push_back(s1);
+	result.push_back(s2);
 	return result;
 }
 
@@ -1041,9 +835,9 @@ string operator+(string s1, const char *s2)
 {
 	int s2s = strlen(s2);
 	string result;
-	result.array<char>::resize(s1.size() + s2s);
-	memcpy(result.data, s1.data, s1.size()*sizeof(char));
-	memcpy(result.data+s1.size(), s2, s2s*sizeof(char));
+	result.reserve(s1.size() + s2s);
+	result.push_back(s1);
+	result.push_back(slice<const char*>(s2, s2+s2s));
 	return result;
 }
 
@@ -1198,6 +992,97 @@ bool is_whitespace(char c)
 			c == '\t' ||
 			c == '\n' ||
 			c == '\r');
+}
+
+
+string to_string(char i)
+{
+	char str[5];
+	snprintf(str, 5, "%hd", i);
+	return string(slice<char*>(str, 5));
+}
+
+string to_string(bool b)
+{
+	return string(b ? slice<const char*>("true", 4) : slice<const char*>("false", 5));
+}
+
+string to_string(int i)
+{
+	char str[12];
+	snprintf(str, 12, "%d", i);
+	return string(slice<char*>(str, 12));
+}
+
+string to_string(short i)
+{
+	char str[7];
+	snprintf(str, 7, "%hd", i);
+	return string(slice<char*>(str, 7));
+}
+
+string to_string(long i)
+{
+	char str[21];
+	snprintf(str, 21, "%ld", i);
+	return string(slice<char*>(str, 21));
+}
+
+string to_string(unsigned char i)
+{
+	char str[5];
+	snprintf(str, 5, "%hu", i);
+	return string(slice<char*>(str, 5));
+}
+
+string to_string(unsigned int i)
+{
+	char str[12];
+	snprintf(str, 12, "%u", i);
+	return string(slice<char*>(str, 12));
+}
+
+string to_string(unsigned short i)
+{
+	char str[7];
+	snprintf(str, 7, "%hu", i);
+	return string(slice<char*>(str, 7));
+}
+
+string to_string(unsigned long i)
+{
+	char str[21];
+	snprintf(str, 21, "%lu", i);
+	return string(slice<char*>(str, 7));
+}
+
+string to_string(float f)
+{
+	char str[32];
+	snprintf(str, 32, "%f", f);
+	return string(slice<char*>(str, 32));
+}
+
+string to_string(double d)
+{
+	char str[32];
+	snprintf(str, 32, "%f", d);
+	return string(slice<char*>(str, 32));
+}
+
+bool to_bool(string s)
+{
+	return (s.compare("true") == 0 || s.compare("1") == 0);
+}
+
+long to_long(string s, int base)
+{
+	return strtol(s.c_str(), NULL, base);
+}
+
+double to_double(string s)
+{
+	return strtod(s.c_str(), NULL);
 }
 
 }

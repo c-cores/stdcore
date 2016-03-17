@@ -73,6 +73,15 @@ struct list
 			end().push(*i);
 	}
 
+	list(const list<value_type> &c)
+	{
+		left.next = &right;
+		right.prev = &left;
+		count = 0;
+		for (const_iterator i = c.begin(); i != c.end(); i++)
+			end().push(*i);
+	}
+
 	list(const value_type &t, int n = 1)
 	{
 		left.next = &right;
@@ -114,6 +123,29 @@ struct list
 		{
 			lst = l;
 			loc = n;
+		}
+
+		iterator(list<value_type> *l, int n)
+		{
+			lst = l;
+			if (n > 0)
+			{
+				loc = lst->left.next;
+				while (n > 0)
+				{
+					loc = loc->next;
+					n--;
+				}
+			}
+			else
+			{
+				loc = &lst->right;
+				while (n < 0)
+				{
+					loc = loc->prev;
+					n++;
+				}
+			}
 		}
 
 		iterator(const iterator &i)
@@ -351,35 +383,9 @@ struct list
 				push(*i);
 		}
 
-		void chop(bool forward = true)
+		slice<iterator> sub(int n)
 		{
-			if (forward)
-			{
-				node *ptr = loc;
-				loc = ptr->pev;
-				while (ptr != &lst->right)
-				{
-					node *temp = ptr->next;
-					delete ptr;
-					ptr = temp;
-					lst->count--;
-				}
-				loc->next = &lst->right;
-				lst->right->prev = loc;
-			}
-			else
-			{
-				node *ptr = lst->left.next;
-				while (ptr != loc)
-				{
-					node *temp = ptr->next;
-					delete ptr;
-					ptr = temp;
-					lst->count--;
-				}
-				lst->left.next = loc;
-				loc->prev = &lst->left;
-			}
+			return slice<iterator>(*this, *this+n);
 		}
 	};
 
@@ -411,6 +417,30 @@ struct list
 			lst = l;
 			loc = n;
 		}
+
+		const_iterator(list<value_type> *l, int n)
+		{
+			lst = l;
+			if (n > 0)
+			{
+				loc = lst->left.next;
+				while (n > 0)
+				{
+					loc = loc->next;
+					n--;
+				}
+			}
+			else
+			{
+				loc = &lst->right;
+				while (n < 0)
+				{
+					loc = loc->prev;
+					n++;
+				}
+			}
+		}
+
 
 		const_iterator(const const_iterator &i)
 		{
@@ -536,6 +566,11 @@ struct list
 				count++;
 			return count;
 		}
+
+		slice<const_iterator> sub(int n)
+		{
+			return slice<const_iterator>(*this, *this+n);
+		}
 	};
 
 	int size() const
@@ -613,14 +648,14 @@ struct list
 		return const_iterator(this, &left);
 	}
 
-	slice<iterator> bound()
+	slice<iterator> sub(int left, int right = -1)
 	{
-		return slice<iterator>(begin(), rbegin());
+		return slice<iterator>(iterator(this, left), iterator(this, right));
 	}
 
-	slice<const_iterator> bound() const
+	slice<const_iterator> sub(int left, int right = -1) const
 	{
-		return slice<const_iterator>(begin(), rbegin());
+		return slice<const_iterator>(const_iterator(this, left), const_iterator(this, right));
 	}
 
 	void push_back(value_type t)
@@ -679,12 +714,19 @@ struct list
 		count = 0;
 	}
 
+	template <class container>
+	list<value_type> &operator=(const container &c)
+	{
+		clear();
+		for (typename container::const_iterator i = c.begin(); i != c.end(); i++)
+			push_back(*i);
+		return *this;
+	}
+
 	list<value_type> &operator=(const list<value_type> &c)
 	{
 		clear();
-
-		typename list<value_type>::const_iterator i;
-		for (i = c.begin(); i != c.end(); i++)
+		for (const_iterator i = c.begin(); i != c.end(); i++)
 			push_back(*i);
 		return *this;
 	}

@@ -18,10 +18,16 @@ struct slice
 
 	slice() {}
 	
-	slice(iterator l, iterator r)
+	slice(iterator left, iterator right)
 	{
-		left = l;
-		right = r;
+		this->left = left;
+		this->right = right;
+	}
+
+	slice(iterator left, int length)
+	{
+		this->left = left;
+		this->right = left+(length-1);
 	}
 
 	~slice() {}

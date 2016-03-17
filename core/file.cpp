@@ -74,19 +74,20 @@ char file::get()
 
 string file::read(int n)
 {
-	string result(n, '\0');
-	result.resize(fread(result.c_str(), 1, n, ptr));
+	string result;
+	result.reserve(n);
+	result.alloc_back(fread(result.c_str(), 1, n, ptr));
 	return result;
 }
 
-void file::read(char *s, int n)
+int file::read(char *s, int n)
 {
-	fread(s, 1, n, ptr);
+	return fread(s, 1, n, ptr);
 }
 
-void file::read(unsigned char *s, int n)
+int file::read(unsigned char *s, int n)
 {
-	fread(s, 1, n, ptr);
+	return fread(s, 1, n, ptr);
 }
 
 string file::read_word()
@@ -101,7 +102,8 @@ string file::read_word()
 string file::read_line()
 {
 	string result(256);
-	fgets(result.c_str(), 256, ptr);
+	if (fgets(result.data, 256, ptr) != NULL)
+		result.alloc_back(strlen(result.data));
 	return result;
 }
 
@@ -110,8 +112,9 @@ string file::read_file()
 	fseek(ptr, 0, SEEK_END);
 	int s = ftell(ptr);
 	fseek(ptr, 0, SEEK_SET);
-	string result(s, '\0');
-	result.resize(fread(result.c_str(), 1, s, ptr));
+	string result;
+	result.reserve(s);
+	result.alloc_back(fread(result.c_str(), 1, s, ptr));
 	return result;
 }
 

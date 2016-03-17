@@ -64,37 +64,69 @@ container &sort_selection(container &c)
 template <class container>
 container &sort_quick(container &c)
 {
-	slice<typename container::iterator> b = c.bound();
-	int size = (b.right + 1) - b.left;
-	if (size > 2)
+	if (c.size() > 2)
 	{
-		typename container::iterator pivot = median_iterator(b.left, b.left + size/2, b.right);
+		typename container::iterator pivot = median_iterator(c.begin(), c.begin() + c.size()/2, c.rbegin());
 
-		pivot.swap(b.right);
-		pivot = b.right;
+		pivot.swap(c.rbegin());
+		pivot = c.rbegin();
 
-		typename container::iterator store = b.left;
-		for (typename container::iterator i = b.left; i != b.right; i++)
+		typename container::iterator store = c.begin();
+		for (typename container::iterator i = c.begin(); i != c.rbegin(); i++)
 			if (*i < *pivot)
 			{
 				i.swap(store);
 				store++;
 			}
 
-		store.swap(b.right);
+		store.swap(c.rbegin());
 
-		slice<typename container::iterator> small(b.left, store-1);
-		slice<typename container::iterator> big(store+1, b.right);
+		slice<typename container::iterator> small(c.begin(), store-1);
+		slice<typename container::iterator> big(store+1, c.rbegin());
 
 		sort_quick(small);
 		sort_quick(big);
 	}
-	else if (size > 1)
-		if (*b.right < *b.left)
-			b.left.swap(b.right);
+	else if (c.size() > 1)
+		if (c.back() < c.front())
+			c.begin().swap(c.rbegin());
 
 	return c;
 }
+
+template <class container, class container2>
+container2 &order_quick(const container &c, container2 &order)
+{
+	if (order.size() > 2)
+	{
+		typename container2::iterator pivot = median_iterator(order.begin(), order.begin() + order.size()/2, order.rbegin());
+
+		pivot.swap(order.rbegin());
+		pivot = order.rbegin();
+
+		typename container2::iterator store = order.begin();
+		for (typename container2::iterator i = order.begin(); i != order.rbegin(); i++)
+			if (c.get(*i) < c.get(*pivot))
+			{
+				i.swap(store);
+				store++;
+			}
+
+		store.swap(order.rbegin());
+
+		slice<typename container2::iterator> small(order.begin(), store-1);
+		slice<typename container2::iterator> big(store+1, order.rbegin());
+
+		order_quick(c, small);
+		order_quick(c, big);
+	}
+	else if (order.size() > 1)
+		if (c.get(*order.rbegin()) < c.get(*order.begin()))
+			order.begin().swap(order.rbegin());
+
+	return order;
+}
+
 
 template <class container>
 bool is_sorted(container &c)

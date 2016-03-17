@@ -42,6 +42,16 @@ struct array
 			new (ptr) value_type(*i);
 	}
 
+	array(const array<value_type> &a)
+	{
+		count = a.size();
+		capacity = count + log2i(count);
+		data = (value_type*)malloc(sizeof(value_type)*capacity);
+		value_type *ptr = data;
+		for (const_iterator i = a.begin(); i != a.end(); i++, ptr++)
+			new (ptr) value_type(*i);
+	}
+
 	/* Initialize this array with n spaces reserved */
 	array(int n)
 	{
@@ -103,7 +113,7 @@ struct array
 
 	struct iterator
 	{
-	private:
+	protected:
 		friend class array<value_type>;
 		friend class const_iterator;
 		array<value_type> *arr;
@@ -245,27 +255,45 @@ struct array
 			memcpy(i.pointer(), &temp, sizeof(value_type));
 		}
 
+		void alloc(unsigned int n = 1)
+		{
+			int offset = loc - arr->data;
+			if (arr->count > 0 && arr->count+(int)n <= arr->capacity)
+				memmove(loc+n, loc, (arr->count-offset)*sizeof(value_type));
+			else if (arr->count+(int)n > arr->capacity)
+			{
+				arr->capacity = arr->count + (int)n + log2i(arr->count + n);
+				value_type *newdata = (value_type*)malloc(sizeof(value_type)*arr->capacity);
+
+				if (arr->data != NULL)
+				{
+					memcpy(newdata, arr->data, offset*sizeof(value_type));
+					memcpy(newdata+offset+n, loc, (arr->count-offset)*sizeof(value_type));
+					free(arr->data);
+				}
+				arr->data = newdata;
+				loc = arr->data + offset;
+			}
+
+			arr->count += n;
+		}
+
 		/* Erase all elements in the range [this, this+n) */
 		void drop(int n = 1)
 		{
 			int offset = loc - arr->data;
-			if (n > 0)
+			if (n < 0)
 			{
-				n = min(offset + n, arr->count) - offset;
-				for (value_type *i = loc; i < loc+n; i++)
-					i->~value_type();
-				memmove(loc, loc+n, (arr->count-offset-n)*sizeof(value_type));
-				arr->count -= n;
+				n = min(-n, offset);
+				loc -= n;
+				offset -= n;
 			}
-			else if (n < 0)
-			{
-				n = max(n, -offset);
-				for (value_type *i = loc+n; i < loc; i++)
-					i->~value_type();
-				memmove(loc+n, loc, (arr->count-offset)*sizeof(value_type));
-				arr->count += n;
-				loc += n;
-			}
+
+			n = min(offset + n, arr->count) - offset;
+			for (value_type *i = loc; i < loc+n; i++)
+				i->~value_type();
+			memmove(loc, loc+n, (arr->count-offset-n)*sizeof(value_type));
+			arr->count -= n;
 		}
 
 
@@ -275,106 +303,135 @@ struct array
 			array<value_type> result;
 
 			int offset = loc - arr->data;
-			if (n > 0)
+			if (n < 0)
 			{
-				n = min(offset + n, arr->count) - offset;
-				result.reserve(n);
-				memcpy(result.data, loc, n*sizeof(value_type));
-				result.count = n;
-				memmove(loc, loc+n, (arr->count-offset-n)*sizeof(value_type));
-				arr->count -= n;
+				n = min(-n, offset);
+				loc -= n;
+				offset -= n;
 			}
-			else if (n < 0)
-			{
-				n = max(n, -offset);
-				result.reserve(-n);
-				memcpy(result.data, loc+n, -n*sizeof(value_type));
-				result.count = -n;
-				memmove(loc+n, loc, (arr->count-offset)*sizeof(value_type));
-				arr->count += n;
-				loc += n;
-			}
+
+			n = min(offset + n, arr->count) - offset;
+			result.reserve(n);
+			memcpy(result.data, loc, n*sizeof(value_type));
+			result.count = n;
+			memmove(loc, loc+n, (arr->count-offset-n)*sizeof(value_type));
+			arr->count -= n;
 
 			return result;
 		}
 
 		void push(value_type v, int n = 1)
 		{
-			int offset = loc - arr->data;
-			if (arr->count > 0 && arr->count+n <= arr->capacity)
-				memmove(loc+n, loc, (arr->count-offset)*sizeof(value_type));
-			else if (arr->count+n > arr->capacity)
-			{
-				arr->capacity = arr->count + n + log2i(arr->count + n);
-				value_type *newdata = (value_type*)malloc(sizeof(value_type)*arr->capacity);
-
-				if (arr->data != NULL)
-				{
-					memcpy(newdata, arr->data, offset*sizeof(value_type));
-					memcpy(newdata+offset+n, loc, (arr->count-offset)*sizeof(value_type));
-					free(arr->data);
-				}
-				arr->data = newdata;
-				loc = arr->data + offset;
-			}
-
-			arr->count += n;
-			for (int i = 0; i < n; i++)
-			{
+			alloc(n);
+			for (int i = 0; i < n; i++, loc++)
 				new (loc) value_type(v);
-				loc++;
-			}
 		}
 
 		template <class container>
 		void push(const container &c)
 		{
 			int n = c.size();
-			int offset = loc - arr->data;
-			if (arr->count > 0 && arr->count + n <= arr->capacity)
-				memmove(loc+n, loc, (arr->count-offset)*sizeof(value_type));
-			else if (arr->count + n > arr->capacity)
+			alloc(n);
+		
+			typename container::const_iterator i = c.begin();
+			while (i != c.end())
 			{
-				arr->capacity = arr->count + n + log2i(arr->count + n);
-				value_type *newdata = (value_type*)malloc(sizeof(value_type)*arr->capacity);
+				new (loc) value_type(*i);
+				i++;
+				loc++;
+			}
+		}
 
-				if (arr->data != NULL)
-				{
-					memcpy(newdata, arr->data, offset*sizeof(value_type));
-					memcpy(newdata+offset+n, loc, (arr->count-offset)*sizeof(value_type));
-					free(arr->data);
-				}
-				arr->data = newdata;
-				loc = arr->data + offset;
+		slice<iterator> sub(int n)
+		{
+			return slice<iterator>(*this, n);
+		}
+
+		void replace(int n, value_type v, int m = 1)
+		{
+			int offset = loc - arr->data;
+			if (n < 0)
+			{
+				n = min(-n, offset);
+				loc -= n;
+				offset -= n;
 			}
 
-			arr->count += n;
-			value_type *j = loc;
-			for (typename container::const_iterator i = c.begin(); i != c.end(); i++, j++)
-				new (j) value_type(*i);
-			loc += n;
-		}
-	
-		void chop(bool forward = true)
-		{
-			if (forward)
+			n = min(offset + n, arr->count) - offset;
+			while (n > 0 && m > 0)
 			{
-				for (value_type *ptr = loc; ptr < arr->data+arr->count; ptr++)
-					ptr->~value_type();
-				arr->count = loc - arr->data;
+				loc->~value_type();
+				new (loc) value_type(v);
+				loc++;
+				m--;
+				n--;
+			}
+
+			if (m == 0 && n > 0)
+			{
+				for (value_type *i = loc; i < loc+n; i++)
+					i->~value_type();
+				memmove(loc, loc+n, (arr->count-offset-n)*sizeof(value_type));
+				arr->count -= n;
 			}
 			else
 			{
-				for (value_type *ptr = arr->data; ptr < loc; ptr++)
-					ptr->~value_type();
-				arr->count -= loc - arr->data;
+				alloc(m);
+				while (m > 0)
+				{
+					new (loc) value_type(v);
+					loc++;
+					m--;
+				}
+			}
+
+		}
+
+		template <class container>
+		void replace(int n, const container &c)
+		{
+			int offset = loc - arr->data;
+			if (n < 0)
+			{
+				n = min(-n, offset);
+				loc -= n;
+				offset -= n;
+			}
+
+			n = min(offset + n, arr->count) - offset;
+			typename container::const_iterator j = c.begin();
+			while (n > 0 && j != c.end())
+			{
+				loc->~value_type();
+				new (loc) value_type(*j);
+				loc++;
+				j++;
+				n--;
+			}
+
+			if (j == c.end() && n > 0)
+			{
+				for (value_type *i = loc; i < loc+n; i++)
+					i->~value_type();
+				memmove(loc, loc+n, (arr->count-offset-n)*sizeof(value_type));
+				arr->count -= n;
+			}
+			else
+			{
+				alloc(c.end()-j);
+				while (j != c.end())
+				{
+					new (loc) value_type(*j);
+					loc++;
+					j++;
+				}
 			}
 		}
 	};
 
 	struct const_iterator
 	{
-	private:
+	protected:
 		friend class array<value_type>;
 		friend class iterator;
 		const array<value_type> *arr;
@@ -513,6 +570,11 @@ struct array
 		{
 			return loc - i.loc;
 		}
+
+		slice<const_iterator> sub(int n)
+		{
+			return slice<const_iterator>(*this, *this+n);
+		}
 	};
 
 	int size() const
@@ -596,24 +658,24 @@ struct array
 		return const_iterator(this, -count-1);
 	}
 
-	slice<iterator> bound()
+	slice<iterator> sub(int left, int right = -1)
 	{
-		return slice<iterator>(begin(), rbegin());
+		return slice<iterator>(iterator(this, left), iterator(this, right));
 	}
 
-	slice<const_iterator> bound() const
+	slice<const_iterator> sub(int left, int right = -1) const
 	{
-		return slice<const_iterator>(begin(), rbegin());
+		return slice<const_iterator>(const_iterator(this, left), const_iterator(this, right));
 	}
 
-	template <class iterator2>
-	void push_back(const slice<iterator2> &c)
+	template <class container>
+	void push_back(const container &c)
 	{
 		end().push(c);
 	}
 
-	template <class iterator2>
-	void push_front(const slice<iterator2> &c)
+	template <class container>
+	void push_front(const container &c)
 	{
 		begin().push(c);
 	}
@@ -648,29 +710,14 @@ struct array
 		return begin().drop(n);
 	}
 
-
-	/**
-	 * \fn void array<value_type>::reserve(int n)
-	 * \brief Increase the capacity of the array to at least n possible elements.
-	 */
-	void resize(int n)
+	void alloc_back(unsigned int n = 1)
 	{
-		reserve(n);
-		for (int i = n; i < count; i++)
-			data[i].~value_type();
-		for (int i = count; i < n; i++)
-			new (data+i) value_type();
-		count = n;
+		end().alloc(n);
 	}
 
-	/**
-	 * \fn void array<value_type>::reserve(int n)
-	 * \brief Increase the capacity of the array to at least count + n possible elements.
-	 */
-	void extend(int n)
+	void alloc_front(unsigned int n = 1)
 	{
-		n = count + n;
-		resize(n);
+		begin().alloc(n);
 	}
 
 	/**
@@ -699,8 +746,7 @@ struct array
 	 */
 	void extend_reserve(int n)
 	{
-		n = count + n;
-		reserve(n);
+		reserve(count + n);
 	}
 
 	/**
@@ -708,6 +754,13 @@ struct array
 	 * \brief Erase all elements from the array.
 	 */
 	void clear()
+	{
+		for (int i = 0; i < count; i++)
+			data[i].~value_type();
+		count = 0;
+	}
+
+	void release()
 	{
 		if (data != NULL)
 		{
@@ -720,25 +773,61 @@ struct array
 		count = 0;
 	}
 
+	template <class container>
+	array<value_type> &operator=(const container &c)
+	{
+		for (int i = 0; i < count; i++)
+			data[i].~value_type();
+
+		count = c.size();
+		if (count > capacity)
+		{
+			if (data != NULL)
+				free(data);
+
+			capacity = count + log2i(count);
+			data = (value_type*)malloc(sizeof(value_type)*capacity);
+		}
+
+		typename container::const_iterator i = c.begin();
+		iterator j = begin();
+		while (i != c.end() && j != end())
+		{
+			new (j.pointer()) value_type(*i);
+			i++;
+			j++;
+		}
+
+		return *this;
+	}
+
 	array<value_type> &operator=(const array<value_type> &c)
 	{
 		for (int i = 0; i < count; i++)
 			data[i].~value_type();
 
-		if (c.count > capacity)
+		count = c.size();
+		if (count > capacity)
 		{
 			if (data != NULL)
 				free(data);
 
-			capacity = c.count + log2i(c.count);
+			capacity = count + log2i(count);
 			data = (value_type*)malloc(sizeof(value_type)*capacity);
 		}
 
-		for (count = 0; count < c.count; count++)
-			new (data+count) value_type(c.data[count]);
+		const_iterator i = c.begin();
+		iterator j = begin();
+		while (i != c.end() && j != end())
+		{
+			new (j.pointer()) value_type(*i);
+			i++;
+			j++;
+		}
 
 		return *this;
 	}
+
 };
 
 template<class value_type>
