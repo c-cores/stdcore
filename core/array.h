@@ -52,16 +52,8 @@ struct array
 			new (ptr) value_type(*i);
 	}
 
-	/* Initialize this array with n spaces reserved */
-	array(int n)
-	{
-		capacity = n;
-		data = (value_type*)malloc(sizeof(value_type)*capacity);
-		count = 0;
-	}
-
 	/* Initialize this array with n elements each assigned the value t */
-	array(const value_type &t, int n = 1)
+	array(int n, const value_type &t)
 	{
 		capacity = n + log2i(n);
 		data = (value_type*)malloc(sizeof(value_type)*capacity);
@@ -81,6 +73,14 @@ struct array
 		for (int i = 1; i < num; i++)
 			result.push_back(va_arg(arguments, value_type));
 		va_end(arguments);
+		return result;
+	}
+
+	template <class container2, class container3>
+	static array<value_type> join(const container2 &c0, const container3 &c1)
+	{
+		array<value_type> result(c0);
+		result.push_back(c1);
 		return result;
 	}
 
@@ -320,7 +320,15 @@ struct array
 			return result;
 		}
 
-		void push(value_type v, int n = 1)
+		void push(value_type v)
+		{
+			alloc(1);
+			new (loc) value_type(v);
+			loc++;
+		}
+
+
+		void push(int n, value_type v)
 		{
 			alloc(n);
 			for (int i = 0; i < n; i++, loc++)
@@ -342,12 +350,17 @@ struct array
 			}
 		}
 
-		slice<iterator> sub(int n)
+		slice<iterator> sub(int n = -1)
 		{
-			return slice<iterator>(*this, n);
+			iterator right;
+			if (n < 0)
+				right = arr->end()+n;
+			else
+				right = *this+n-1;
+			return slice<iterator>(*this, right);
 		}
 
-		void replace(int n, value_type v, int m = 1)
+		void replace(int n, int m, value_type v)
 		{
 			int offset = loc - arr->data;
 			if (n < 0)
@@ -360,8 +373,7 @@ struct array
 			n = min(offset + n, arr->count) - offset;
 			while (n > 0 && m > 0)
 			{
-				loc->~value_type();
-				new (loc) value_type(v);
+				*loc = v;
 				loc++;
 				m--;
 				n--;
@@ -402,8 +414,7 @@ struct array
 			typename container::const_iterator j = c.begin();
 			while (n > 0 && j != c.end())
 			{
-				loc->~value_type();
-				new (loc) value_type(*j);
+				*loc = *j;
 				loc++;
 				j++;
 				n--;
@@ -571,9 +582,14 @@ struct array
 			return loc - i.loc;
 		}
 
-		slice<const_iterator> sub(int n)
+		slice<const_iterator> sub(int n = -1)
 		{
-			return slice<const_iterator>(*this, *this+n);
+			iterator right;
+			if (n < 0)
+				right = arr->end()+n;
+			else
+				right = *this+n-1;
+			return slice<const_iterator>(*this, right);
 		}
 	};
 
@@ -668,6 +684,26 @@ struct array
 		return slice<const_iterator>(const_iterator(this, left), const_iterator(this, right));
 	}
 
+	void push_back(int n, value_type v)
+	{
+		end().push(n, v);
+	}
+
+	void push_front(int n, value_type v)
+	{
+		begin().push(n, v);
+	}
+
+	void push_back(value_type v)
+	{
+		end().push(v);
+	}
+
+	void push_front(value_type v)
+	{
+		begin().push(v);
+	}
+
 	template <class container>
 	void push_back(const container &c)
 	{
@@ -679,17 +715,7 @@ struct array
 	{
 		begin().push(c);
 	}
-
-	void push_back(value_type v, int n = 1)
-	{
-		end().push(v, n);
-	}
-
-	void push_front(value_type v, int n = 1)
-	{
-		begin().push(v, n);
-	}
-
+	
 	array<value_type> pop_back(unsigned int n = 1)
 	{
 		return end().pop(-n);

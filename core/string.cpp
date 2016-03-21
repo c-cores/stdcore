@@ -19,12 +19,12 @@ string::string()
 
 }
 
-string::string(char t, int n) : array<char>(t, n)
+string::string(int n, char t) : array<char>(n, t)
 {
 	
 }
 
-string::string(const char *str) : array<char>(slice<const char*>(str, strlen(str)))
+string::string(const char *str) : array<char>(slice<const char*>(str, str+strlen(str)-1))
 {
 }
 
@@ -643,7 +643,7 @@ int string::find_last_not_of_l0(string str, string del, int pos)
 
 void string::insert(int pos, const char *str)
 {
-	at(pos).push(slice<const char*>(str, strlen(str)));
+	at(pos).push(slice<const char*>(str, str+strlen(str)-1));
 }
 
 void string::insert(int pos, string str)
@@ -653,7 +653,7 @@ void string::insert(int pos, string str)
 
 string &string::replace(int s, int e, const char *r)
 {
-	at(s).replace(e-s, slice<const char*>(r, strlen(r)));
+	at(s).replace(e-s, slice<const char*>(r, r+strlen(r)-1));
 	return *this;
 }
 
@@ -786,13 +786,13 @@ string &string::tolower()
 
 string &string::operator=(const char *str)
 {
-	array<char>::operator=(slice<const char *>(str, strlen(str)));
+	array<char>::operator=(slice<const char *>(str, str+strlen(str)-1));
 	return *this;
 }
 
 string &string::operator=(char *str)
 {
-	array<char>::operator=(slice<char*>(str, strlen(str)));
+	array<char>::operator=(slice<char*>(str, str+strlen(str)-1));
 	return *this;
 }
 
@@ -837,7 +837,7 @@ string operator+(string s1, const char *s2)
 	string result;
 	result.reserve(s1.size() + s2s);
 	result.push_back(s1);
-	result.push_back(slice<const char*>(s2, s2+s2s));
+	result.push_back(slice<const char*>(s2, s2+s2s-1));
 	return result;
 }
 
@@ -999,75 +999,75 @@ string to_string(char i)
 {
 	char str[5];
 	snprintf(str, 5, "%hd", i);
-	return string(slice<char*>(str, 5));
+	return string(slice<char*>(str, str+4));
 }
 
 string to_string(bool b)
 {
-	return string(b ? slice<const char*>("true", 4) : slice<const char*>("false", 5));
+	return string(b ? "true" : "false");
 }
 
 string to_string(int i)
 {
 	char str[12];
 	snprintf(str, 12, "%d", i);
-	return string(slice<char*>(str, 12));
+	return string(slice<char*>(str, str+11));
 }
 
 string to_string(short i)
 {
 	char str[7];
 	snprintf(str, 7, "%hd", i);
-	return string(slice<char*>(str, 7));
+	return string(slice<char*>(str, str+6));
 }
 
 string to_string(long i)
 {
 	char str[21];
 	snprintf(str, 21, "%ld", i);
-	return string(slice<char*>(str, 21));
+	return string(slice<char*>(str, str+20));
 }
 
 string to_string(unsigned char i)
 {
 	char str[5];
 	snprintf(str, 5, "%hu", i);
-	return string(slice<char*>(str, 5));
+	return string(slice<char*>(str, str+4));
 }
 
 string to_string(unsigned int i)
 {
 	char str[12];
 	snprintf(str, 12, "%u", i);
-	return string(slice<char*>(str, 12));
+	return string(slice<char*>(str, str+11));
 }
 
 string to_string(unsigned short i)
 {
 	char str[7];
 	snprintf(str, 7, "%hu", i);
-	return string(slice<char*>(str, 7));
+	return string(slice<char*>(str, str+6));
 }
 
 string to_string(unsigned long i)
 {
 	char str[21];
 	snprintf(str, 21, "%lu", i);
-	return string(slice<char*>(str, 7));
+	return string(slice<char*>(str, str+6));
 }
 
 string to_string(float f)
 {
 	char str[32];
 	snprintf(str, 32, "%f", f);
-	return string(slice<char*>(str, 32));
+	return string(slice<char*>(str, str+31));
 }
 
 string to_string(double d)
 {
 	char str[32];
 	snprintf(str, 32, "%f", d);
-	return string(slice<char*>(str, 32));
+	return string(slice<char*>(str, str+31));
 }
 
 bool to_bool(string s)

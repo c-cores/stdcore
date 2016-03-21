@@ -7,6 +7,7 @@
 
 #include "file.h"
 #include <stdarg.h>
+#include <stdint.h>
 
 namespace core
 {
@@ -92,8 +93,9 @@ int file::read(unsigned char *s, int n)
 
 string file::read_word()
 {
-	string result(16);
+	string result;
 	char c;
+	result.reserve(16);
 	while ((c = fgetc(ptr)) != ' ' && c != '\t' && c != '\n' && c != '\0')
 		result.push_back(c);
 	return result;
@@ -101,7 +103,8 @@ string file::read_word()
 
 string file::read_line()
 {
-	string result(256);
+	string result;
+	result.reserve(256);
 	if (fgets(result.data, 256, ptr) != NULL)
 		result.alloc_back(strlen(result.data));
 	return result;
@@ -333,13 +336,13 @@ file &operator<<(file &fout, file::hex<unsigned long> i)
 
 file &operator<<(file &fout, file::hex<float> i)
 {
-	fprintf(fout.ptr, "%08X", *(int*)(&i.value));
+	fprintf(fout.ptr, "%08X", *(uint32_t*)(&i.value));
 	return fout;
 }
 
 file &operator<<(file &fout, file::hex<double> i)
 {
-	fprintf(fout.ptr, "%08X%08X", *(int*)((&i.value) + 1), *(int*)(&i.value));
+	fprintf(fout.ptr, "%08X%08X", *(uint32_t*)((&i.value) + 1), *(uint32_t*)(&i.value));
 	return fout;
 }
 

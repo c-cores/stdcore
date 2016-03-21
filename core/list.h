@@ -82,12 +82,12 @@ struct list
 			end().push(*i);
 	}
 
-	list(const value_type &t, int n = 1)
+	list(int n, const value_type &t)
 	{
 		left.next = &right;
 		right.prev = &left;
 		count = 0;
-		end().push(t, n);
+		end().push(n, t);
 	}
 
 	~list()
@@ -104,7 +104,7 @@ struct list
 
 	struct iterator
 	{
-	private:
+	protected:
 		friend class list<value_type>;
 		friend class const_iterator;
 		list<value_type> *lst;
@@ -361,7 +361,18 @@ struct list
 			}
 		}
 
-		void push(value_type v, int n = 1)
+		void push(value_type v)
+		{
+			node *start = loc->prev;
+			start->next = new item(v);
+			start->next->prev = start;
+			start = start->next;
+			start->next = loc;
+			loc->prev = start;
+			lst->count++;
+		}
+
+		void push(int n, value_type v)
 		{
 			node *start = loc->prev;
 			for (int i = 0; i < n; i++)
@@ -379,19 +390,75 @@ struct list
 		template <class container>
 		void push(const container &c)
 		{
+			node *start = loc->prev;
 			for (typename container::const_iterator i = c.begin(); i != c.end(); i++)
-				push(*i);
+			{
+				start->next = new item(*i);
+				start->next->prev = start;
+				start = start->next;
+			}
+
+			start->next = loc;
+			loc->prev = start;
+			lst->count += c.size();
 		}
 
-		slice<iterator> sub(int n)
+		slice<iterator> sub(int n = -1)
 		{
-			return slice<iterator>(*this, *this+n);
+			iterator right;
+			if (n < 0)
+				right = lst->end()+n;
+			else
+				right = *this+n-1;
+			return slice<iterator>(*this, right);
 		}
+
+		void replace(int n, int m, value_type v)
+		{
+			int j = 0;
+			iterator i = *this;
+			while (i != lst->end() && j < n && j < m)
+			{
+				*i = v;
+				i++;
+				j++;
+			}
+
+			if (i == lst->end() && j < m)
+				i.push(m-j, v);
+			else if (j < m)
+				(i+1).push(m-j, v);
+			else if (j < n)
+				i.pop(n-j);
+		}
+		
+		template <class container>
+		void replace(int n, const container &c)
+		{
+			typename container::const_iterator j = c.begin();
+			int k = 0;
+			iterator i = *this;
+			while (i != lst->end() && k < n && j != c.end())
+			{
+				*i = *j;
+				i++;
+				j++;
+				k++;
+			}
+
+			if (i == lst->end() && j != c.end())
+				i.push(j.sub());
+			else if (j != c.end())
+				(i+1).push(j.sub());	
+			else if (k < n)
+				i.pop(n-k);
+		}
+
 	};
 
 	struct const_iterator
 	{
-	private:
+	protected:
 		friend class list<value_type>;
 		friend class iterator;
 		const list<value_type> *lst;
@@ -567,9 +634,14 @@ struct list
 			return count;
 		}
 
-		slice<const_iterator> sub(int n)
+		slice<const_iterator> sub(int n = -1)
 		{
-			return slice<const_iterator>(*this, *this+n);
+			const_iterator right;
+			if (n < 0)
+				right = lst->end()+n;
+			else
+				right = *this+n-1;
+			return slice<const_iterator>(*this, right);
 		}
 	};
 
@@ -658,26 +730,37 @@ struct list
 		return slice<const_iterator>(const_iterator(this, left), const_iterator(this, right));
 	}
 
-	void push_back(value_type t)
+	void push_back(const value_type &t)
 	{
 		end().push(t);
 	}
 	
-	void push_front(value_type t)
+	void push_front(const value_type &t)
 	{
 		begin().push(t);
 	}
 
-	template <class container>
-	void merge_back(container &c)
+	void push_back(int n, const value_type &t)
 	{
-		end().merge(c);
+		end().push(n, t);
+	}
+	
+	void push_front(int n, const value_type &t)
+	{
+		begin().push(n, t);
+	}
+
+
+	template <class container>
+	void push_back(container &c)
+	{
+		end().push(c);
 	}
 
 	template <class container>
-	void merge_front(container &c)
+	void push_front(container &c)
 	{
-		begin().merge(c);
+		begin().push(c);
 	}
 
 	list<value_type> pop_back(unsigned int n = 1)

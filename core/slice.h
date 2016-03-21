@@ -17,17 +17,11 @@ struct slice
 	typedef iterator_type const_iterator;
 
 	slice() {}
-	
+
 	slice(iterator left, iterator right)
 	{
 		this->left = left;
 		this->right = right;
-	}
-
-	slice(iterator left, int length)
-	{
-		this->left = left;
-		this->right = left+(length-1);
 	}
 
 	~slice() {}
@@ -59,9 +53,12 @@ struct slice
 		return left-1;
 	}
 
-	slice<iterator> &bound() const
+	slice<iterator> &sub(int left, int right = -1) const
 	{
-		return *this;
+		if (right < 0)
+			return slice<iterator>(this->left+left, this->right+right+1);
+		else
+			return slice<iterator>(this->left+left, this->left+right);
 	}
 };
 

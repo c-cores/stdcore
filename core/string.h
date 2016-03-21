@@ -16,7 +16,7 @@ namespace core
 struct string : array<char>
 {
 	string();
-	string(char t, int n);
+	string(int n, char t);
 	string(const char *str);
 	
 	template <class container>
