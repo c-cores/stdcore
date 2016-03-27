@@ -23,6 +23,8 @@ namespace core
 template <class value_type>
 struct array
 {
+	typedef value_type type;
+
 	array()
 	{
 		data = NULL;

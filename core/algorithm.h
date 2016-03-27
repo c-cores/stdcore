@@ -42,6 +42,20 @@ container &unique(container &c)
 	return c;
 }
 
+template <class container>
+container &remove(container &c, const typename container::type &value)
+{
+	typename container::iterator i = c.begin();
+	while (i != c.end())
+	{
+		if (*i == value)
+			i.drop();
+		else
+			i++;
+	}
+	return c;
+}
+
 array<int> range(int lower, int upper, int step = 1)
 {
 	array<int> result;
