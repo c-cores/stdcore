@@ -63,35 +63,6 @@ struct array
 			new (data+count) value_type(t);
 	}
 
-	template <int num>
-	static array<value_type> join(value_type first, ...)
-	{
-		array<value_type> result;
-		va_list arguments;
-
-		va_start(arguments, first);
-		result.reserve(num);
-		result.push_back(first);
-		for (int i = 1; i < num; i++)
-			result.push_back(va_arg(arguments, value_type));
-		va_end(arguments);
-		return result;
-	}
-
-	template <class container2, class container3>
-	static array<value_type> join(const container2 &c0, const container3 &c1)
-	{
-		array<value_type> result(c0);
-		result.push_back(c1);
-		return result;
-	}
-
-	template <int num>
-	static array<value_type> join()
-	{
-		return array<value_type>();
-	}
-
 	virtual ~array()
 	{
 		if (data != NULL)
@@ -951,6 +922,18 @@ bool operator!=(array<value_type> a0, array<value_type> a1)
 			return true;
 
 	return false;
+}
+
+template <class value_type>
+array<value_type> &operator<<(array<value_type> &a1, const array<value_type> &a2)
+{
+	a1.push_back(a2);
+}
+
+template <class value_type>
+array<value_type> &operator<<(array<value_type> &a1, const value_type &a2)
+{
+	a1.push_back(a2);
 }
 
 }

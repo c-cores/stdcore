@@ -6,7 +6,7 @@
  */
 
 #include "list.h"
-#include "pair.h"
+#include "implier.h"
 #include "algorithm.h"
 
 #ifndef map_h
@@ -14,57 +14,6 @@
 
 namespace core
 {
-
-template <class ktype, class vtype>
-struct implier
-{
-	implier() {}
-	implier(ktype k, vtype v)
-	{
-		key = k;
-		value = v;
-	}
-	~implier() {}
-
-	ktype key;
-	vtype value;
-};
-
-template <class ktype, class vtype>
-bool operator<(implier<ktype, vtype> i0, implier<ktype, vtype> i1)
-{
-	return (i0.key < i1.key);
-}
-
-template <class ktype, class vtype>
-bool operator>(implier<ktype, vtype> i0, implier<ktype, vtype> i1)
-{
-	return (i0.key > i1.key);
-}
-
-template <class ktype, class vtype>
-bool operator<=(implier<ktype, vtype> i0, implier<ktype, vtype> i1)
-{
-	return (i0.key <= i1.key);
-}
-
-template <class ktype, class vtype>
-bool operator>=(implier<ktype, vtype> i0, implier<ktype, vtype> i1)
-{
-	return (i0.key >= i1.key);
-}
-
-template <class ktype, class vtype>
-bool operator==(implier<ktype, vtype> i0, implier<ktype, vtype> i1)
-{
-	return (i0.key == i1.key);
-}
-
-template <class ktype, class vtype>
-bool operator!=(implier<ktype, vtype> i0, implier<ktype, vtype> i1)
-{
-	return (i0.key != i1.key);
-}
 
 template <class ktype, class vtype>
 struct map : list<implier<ktype, vtype> >
@@ -79,6 +28,7 @@ struct map : list<implier<ktype, vtype> >
 
 	}
 
+	using typename list<implier<ktype, vtype> >::type;
 	using typename list<implier<ktype, vtype> >::iterator;
 	using typename list<implier<ktype, vtype> >::const_iterator;
 	using list<implier<ktype, vtype> >::begin;

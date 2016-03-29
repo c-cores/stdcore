@@ -12,8 +12,8 @@
 namespace core
 {
 
-template <class container>
-typename container::iterator find(container &c, const typename container::iterator::type &t)
+template <class container, class element>
+typename container::iterator find(container &c, const element &t)
 {
 	for (typename container::iterator i = c.begin(); i != c.end(); i++)
 		if (*i == t)
@@ -44,8 +44,8 @@ typename container1::iterator find(container1 &c, const container2 &t)
 	return c.end();
 }
 
-template <class container>
-bool contains(container &c, const typename container::iterator::type &t)
+template <class container, class element>
+bool contains(container &c, const element &t)
 {
 	return (find(c, t) != c.end());
 }
@@ -56,8 +56,8 @@ bool contains(container1 &c, const container2 &t)
 	return (find(c, t) != c.end());
 }
 
-template <class container>
-typename container::iterator search_tree(container &c, const typename container::iterator::type &t, int radix = 2)
+template <class container, class element>
+typename container::iterator search_tree(container &c, const element &t, int radix = 2)
 {
 	int size = c.end() - c.begin();
 	if (size >= radix)

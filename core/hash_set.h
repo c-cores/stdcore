@@ -1,5 +1,5 @@
 /*
- * hash_table.h
+ * hash_set.h
  *
  *  Created on: Jun 20, 2015
  *      Author: nbingham
@@ -7,17 +7,17 @@
 
 #pragma once
 
-#include "hasher.h"
+#include "bits.h"
 
 template <class value_type, int num_buckets>
-struct hash_table
+struct hash_set
 {
-	hash_table() : capacity(num_buckets)
+	hash_set() : capacity(num_buckets)
 	{
 		count = 0;
 	}
 
-	~hash_table() {}
+	~hash_set() {}
 
 	const int capacity;
 	vector<value_type> buckets[num_buckets];
@@ -74,7 +74,7 @@ struct hash_table
 		return max_size;
 	}
 
-	void merge(const hash_table<value_type, num_buckets> &m)
+	void merge(const hash_set<value_type, num_buckets> &m)
 	{
 		for (int i = 0; i < num_buckets; i++)
 		{
@@ -93,7 +93,7 @@ struct hash_table
 		return buckets[i][index];
 	}
 
-	hash_table<value_type, num_buckets> &operator=(const hash_table<value_type, num_buckets> &copy)
+	hash_set<value_type, num_buckets> &operator=(const hash_set<value_type, num_buckets> &copy)
 	{
 		for (int i = 0; i < num_buckets; i++)
 			buckets[i] = copy.buckets[i];
