@@ -5,8 +5,7 @@
  *      Author: nbingham
  */
 
-#ifndef pair_h
-#define pair_h
+#pragma once
 
 namespace core
 {
@@ -69,5 +68,3 @@ bool operator>=(pair<type1, type2> p1, pair<type1, type2> p2)
 }
 
 }
-
-#endif

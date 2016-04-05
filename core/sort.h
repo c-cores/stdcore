@@ -45,7 +45,7 @@ type median_iterator(type t1, type t2, type t3)
 
 // Sorting Algorithms
 template <class container>
-container &sort_selection(container &c)
+container sort_selection(container c)
 {
 	for (typename container::iterator i = c.begin(); i != c.end(); i++)
 	{
@@ -60,9 +60,8 @@ container &sort_selection(container &c)
 	return c;
 }
 
-// Sorting Algorithms
-template <class container, class container2>
-container2 &order_selection(const container &c, container2 &order)
+template <class container1, class container2>
+container2 order_selection(const container1 &c, container2 order)
 {
 	for (typename container2::iterator i = order.begin(); i != order.end(); i++)
 	{
@@ -78,7 +77,7 @@ container2 &order_selection(const container &c, container2 &order)
 }
 
 template <class container>
-container &sort_quick(container &c)
+container sort_quick(container c)
 {
 	if (c.size() > 2)
 	{
@@ -97,11 +96,8 @@ container &sort_quick(container &c)
 
 		store.swap(c.rbegin());
 
-		slice<typename container::iterator> small(c.begin(), store-1);
-		slice<typename container::iterator> big(store+1, c.rbegin());
-
-		sort_quick(small);
-		sort_quick(big);
+		sort_quick(c.sub(c.begin(), store-1));
+		sort_quick(c.sub(store+1, c.rbegin()));
 	}
 	else if (c.size() > 1)
 		if (*c.rbegin() < *c.begin())
@@ -111,7 +107,7 @@ container &sort_quick(container &c)
 }
 
 template <class container, class container2>
-container2 &order_quick(const container &c, container2 &order)
+container2 order_quick(const container &c, container2 order)
 {
 	if (order.size() > 2)
 	{
@@ -130,11 +126,8 @@ container2 &order_quick(const container &c, container2 &order)
 
 		store.swap(order.rbegin());
 
-		slice<typename container2::iterator> small(order.begin(), store-1);
-		slice<typename container2::iterator> big(store+1, order.rbegin());
-
-		order_quick(c, small);
-		order_quick(c, big);
+		order_quick(c, order.sub(order.begin(), store-1));
+		order_quick(c, order.sub(store+1, order.rbegin()));
 	}
 	else if (order.size() > 1)
 		if (*(c.begin() + *order.rbegin()) < *(c.begin() + *order.begin()))
@@ -145,9 +138,9 @@ container2 &order_quick(const container &c, container2 &order)
 
 
 template <class container>
-bool is_sorted(container &c)
+bool is_sorted(const container &c)
 {
-	for (typename container::iterator i = c.begin(); i != c.rbegin(); i++)
+	for (typename container::const_iterator i = c.begin(); i != c.rbegin(); i++)
 		if (*(i+1) < *i)
 			return false;
 
@@ -155,9 +148,9 @@ bool is_sorted(container &c)
 }
 
 template <class container>
-bool is_rsorted(container &c)
+bool is_rsorted(const container &c)
 {
-	for (typename container::iterator i = c.begin(); i != c.rbegin(); i++)
+	for (typename container::const_iterator i = c.begin(); i != c.rbegin(); i++)
 		if (*(i+1) > *i)
 			return false;
 
@@ -165,7 +158,7 @@ bool is_rsorted(container &c)
 }
 
 template <class container>
-container &reverse(container &c)
+container reverse(container c)
 {
 	for (typename container::iterator i = c.begin(), j = c.rbegin(); i != j && i != j+1; i++, j--)
 		i.swap(j);

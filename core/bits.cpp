@@ -7,6 +7,9 @@
 
 #include "bits.h"
 
+namespace core
+{
+
 bits::bits()
 {
 
@@ -21,7 +24,7 @@ bits::~bits()
 uint32_t bits::hash()
 {
 	uint32_t len = size();
-	const char* ptr = data();
+	unsigned char* ptr = data;
 	uint32_t hash = len, tmp;
 	int rem;
 
@@ -70,14 +73,14 @@ uint32_t bits::hash()
 
 bits &operator<<(bits &str, char v)
 {
-	str.push_back(v);
-	return bits;
+	str.push_back((unsigned char)v);
+	return str;
 }
 
 bits &operator<<(bits &str, unsigned char v)
 {
 	str.push_back(v);
-	return bits;
+	return str;
 }
 
 bits &operator<<(bits &str, short v)
@@ -85,7 +88,7 @@ bits &operator<<(bits &str, short v)
 	str.reserve(str.size() + sizeof(short));
 	memcpy(str.data + str.size(), &v, sizeof(short));
 	str.alloc_back(sizeof(short));
-	return bits;
+	return str;
 }
 
 bits &operator<<(bits &str, unsigned short v)
@@ -93,7 +96,7 @@ bits &operator<<(bits &str, unsigned short v)
 	str.reserve(str.size() + sizeof(unsigned short));
 	memcpy(str.data + str.size(), &v, sizeof(unsigned short));
 	str.alloc_back(sizeof(unsigned short));
-	return bits;
+	return str;
 }
 
 bits &operator<<(bits &str, int v)
@@ -101,7 +104,7 @@ bits &operator<<(bits &str, int v)
 	str.reserve(str.size() + sizeof(int));
 	memcpy(str.data + str.size(), &v, sizeof(int));
 	str.alloc_back(sizeof(int));
-	return bits;
+	return str;
 }
 
 bits &operator<<(bits &str, unsigned int v)
@@ -109,7 +112,7 @@ bits &operator<<(bits &str, unsigned int v)
 	str.reserve(str.size() + sizeof(unsigned int));
 	memcpy(str.data + str.size(), &v, sizeof(unsigned int));
 	str.alloc_back(sizeof(unsigned int));
-	return bits;
+	return str;
 }
 
 bits &operator<<(bits &str, long v)
@@ -117,7 +120,7 @@ bits &operator<<(bits &str, long v)
 	str.reserve(str.size() + sizeof(long));
 	memcpy(str.data + str.size(), &v, sizeof(long));
 	str.alloc_back(sizeof(long));
-	return bits;
+	return str;
 }
 
 bits &operator<<(bits &str, unsigned long v)
@@ -125,7 +128,7 @@ bits &operator<<(bits &str, unsigned long v)
 	str.reserve(str.size() + sizeof(unsigned long));
 	memcpy(str.data + str.size(), &v, sizeof(unsigned long));
 	str.alloc_back(sizeof(unsigned long));
-	return bits;
+	return str;
 }
 
 bits &operator<<(bits &str, long long v)
@@ -133,7 +136,7 @@ bits &operator<<(bits &str, long long v)
 	str.reserve(str.size() + sizeof(long long));
 	memcpy(str.data + str.size(), &v, sizeof(long long));
 	str.alloc_back(sizeof(long long));
-	return bits;
+	return str;
 }
 
 bits &operator<<(bits &str, unsigned long long v)
@@ -141,7 +144,7 @@ bits &operator<<(bits &str, unsigned long long v)
 	str.reserve(str.size() + sizeof(unsigned long long));
 	memcpy(str.data + str.size(), &v, sizeof(unsigned long long));
 	str.alloc_back(sizeof(unsigned long long));
-	return bits;
+	return str;
 }
 
 bits &operator<<(bits &str, bool v)
@@ -149,7 +152,7 @@ bits &operator<<(bits &str, bool v)
 	str.reserve(str.size() + sizeof(bool));
 	memcpy(str.data + str.size(), &v, sizeof(bool));
 	str.alloc_back(sizeof(bool));
-	return bits;
+	return str;
 }
 
 bits &operator<<(bits &str, float v)
@@ -157,7 +160,7 @@ bits &operator<<(bits &str, float v)
 	str.reserve(str.size() + sizeof(float));
 	memcpy(str.data + str.size(), &v, sizeof(float));
 	str.alloc_back(sizeof(float));
-	return bits;
+	return str;
 }
 
 bits &operator<<(bits &str, double v)
@@ -165,15 +168,7 @@ bits &operator<<(bits &str, double v)
 	str.reserve(str.size() + sizeof(double));
 	memcpy(str.data + str.size(), &v, sizeof(double));
 	str.alloc_back(sizeof(double));
-	return bits;
-}
-
-bits &operator<<(bits &str, string v)
-{
-	str.reserve(str.size() + v.size());
-	memcpy(str.data + str.size(), v.data, v.size());
-	str.alloc_back(v.size());
-	return bits;
+	return str;
 }
 
 bits &operator<<(bits &str, const char *v)
@@ -182,7 +177,7 @@ bits &operator<<(bits &str, const char *v)
 	str.reserve(str.size() + n);
 	memcpy(str.data + str.size(), v, n);
 	str.alloc_back(n);
-	return bits;
+	return str;
 }
 
 bits &operator<<(bits &str, char *v)
@@ -191,8 +186,7 @@ bits &operator<<(bits &str, char *v)
 	str.reserve(str.size() + n);
 	memcpy(str.data + str.size(), v, n);
 	str.alloc_back(n);
-	return bits;
+	return str;
 }
 
-
-
+}

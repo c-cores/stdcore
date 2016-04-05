@@ -7,14 +7,13 @@
 
 #pragma once
 
-#include "sort.h"
-#include "search.h"
+#include "slice.h"
 
 namespace core
 {
 
 template <class container>
-container &collapse(container &c)
+container collapse(container c)
 {
 	typename container::iterator i = c.begin(), j = c.begin()+1;
 	for (; j != c.end(); j++)
@@ -28,7 +27,7 @@ container &collapse(container &c)
 }
 
 template <class container>
-container &unique(container &c)
+container unique(container c)
 {
 	for (typename container::iterator i = c.begin(); i != c.end(); i++)
 		for (typename container::iterator j = i+1; j != c.end();)
@@ -43,7 +42,7 @@ container &unique(container &c)
 }
 
 template <class container>
-container &remove(container &c, const typename container::type &value)
+container remove(container c, const typename container::type &value)
 {
 	typename container::iterator i = c.begin();
 	while (i != c.end())
@@ -56,14 +55,15 @@ container &remove(container &c, const typename container::type &value)
 	return c;
 }
 
-array<int> range(int lower, int upper, int step = 1)
+template <class container>
+container range(typename container::type lower, typename container::type upper, typename container::type step)
 {
-	array<int> result;
-	result.reserve((upper-lower)/step);
-	for (int i = lower; i < upper; i+=step)
+	container result;
+	for (typename container::type i = lower; i < upper; i += step)
 		result.push_back(i);
 	return result;
 }
+
 
 }
 

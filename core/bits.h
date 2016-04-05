@@ -8,6 +8,11 @@
 #pragma once
 
 #include "array.h"
+#include "pair.h"
+#include "implier.h"
+
+namespace core
+{
 
 struct bits : array<unsigned char>
 {
@@ -18,14 +23,14 @@ struct bits : array<unsigned char>
 	using typename array<unsigned char>::iterator;
 	using typename array<unsigned char>::const_iterator;
 	
-	using array<char>::begin;
-	using array<char>::end;
-	using array<char>::rbegin;
-	using array<char>::rend;
-	using array<char>::sub;
-	using array<char>::size;
+	using array<unsigned char>::begin;
+	using array<unsigned char>::end;
+	using array<unsigned char>::rbegin;
+	using array<unsigned char>::rend;
+	using array<unsigned char>::sub;
+	using array<unsigned char>::size;
 
-	using array<char>::operator=;
+	using array<unsigned char>::operator=;
 
 	uint32_t hash();
 };
@@ -43,37 +48,29 @@ bits &operator<<(bits &str, unsigned long long v);
 bits &operator<<(bits &str, bool v);
 bits &operator<<(bits &str, float v);
 bits &operator<<(bits &str, double v);
-bits &operator<<(bits &str, string v);
 bits &operator<<(bits &str, const char *v);
 bits &operator<<(bits &str, char *v);
+
+template <class container>
+bits &operator<<(bits &str, const container &v)
+{
+	for (typename container::const_iterator i = v.begin(); i != v.end(); i++)
+		str << *i;
+	return str;
+}
 
 template <class type0, class type1>
 bits &operator<<(bits &str, const pair<type0, type1> &v)
 {
-	return str << v.first << v.second;
-}
-
-template <class type>
-bits &operator<<(bits &str, const array<type> &v)
-{
-	for (typename array<type>::const_iterator i = v.begin(); i != v.end(); i++)
-		str << *i;
+	str << v.first << v.second;
 	return str;
 }
 
-template <class type>
-bits &operator<<(bits &str, const list<type> &v)
+template <class type0, class type1>
+bits &operator<<(bits &str, const implier<type0, type1> &v)
 {
-	for (typename array<type>::const_iterator i = v.begin(); i != v.end(); i++)
-		str << *i;
+	str << v.first << v.second;
 	return str;
 }
 
-template <class key_type, class value_type>
-bits &operator<<(bits &str, const map<key_type, value_type> &v)
-{
-	for (typename map<key_type, value_type>::const_iterator i = v->begin(); i != v->end(); i++)
-		str << *i;
-	return str;
 }
-

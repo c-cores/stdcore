@@ -1,6 +1,8 @@
 #pragma once
 
 #include "array.h"
+#include "pair.h"
+#include "implier.h"
 
 namespace core
 {
@@ -62,6 +64,61 @@ string &operator<<(string &s1, double s2);
 string &operator<<(string &s1, string s2);
 string &operator<<(string &s1, const char *s2);
 string &operator<<(string &s1, char *s2);
+
+template <class container>
+string &operator<<(string &s1, const container &v)
+{
+	s1.push_back('[');
+	for (typename container::const_iterator i = v.begin(); i != v.end(); i++)
+	{
+		if (i != v.begin())
+			s1.push_back(' ');
+		s1 << *i;
+	}
+	s1.push_back(']');
+	return s1;
+}
+
+template <class type0, class type1>
+string &operator<<(string &s1, const pair<type0, type1> &v)
+{
+	s1.push_back('(');
+	s1 << v.first;
+	s1.push_back(' ');
+	s1 << v.second;
+	s1.push_back(')');
+	return s1;
+}
+
+template <class type0, class type1>
+string &operator<<(string &s1, const implier<type0, type1> &v)
+{
+	s1.push_back('(');
+	s1 << v.first;
+	s1 += " -> ";
+	s1 << v.second;
+	s1.push_back(')');
+	return s1;
+}
+
+bool operator==(string s1, string s2);
+bool operator!=(string s1, string s2);
+bool operator<(string s1, string s2);
+bool operator>(string s1, string s2);
+bool operator<=(string s1, string s2);
+bool operator>=(string s1, string s2);
+bool operator==(string s1, const char* s2);
+bool operator!=(string s1, const char* s2);
+bool operator<(string s1, const char* s2);
+bool operator>(string s1, const char* s2);
+bool operator<=(string s1, const char* s2);
+bool operator>=(string s1, const char* s2);
+bool operator==(const char* s1, string s2);
+bool operator!=(const char* s1, string s2);
+bool operator<(const char* s1, string s2);
+bool operator>(const char* s1, string s2);
+bool operator<=(const char* s1, string s2);
+bool operator>=(const char* s1, string s2);
 
 bool is_alpha(char c);
 bool is_numeric(char c);

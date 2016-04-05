@@ -5,12 +5,11 @@
  *      Author: nbingham
  */
 
+#pragma once
+
 #include "list.h"
 #include "implier.h"
-#include "algorithm.h"
-
-#ifndef map_h
-#define map_h
+#include "search.h"
 
 namespace core
 {
@@ -35,11 +34,12 @@ struct map : list<implier<ktype, vtype> >
 	using list<implier<ktype, vtype> >::end;
 	using list<implier<ktype, vtype> >::rbegin;
 	using list<implier<ktype, vtype> >::rend;
-	using list<implier<ktype, vtype> >::bound;
+	using list<implier<ktype, vtype> >::sub;
+	using list<implier<ktype, vtype> >::ref;
 
 	iterator find(ktype key)
 	{
-		iterator pos = search_tree(*this, implier<ktype, vtype>(key, vtype()));
+		iterator pos = search_tree(ref(), key);
 		if (pos != end() && pos->key == key)
 			return pos;
 		else
@@ -48,14 +48,14 @@ struct map : list<implier<ktype, vtype> >
 
 	iterator insert(ktype key, vtype value)
 	{
-		iterator pos = search_tree(*this, implier<ktype, vtype>(key, vtype()));
+		iterator pos = search_tree(ref(), key);
 		pos.push(implier<ktype, vtype>(key, value));
 		return (pos-1);
 	}
 
 	vtype &operator[](ktype key)
 	{
-		iterator pos = search_tree(*this, implier<ktype, vtype>(key, vtype()));
+		iterator pos = search_tree(ref(), key);
 		if (pos != end() && pos->key == key)
 			return pos->value;
 		else
@@ -68,4 +68,3 @@ struct map : list<implier<ktype, vtype> >
 
 }
 
-#endif

@@ -12,23 +12,55 @@
 namespace core
 {
 
-template <class container, class element>
-typename container::iterator find(container &c, const element &t)
+template <typename container, typename element>
+typename slice<container>::iterator find_first(slice<container> c, const element &t)
 {
-	for (typename container::iterator i = c.begin(); i != c.end(); i++)
+	for (typename slice<container>::iterator i = c.begin(); i != c.end(); i++)
 		if (*i == t)
 			return i;
 
 	return c.end();
 }
 
-template <class container1, class container2>
-typename container1::iterator find(container1 &c, const container2 &t)
+template <typename container, typename element>
+typename slice<container>::iterator find_last(slice<container> c, const element &t)
 {
-	for (typename container1::iterator i = c.begin(); i != c.end(); i++)
+	for (typename slice<container>::iterator i = c.rbegin(); i != c.rend(); i--)
+		if (*i == t)
+			return i;
+
+	return c.end();
+}
+
+template <typename container1, typename container2>
+typename slice<container1>::iterator find_first_of(slice<container1> c1, const container2 &c2)
+{
+	for (typename slice<container1>::iterator i = c1.begin(); i != c1.end(); i++)
+		for (typename container2::const_iterator j = c2.begin(); j != c2.end(); j++)
+			if (*i == *j)
+				return i;
+
+	return c1.end();
+}
+
+template <typename container1, typename container2>
+typename slice<container1>::iterator find_last_of(slice<container1> c1, const container2 &c2)
+{
+	for (typename slice<container1>::iterator i = c1.rbegin(); i != c1.rend(); i--)
+		for (typename container2::const_iterator j = c2.begin(); j != c2.end(); j++)
+			if (*i == *j)
+				return i;
+
+	return c1.end();
+}
+
+template <typename container1, typename container2>
+typename slice<container1>::iterator find_pattern(slice<container1> c, const container2 &t)
+{
+	for (typename slice<container1>::iterator i = c.begin(); i != c.end(); i++)
 	{
 		bool fail = false;
-		typename container1::iterator k = i;
+		typename slice<container1>::iterator k = i;
 		for (typename container2::const_iterator j = t.begin(); j != t.end(); j++,k++)
 		{
 			if (k == c.end())
@@ -44,26 +76,32 @@ typename container1::iterator find(container1 &c, const container2 &t)
 	return c.end();
 }
 
-template <class container, class element>
-bool contains(container &c, const element &t)
+template <typename container, typename element>
+bool contains(slice<container> c, const element &t)
 {
-	return (find(c, t) != c.end());
+	return (find_first(c, t) != c.end());
 }
 
-template <class container1, class container2>
-bool contains(container1 &c, const container2 &t)
+template <typename container1, typename container2>
+bool contains_one_of(slice<container1> c1, const container2 &c2)
 {
-	return (find(c, t) != c.end());
+	return (find_first_of(c1, c2) != c1.end());
 }
 
-template <class container, class element>
-typename container::iterator search_tree(container &c, const element &t, int radix = 2)
+template <typename container1, typename container2>
+bool contains_pattern(slice<container1> c, const container2 &t)
+{
+	return (find_pattern(c, t) != c.end());
+}
+
+template <typename container, typename element>
+typename slice<container>::iterator search_tree(slice<container> c, const element &t, int radix = 2)
 {
 	int size = c.end() - c.begin();
 	if (size >= radix)
 	{
 		int D = 2*radix - size;
-		slice<typename container::iterator> pivot(c.begin(), c.begin());
+		slice<container> pivot(c.begin(), c.begin());
 		while (pivot.right != c.end())
 		{
 			if (D > 0)
@@ -83,7 +121,7 @@ typename container::iterator search_tree(container &c, const element &t, int rad
 	}
 	else
 	{
-		typename container::iterator i = c.begin();
+		typename slice<container>::iterator i = c.begin();
 		while (i != c.end() && *i < t)
 			i++;
 		return i;

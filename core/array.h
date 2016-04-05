@@ -92,8 +92,6 @@ struct array
 		array<value_type> *arr;
 		value_type *loc;
 	public:
-		typedef array<value_type> container;
-		typedef value_type type;
 		iterator()
 		{
 			arr = NULL;
@@ -120,12 +118,12 @@ struct array
 			return loc;
 		}
 
-		value_type *pointer()
+		value_type *ptr()
 		{
 			return loc;
 		}
 
-		value_type &value()
+		value_type &get()
 		{
 			return *loc;
 		}
@@ -224,8 +222,8 @@ struct array
 		{
 			value_type temp;
 			memcpy(&temp, loc, sizeof(value_type));
-			memcpy(loc, i.pointer(), sizeof(value_type));
-			memcpy(i.pointer(), &temp, sizeof(value_type));
+			memcpy(loc, i.ptr(), sizeof(value_type));
+			memcpy(i.ptr(), &temp, sizeof(value_type));
 		}
 
 		void alloc(unsigned int n = 1)
@@ -309,7 +307,7 @@ struct array
 		}
 
 		template <class container>
-		void push(const container &c)
+		void append(const container &c)
 		{
 			int n = c.size();
 			alloc(n);
@@ -323,14 +321,14 @@ struct array
 			}
 		}
 
-		slice<iterator> sub(int n = -1)
+		slice<array<value_type> > sub(int n = -1)
 		{
 			iterator right;
 			if (n < 0)
 				right = arr->end()+n;
 			else
 				right = *this+n-1;
-			return slice<iterator>(*this, right);
+			return slice<array<value_type> >(*this, right);
 		}
 
 		void replace(int n, int m, value_type v)
@@ -421,12 +419,16 @@ struct array
 		const array<value_type> *arr;
 		const value_type *loc;
 	public:
-		typedef const array<value_type> container;
-		typedef value_type type;
 		const_iterator()
 		{
 			arr = NULL;
 			loc = NULL;
+		}
+
+		const_iterator(iterator copy)
+		{
+			arr = copy.arr;
+			loc = copy.loc;
 		}
 
 		const_iterator(const array<value_type> *arr, int offset)
@@ -449,12 +451,12 @@ struct array
 			return loc;
 		}
 
-		const value_type *pointer()
+		const value_type *ptr()
 		{
 			return loc;
 		}
 
-		const value_type &value()
+		const value_type &get()
 		{
 			return *loc;
 		}
@@ -555,14 +557,14 @@ struct array
 			return loc - i.loc;
 		}
 
-		slice<const_iterator> sub(int n = -1)
+		slice<const array<value_type> > sub(int n = -1) const
 		{
-			iterator right;
+			const_iterator right;
 			if (n < 0)
 				right = arr->end()+n;
 			else
 				right = *this+n-1;
-			return slice<const_iterator>(*this, right);
+			return slice<const array<value_type> >(*this, right);
 		}
 	};
 
@@ -587,6 +589,11 @@ struct array
 			i += count;
 
 		return *(data + i);
+	}
+
+	value_type *ptr(int i) const
+	{
+		return data+i;
 	}
 
 	value_type &operator[](int i) const
@@ -647,14 +654,34 @@ struct array
 		return const_iterator(this, -count-1);
 	}
 
-	slice<iterator> sub(int left, int right = -1)
+	slice<array<value_type> > sub(int left, int right = -1)
 	{
-		return slice<iterator>(iterator(this, left), iterator(this, right));
+		return slice<array<value_type> >(iterator(this, left), iterator(this, right));
 	}
 
-	slice<const_iterator> sub(int left, int right = -1) const
+	slice<const array<value_type> > sub(int left, int right = -1) const
 	{
-		return slice<const_iterator>(const_iterator(this, left), const_iterator(this, right));
+		return slice<const array<value_type> >(const_iterator(this, left), const_iterator(this, right));
+	}
+
+	static slice<array<value_type> > sub(iterator left, iterator right)
+	{
+		return slice<array<value_type> >(left, right);
+	}
+
+	static slice<const array<value_type> > sub(const_iterator left, const_iterator right)
+	{
+		return slice<const array<value_type> >(left, right);
+	}
+
+	slice<array<value_type> > ref()
+	{
+		return slice<array<value_type> >(begin(), rbegin());
+	}
+
+	slice<const array<value_type> > ref() const
+	{
+		return slice<const array<value_type> >(begin(), rbegin());
 	}
 
 	void push_back(int n, value_type v)
@@ -678,15 +705,15 @@ struct array
 	}
 
 	template <class container>
-	void push_back(const container &c)
+	void append_back(const container &c)
 	{
-		end().push(c);
+		end().append(c);
 	}
 
 	template <class container>
-	void push_front(const container &c)
+	void append_front(const container &c)
 	{
-		begin().push(c);
+		begin().append(c);
 	}
 	
 	array<value_type> pop_back(unsigned int n = 1)
@@ -792,7 +819,7 @@ struct array
 		iterator j = begin();
 		while (i != c.end() && j != end())
 		{
-			new (j.pointer()) value_type(*i);
+			new (j.ptr()) value_type(*i);
 			i++;
 			j++;
 		}
@@ -819,7 +846,7 @@ struct array
 		iterator j = begin();
 		while (i != c.end() && j != end())
 		{
-			new (j.pointer()) value_type(*i);
+			new (j.ptr()) value_type(*i);
 			i++;
 			j++;
 		}

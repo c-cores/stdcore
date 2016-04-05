@@ -37,19 +37,19 @@ string &string::operator=(char *str)
 
 string &string::operator+=(const char *str)
 {
-	array<char>::push_back(slice<const char *>(str, str + strlen(str)-1));
+	array<char>::append_back(slice<const char*>(str, str + strlen(str)-1));
 	return *this;
 }
 
 string &string::operator+=(char *str)
 {
-	array<char>::push_back(slice<const char *>(str, str + strlen(str)-1));
+	array<char>::append_back(slice<const char*>(str, str + strlen(str)-1));
 	return *this;
 }
 
 string &string::operator+=(string str)
 {
-	array<char>::push_back(str.sub(0));
+	array<char>::append_back(str.sub(0));
 	return *this;
 }
 
@@ -64,8 +64,8 @@ string operator+(string s1, string s2)
 {
 	string result;
 	result.reserve(s1.size() + s2.size());
-	result.push_back(s1);
-	result.push_back(s2);
+	result.append_back(s1);
+	result.append_back(s2);
 	return result;
 }
 
@@ -74,8 +74,8 @@ string operator+(string s1, const char *s2)
 	string result;
 	int n = strlen(s2);
 	result.reserve(s1.size() + n);
-	result.push_back(s1);
-	result.push_back(slice<const char*>(s2, s2 + n-1));
+	result.append_back(s1);
+	result.append_back(slice<const char*>(s2, s2 + n-1));
 	return result;
 }
 
@@ -84,14 +84,14 @@ string operator+(string s1, char *s2)
 	string result;
 	int n = strlen(s2);
 	result.reserve(s1.size() + n);
-	result.push_back(s1);
-	result.push_back(slice<const char*>(s2, s2 + n-1));
+	result.append_back(s1);
+	result.append_back(slice<const char*>(s2, s2 + n-1));
 	return result;
 }
 
 string &operator<<(string &s1, string s2)
 {
-	s1.push_back(s2);
+	s1.append_back(s2);
 	return s1;
 }
 
@@ -106,12 +106,12 @@ string &operator<<(string &s1, bool s2)
 	if (s2)
 	{
 		const char *v = "true";
-		s1.push_back(slice<const char *>(v, v+3));
+		s1.append_back(slice<const char*>(v, v+3));
 	}
 	else
 	{
 		const char *v = "false";
-		s1.push_back(slice<const char *>(v, v+4));
+		s1.append_back(slice<const char*>(v, v+4));
 	}
 
 	return s1;
@@ -196,14 +196,104 @@ string &operator<<(string &s1, double s2)
 
 string &operator<<(string &s1, const char *s2)
 {
-	s1.push_back(slice<const char *>(s2, s2 + strlen(s2)-1));
+	s1.append_back(slice<const char*>(s2, s2 + strlen(s2)-1));
 	return s1;
 }
 
 string &operator<<(string &s1, char *s2)
 {
-	s1.push_back(slice<char *>(s2, s2 + strlen(s2)-1));
+	s1.append_back(slice<char*>(s2, s2 + strlen(s2)-1));
 	return s1;
+}
+
+bool operator==(string s1, string s2)
+{
+	return (compare(s1, s2) == 0);
+}
+
+bool operator!=(string s1, string s2)
+{
+	return (compare(s1, s2) != 0);
+}
+
+bool operator<(string s1, string s2)
+{
+	return (compare(s1, s2) < 0);
+}
+
+bool operator>(string s1, string s2)
+{
+	return (compare(s1, s2) > 0);
+}
+
+bool operator<=(string s1, string s2)
+{
+	return (compare(s1, s2) <= 0);
+}
+
+bool operator>=(string s1, string s2)
+{
+	return (compare(s1, s2) >= 0);
+}
+
+bool operator==(string s1, const char* s2)
+{
+	return (compare(s1, slice<const char*>(s2, s2+strlen(s2))) == 0);
+}
+
+bool operator!=(string s1, const char* s2)
+{
+	return (compare(s1, slice<const char*>(s2, s2+strlen(s2))) != 0);
+}
+
+bool operator<(string s1, const char* s2)
+{
+	return (compare(s1, slice<const char*>(s2, s2+strlen(s2))) < 0);
+}
+
+bool operator>(string s1, const char* s2)
+{
+	return (compare(s1, slice<const char*>(s2, s2+strlen(s2))) > 0);
+}
+
+bool operator<=(string s1, const char* s2)
+{
+	return (compare(s1, slice<const char*>(s2, s2+strlen(s2))) <= 0);
+}
+
+bool operator>=(string s1, const char* s2)
+{
+	return (compare(s1, slice<const char*>(s2, s2+strlen(s2))) >= 0);
+}
+
+bool operator==(const char* s1, string s2)
+{
+	return (compare(slice<const char*>(s1, s1+strlen(s1)), s2) == 0);
+}
+
+bool operator!=(const char* s1, string s2)
+{
+	return (compare(slice<const char*>(s1, s1+strlen(s1)), s2) != 0);
+}
+
+bool operator<(const char* s1, string s2)
+{
+	return (compare(slice<const char*>(s1, s1+strlen(s1)), s2) < 0);
+}
+
+bool operator>(const char* s1, string s2)
+{
+	return (compare(slice<const char*>(s1, s1+strlen(s1)), s2) > 0);
+}
+
+bool operator<=(const char* s1, string s2)
+{
+	return (compare(slice<const char*>(s1, s1+strlen(s1)), s2) <= 0);
+}
+
+bool operator>=(const char* s1, string s2)
+{
+	return (compare(slice<const char*>(s1, s1+strlen(s1)), s2) >= 0);
 }
 
 /*Is this character a legal name starter character?

@@ -112,9 +112,6 @@ struct list
 		list<value_type> *root;
 		end_item *loc;
 	public:
-		typedef list<value_type> container;
-		typedef value_type type;
-
 		iterator()
 		{
 			root = NULL;
@@ -167,12 +164,12 @@ struct list
 			return &((item*)loc)->value;
 		}
 
-		value_type *pointer()
+		value_type *ptr()
 		{
 			return &((item*)loc)->value;
 		}
 
-		value_type &value()
+		value_type &get()
 		{
 			return ((item*)loc)->value;
 		}
@@ -390,7 +387,7 @@ struct list
 		}
 
 		template <class container>
-		void push(const container &c)
+		void append(const container &c)
 		{
 			end_item *start = loc->prev;
 			for (typename container::const_iterator i = c.begin(); i != c.end(); i++)
@@ -405,14 +402,14 @@ struct list
 			root->count += c.size();
 		}
 
-		slice<iterator> sub(int n = -1)
+		slice<list<value_type> > sub(int n = -1)
 		{
 			iterator right;
 			if (n < 0)
 				right = root->end()+n;
 			else
 				right = *this+n-1;
-			return slice<iterator>(*this, right);
+			return slice<list<value_type> >(*this, right);
 		}
 
 		void replace(int n, int m, value_type v)
@@ -466,9 +463,6 @@ struct list
 		const list<value_type> *root;
 		const end_item *loc;
 	public:
-		typedef const list<value_type> container;
-		typedef value_type type;
-
 		const_iterator()
 		{
 			root = NULL;
@@ -510,6 +504,11 @@ struct list
 			}
 		}
 
+		const_iterator(const iterator &i)
+		{
+			root = i.root;
+			loc = i.loc;
+		}
 
 		const_iterator(const const_iterator &i)
 		{
@@ -529,12 +528,12 @@ struct list
 			return &((const item*)loc)->value;
 		}
 
-		const value_type &value()
+		const value_type &get()
 		{
 			return ((const item*)loc)->value;
 		}
 
-		const value_type *pointer()
+		const value_type *ptr()
 		{
 			return &((const item*)loc)->value;
 		}
@@ -647,14 +646,14 @@ struct list
 			return count;
 		}
 
-		slice<const_iterator> sub(int n = -1)
+		slice<const list<value_type> > sub(int n = -1)
 		{
 			const_iterator right;
 			if (n < 0)
 				right = root->end()+n;
 			else
 				right = *this+n-1;
-			return slice<const_iterator>(*this, right);
+			return slice<const list<value_type> >(*this, right);
 		}
 	};
 
@@ -676,6 +675,11 @@ struct list
 	value_type &get(int i) const
 	{
 		return ((item*)(begin() + i))->value;
+	}
+
+	value_type *ptr(int i) const
+	{
+		return (begin() + i).ptr();
 	}
 
 	value_type &operator[](int i) const
@@ -733,14 +737,34 @@ struct list
 		return const_iterator(this, &left);
 	}
 
-	slice<iterator> sub(int left, int right = -1)
+	slice<list<value_type> > sub(int left, int right = -1)
 	{
-		return slice<iterator>(iterator(this, left), iterator(this, right));
+		return slice<list<value_type> >(iterator(this, left), iterator(this, right));
 	}
 
-	slice<const_iterator> sub(int left, int right = -1) const
+	slice<const list<value_type> > sub(int left, int right = -1) const
 	{
-		return slice<const_iterator>(const_iterator(this, left), const_iterator(this, right));
+		return slice<const list<value_type> >(const_iterator(this, left), const_iterator(this, right));
+	}
+
+	static slice<list<value_type> > sub(iterator left, iterator right)
+	{
+		return slice<list<value_type> >(left, right);
+	}
+
+	static slice<const list<value_type> > sub(const_iterator left, const_iterator right)
+	{
+		return slice<const list<value_type> >(left, right);
+	}
+
+	slice<list<value_type> > ref()
+	{
+		return slice<list<value_type> >(begin(), rbegin());
+	}
+
+	slice<const list<value_type> > ref() const
+	{
+		return slice<const list<value_type> >(begin(), rbegin());
 	}
 
 	void push_back(const value_type &value)
@@ -765,15 +789,15 @@ struct list
 
 
 	template <class container>
-	void push_back(container &c)
+	void append_back(container &c)
 	{
-		end().push(c);
+		end().append(c);
 	}
 
 	template <class container>
-	void push_front(container &c)
+	void append_front(container &c)
 	{
-		begin().push(c);
+		begin().append(c);
 	}
 
 	list<value_type> pop_back(unsigned int n = 1)

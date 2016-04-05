@@ -41,6 +41,7 @@ struct hash_map : list<implier<pair<uint32_t, key_type>, value_type> >
 	using super::end;
 	using super::rbegin;
 	using super::rend;
+	using super::sub;
 
 	iterator insert(const key_type &key, const value_type &value, )
 	{
@@ -56,7 +57,7 @@ struct hash_map : list<implier<pair<uint32_t, key_type>, value_type> >
 	{
 		uint32_t hash = hasher(key);
 		uint32_t bucket = hash >> shift;
-		iterator pos = search_tree(slice<iterator>(buckets.at(bucket), buckets.at(bucket+1)-1), pair<uint32_t, key_type>(hash, key));
+		iterator pos = search_tree(slice<iterator, type>(buckets.at(bucket), buckets.at(bucket+1)-1), pair<uint32_t, key_type>(hash, key));
 		return pos-1;
 	}
 
