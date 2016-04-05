@@ -37,7 +37,7 @@ struct array
 	array(const container &a)
 	{
 		count = a.size();
-		capacity = count + log2i(count);
+		capacity = (1 << (log2i(count)+1));
 		data = (value_type*)malloc(sizeof(value_type)*capacity);
 		value_type *ptr = data;
 		for (typename container::const_iterator i = a.begin(); i != a.end(); i++, ptr++)
@@ -47,7 +47,7 @@ struct array
 	array(const array<value_type> &a)
 	{
 		count = a.size();
-		capacity = count + log2i(count);
+		capacity = a.capacity;
 		data = (value_type*)malloc(sizeof(value_type)*capacity);
 		value_type *ptr = data;
 		for (const_iterator i = a.begin(); i != a.end(); i++, ptr++)
@@ -57,7 +57,7 @@ struct array
 	/* Initialize this array with n elements each assigned the value t */
 	array(int n, const value_type &t)
 	{
-		capacity = n + log2i(n);
+		capacity = (1 << (log2i(count)+1));
 		data = (value_type*)malloc(sizeof(value_type)*capacity);
 		for (count = 0; count < n; count++)
 			new (data+count) value_type(t);
@@ -233,7 +233,7 @@ struct array
 				memmove(loc+n, loc, (arr->count-offset)*sizeof(value_type));
 			else if (arr->count+(int)n > arr->capacity)
 			{
-				arr->capacity = arr->count + (int)n + log2i(arr->count + n);
+				arr->capacity = (1 << (log2i(arr->count + n)+1));
 				value_type *newdata = (value_type*)malloc(sizeof(value_type)*arr->capacity);
 
 				if (arr->data != NULL)
@@ -754,7 +754,7 @@ struct array
 	{
 		if (n > capacity)
 		{
-			capacity = n + log2i(n);
+			capacity = (1 << (log2i(n)+1));
 			value_type *newdata = (value_type*)malloc(sizeof(value_type)*capacity);
 
 			if (data != NULL)
@@ -811,7 +811,7 @@ struct array
 			if (data != NULL)
 				free(data);
 
-			capacity = count + log2i(count);
+			capacity = (1 << (log2i(count)+1));
 			data = (value_type*)malloc(sizeof(value_type)*capacity);
 		}
 
@@ -838,7 +838,7 @@ struct array
 			if (data != NULL)
 				free(data);
 
-			capacity = count + log2i(count);
+			capacity = (1 << (log2i(count)+1));
 			data = (value_type*)malloc(sizeof(value_type)*capacity);
 		}
 
