@@ -2,6 +2,7 @@
 
 #include "array.h"
 #include "map.h"
+#include "algorithm.h"
 
 namespace core
 {

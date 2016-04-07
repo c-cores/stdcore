@@ -20,6 +20,7 @@
 namespace core
 {
 
+// A dynamically allocated array structure
 template <class value_type>
 struct array
 {
@@ -32,7 +33,7 @@ struct array
 		capacity = 0;
 	}
 
-	/* Initialize this array as a copy of another */
+	// Initialize this array as a copy of some other container
 	template <class container>
 	array(const container &a)
 	{
@@ -44,6 +45,7 @@ struct array
 			new (ptr) value_type(*i);
 	}
 
+	// Initialize this array as a copy of another array
 	array(const array<value_type> &a)
 	{
 		count = a.size();
@@ -54,7 +56,7 @@ struct array
 			new (ptr) value_type(*i);
 	}
 
-	/* Initialize this array with n elements each assigned the value t */
+	// Initialize this array with n elements each assigned the value t
 	array(int n, const value_type &t)
 	{
 		capacity = (1 << (log2i(count)+1));
@@ -63,6 +65,8 @@ struct array
 			new (data+count) value_type(t);
 	}
 
+	// delete all of the initialized objects in the array
+	// and free the memory block allocated for them		
 	virtual ~array()
 	{
 		if (data != NULL)
@@ -77,9 +81,9 @@ struct array
 		count = 0;
 	}
 
-	value_type *data;
-	int count;
-	int capacity;
+	value_type *data;	// pointer to first object
+	int count;			// number of stored objects
+	int capacity;		// number of allocated spaces
 
 	struct iterator;
 	struct const_iterator;
@@ -331,6 +335,11 @@ struct array
 			return slice<array<value_type> >(*this, right);
 		}
 
+		array<value_type> subcpy(int n = -1)
+		{
+			return array<value_type>(sub(n));
+		}
+
 		void replace(int n, int m, value_type v)
 		{
 			int offset = loc - arr->data;
@@ -566,6 +575,11 @@ struct array
 				right = *this+n-1;
 			return slice<const array<value_type> >(*this, right);
 		}
+
+		array<value_type> subcpy(int n = -1)
+		{
+			return array<value_type>(sub(n));
+		}
 	};
 
 	int size() const
@@ -664,6 +678,11 @@ struct array
 		return slice<const array<value_type> >(const_iterator(this, left), const_iterator(this, right));
 	}
 
+	array<value_type> subcpy(int left, int right = -1) const
+	{
+		return array<value_type>(sub(left, right));
+	}
+
 	static slice<array<value_type> > sub(iterator left, iterator right)
 	{
 		return slice<array<value_type> >(left, right);
@@ -672,6 +691,16 @@ struct array
 	static slice<const array<value_type> > sub(const_iterator left, const_iterator right)
 	{
 		return slice<const array<value_type> >(left, right);
+	}
+
+	static array<value_type> subcpy(iterator left, iterator right)
+	{
+		return array<value_type>(sub(left, right));
+	}
+
+	static array<value_type> subcpy(const_iterator left, const_iterator right)
+	{
+		return array<value_type>(sub(left, right));
 	}
 
 	slice<array<value_type> > ref()

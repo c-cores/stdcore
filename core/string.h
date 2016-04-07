@@ -32,6 +32,7 @@ struct string : array<char>
 	using array<char>::rend;
 	using array<char>::sub;
 	using array<char>::size;
+	using array<char>::subcpy;
 
 	using array<char>::operator=;
 	string &operator=(const char *str);

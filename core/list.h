@@ -412,6 +412,11 @@ struct list
 			return slice<list<value_type> >(*this, right);
 		}
 
+		list<value_type> subcpy(int n = -1)
+		{
+			return list<value_type>(sub(n));
+		}
+
 		void replace(int n, int m, value_type v)
 		{
 			int j = 0;
@@ -655,6 +660,11 @@ struct list
 				right = *this+n-1;
 			return slice<const list<value_type> >(*this, right);
 		}
+
+		list<value_type> subcpy(int n = -1)
+		{
+			return list<value_type>(sub(n));
+		}
 	};
 
 	int size() const
@@ -747,6 +757,11 @@ struct list
 		return slice<const list<value_type> >(const_iterator(this, left), const_iterator(this, right));
 	}
 
+	list<value_type> subcpy(int left, int right = -1) const
+	{
+		return list<value_type>(sub(left, right));
+	}
+
 	static slice<list<value_type> > sub(iterator left, iterator right)
 	{
 		return slice<list<value_type> >(left, right);
@@ -755,6 +770,16 @@ struct list
 	static slice<const list<value_type> > sub(const_iterator left, const_iterator right)
 	{
 		return slice<const list<value_type> >(left, right);
+	}
+
+	static list<value_type> subcpy(iterator left, iterator right)
+	{
+		return list<value_type>(sub(left, right));
+	}
+
+	static list<value_type> subcpy(const_iterator left, const_iterator right)
+	{
+		return list<value_type>(sub(left, right));
 	}
 
 	slice<list<value_type> > ref()

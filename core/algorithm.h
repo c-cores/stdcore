@@ -58,10 +58,20 @@ container remove(container c, const typename container::type &value)
 template <class container>
 container range(typename container::type lower, typename container::type upper, typename container::type step)
 {
-	container result;
-	for (typename container::type i = lower; i < upper; i += step)
-		result.push_back(i);
-	return result;
+	if (lower < upper)
+	{
+		container result;
+		for (typename container::type i = lower; i < upper; i += step)
+			result.push_back(i);
+		return result;
+	}
+	else
+	{
+		container result;
+		for (typename container::type i = lower; i > upper; i += step)
+			result.push_back(i);
+		return result;
+	}
 }
 
 
