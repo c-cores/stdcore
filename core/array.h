@@ -113,6 +113,11 @@ struct array
 
 		~iterator() {}
 
+		operator bool()
+		{
+			return loc < arr->data + arr->count && loc >= arr->data;
+		}
+
 		value_type &operator*()
 		{
 			return *loc;
@@ -451,6 +456,11 @@ struct array
 
 		~const_iterator() {}
 
+		operator bool()
+		{
+			return loc < arr->data+arr->count && loc >= arr->data;
+		}
+
 		const value_type &operator*()
 		{
 			return *loc;
@@ -728,6 +738,19 @@ struct array
 		end().push(v);
 	}
 
+	void push_back_unsafe(int n, value_type v)
+	{
+		for (int i = 0; i < n; i++)
+			new (data+count+i) value_type(v);
+		count += n;
+	}
+
+	void push_back_unsafe(value_type v)
+	{
+		new (data+count) value_type(v);
+		count++;
+	}
+
 	void push_front(value_type v)
 	{
 		begin().push(v);
@@ -737,6 +760,13 @@ struct array
 	void append_back(const container &c)
 	{
 		end().append(c);
+	}
+
+	template <class container>
+	void append_back_unsafe(const container &c)
+	{
+		for (typename container::const_iterator i = c.begin(); i; i++, count++)
+            new (data+count) value_type(*i);
 	}
 
 	template <class container>

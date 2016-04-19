@@ -69,7 +69,7 @@ bits &operator<<(bits &str, const pair<type0, type1> &v)
 template <class type0, class type1>
 bits &operator<<(bits &str, const implier<type0, type1> &v)
 {
-	str << v.first << v.second;
+	str << v.key << v.value;
 	return str;
 }
 

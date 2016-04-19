@@ -155,6 +155,11 @@ struct list
 
 		~iterator() {}
 
+		operator bool()
+		{
+			return loc != &root->left && loc != &root->right;
+		}
+
 		value_type &operator*()
 		{
 			return ((item*)loc)->value;
@@ -474,13 +479,13 @@ struct list
 			loc = NULL;
 		}
 
-		const_iterator(const list *l)
+		const_iterator(const list<value_type> *l)
 		{
 			root = l;
 			loc = &l->left;
 		}
 
-		const_iterator(const list *l, const end_item *n)
+		const_iterator(const list<value_type> *l, const end_item *n)
 		{
 			root = l;
 			loc = n;
@@ -522,6 +527,11 @@ struct list
 		}
 
 		~const_iterator() {}
+
+		operator bool()
+		{
+			return loc != &root->left && loc != &root->right;
+		}
 
 		const value_type &operator*()
 		{
@@ -874,6 +884,12 @@ struct list
 		for (const_iterator i = c.begin(); i != c.end(); i++)
 			push_back(*i);
 		return *this;
+	}
+
+protected:
+	end_item* get_item(iterator i)
+	{
+		return i.loc;
 	}
 };
 
