@@ -22,18 +22,6 @@ struct string : array<char>
 	
 	~string();
 
-	using typename array<char>::type;
-	using typename array<char>::iterator;
-	using typename array<char>::const_iterator;
-
-	using array<char>::begin;
-	using array<char>::end;
-	using array<char>::rbegin;
-	using array<char>::rend;
-	using array<char>::sub;
-	using array<char>::size;
-	using array<char>::subcpy;
-
 	using array<char>::operator=;
 	string &operator=(const char *str);
 	string &operator=(char *str);
@@ -125,5 +113,10 @@ bool is_alpha(char c);
 bool is_numeric(char c);
 bool is_symbol(char c);
 bool is_whitespace(char c);
+
+int edit_distance(const string &s1, const string &s2);
+int get_column(const string &line, int index, int tab_width);
+string get_column_ptr(const string &line, int index);
+string line_wrap(const string &line, int length);
 
 }

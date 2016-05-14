@@ -115,7 +115,7 @@ struct array
 
 		operator bool()
 		{
-			return loc < arr->data + arr->count && loc >= arr->data;
+			return arr != NULL && loc < arr->data + arr->count && loc >= arr->data;
 		}
 
 		value_type &operator*()
@@ -458,7 +458,7 @@ struct array
 
 		operator bool()
 		{
-			return loc < arr->data+arr->count && loc >= arr->data;
+			return arr != NULL && loc < arr->data+arr->count && loc >= arr->data;
 		}
 
 		const value_type &operator*()
@@ -787,17 +787,22 @@ struct array
 
 	void drop_back(unsigned int n = 1)
 	{
-		return end().drop(-n);
+		end().drop(-n);
 	}
 
 	void drop_front(unsigned int n = 1)
 	{
-		return begin().drop(n);
+		begin().drop(n);
 	}
 
 	void alloc_back(unsigned int n = 1)
 	{
 		end().alloc(n);
+	}
+
+	void alloc_back_unsafe(unsigned int n = 1)
+	{
+		count += n;
 	}
 
 	void alloc_front(unsigned int n = 1)
@@ -913,6 +918,18 @@ struct array
 		return *this;
 	}
 
+	void swap(array<value_type> &arr)
+	{
+		int tmp_capacity = capacity;
+		int tmp_count = count;
+		value_type* tmp_data = data;
+		capacity = arr.capacity;
+		count = arr.count;
+		data = arr.data;
+		arr.capacity = tmp_capacity;
+		arr.count = tmp_count;
+		arr.data = tmp_data;
+	}
 };
 
 template<class value_type>

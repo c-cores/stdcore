@@ -157,7 +157,7 @@ struct list
 
 		operator bool()
 		{
-			return loc != &root->left && loc != &root->right;
+			return root != NULL && loc != NULL && loc != &root->left && loc != &root->right;
 		}
 
 		value_type &operator*()
@@ -530,7 +530,7 @@ struct list
 
 		operator bool()
 		{
-			return loc != &root->left && loc != &root->right;
+			return root != NULL && loc != NULL && loc != &root->left && loc != &root->right;
 		}
 
 		const value_type &operator*()
@@ -884,6 +884,19 @@ struct list
 		for (const_iterator i = c.begin(); i != c.end(); i++)
 			push_back(*i);
 		return *this;
+	}
+
+	void swap(list<value_type> &lst)
+	{
+		end_item tmp_left = left;
+		end_item tmp_right = right;
+		int tmp_count = count;
+		left = lst.left;
+		right = lst.right;
+		count = lst.count;
+		lst.left = tmp_left;
+		lst.right = tmp_right;
+		lst.count = tmp_count;
 	}
 
 protected:

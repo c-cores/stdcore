@@ -6,34 +6,33 @@
  */
 
 #include "file.h"
+#include "string.h"
 #include <stdarg.h>
 #include <stdint.h>
 
 namespace core
 {
 
-file cout(stdout);
-file cin(stdin);
-file cerr(stderr);
-string endl("\n");
-
 file::file()
 {
 	ptr = NULL;
 }
 
-file::file(FILE *f)
+file::file(FILE *ptr)
 {
-	ptr = f;
-}
-
-file::file(string filename, string options)
-{
-	ptr = fopen(filename.c_str(), options.c_str());
+	this->ptr = ptr;
 }
 
 file::~file()
 {
+	if (ptr != NULL)
+		fclose(ptr);
+	ptr = NULL;
+}
+
+file::operator bool()
+{
+	return !feof(ptr);
 }
 
 int file::size()
@@ -45,98 +44,116 @@ int file::size()
 	return result;
 }
 
-bool file::eof()
+bool file::open(const char *filename, const char *options)
 {
-	return (bool)feof(ptr);
-}
-
-bool file::is_open()
-{
-	return (ptr != NULL);
-}
-
-bool file::open(string filename, string options)
-{
-	ptr = fopen(filename.c_str(), options.c_str());
+	ptr = fopen(filename, options);
 	return (ptr != NULL);
 }
 
 void file::close()
 {
-	if (ptr != NULL)
-		fclose(ptr);
-	ptr = NULL;
+	fclose(ptr);
 }
 
-char file::get()
+void file::flush()
 {
-	return fgetc(ptr);
+	fflush(ptr);
 }
 
-string file::read(int n)
+int file::read(char *str, int n)
 {
-	string result;
+	int result = (int)fread(str, 1, n-1, ptr);
+	str[result] = '\0';
+	return result;
+}
+
+int file::read(char *str, int n, const char *delimiter)
+{
+	char *result;
+	char *end = str+n-1;
+	for (result = str; !feof(ptr) && result < end; result++)
+	{
+		*result = fgetc(ptr);
+		for (const char *i = delimiter; *i != '\0'; i++)
+			if (*i == *result)
+			{
+				*++result = '\0';
+				return result-str;
+			}
+	}
+	*result = '\0';
+	return result-str;
+}
+
+int file::read(char *str, int n, const array<char> &delimiter)
+{
+	char *result;
+	char *end = str+n-1;
+	for (result = str; !feof(ptr) && result < end; result++)
+	{
+		*result = fgetc(ptr);
+		for (array<char>::const_iterator i = delimiter.begin(); i; i++)
+			if (*i == *result)
+			{
+				*++result = '\0';
+				return result-str;
+			}
+	}
+	*result = '\0';
+	return result-str;
+}
+
+array<char> file::read(int n)
+{
+	array<char> result;
+	if (n < 0)
+		n = size();
 	result.reserve(n);
-	result.alloc_back(fread(result.c_str(), 1, n, ptr));
+	result.alloc_back_unsafe((int)fread(result.data, 1, n, ptr));
 	return result;
 }
 
-int file::read(char *s, int n)
+array<char> file::read(const char *delimiter)
 {
-	return fread(s, 1, n, ptr);
-}
-
-int file::read(unsigned char *s, int n)
-{
-	return fread(s, 1, n, ptr);
-}
-
-string file::read_word()
-{
-	string result;
-	char c;
-	result.reserve(16);
-	while ((c = fgetc(ptr)) != ' ' && c != '\t' && c != '\n' && c != '\0')
-		result.push_back(c);
-	return result;
-}
-
-string file::read_line()
-{
-	string result;
+	array<char> result;
 	result.reserve(256);
-	if (fgets(result.data, 256, ptr) != NULL)
-		result.alloc_back(strlen(result.data));
+	while (!feof(ptr))
+	{
+		result.push_back(fgetc(ptr));
+		for (const char *i = delimiter; *i != '\0'; i++)
+			if (*i == result.back())
+				return result;
+	}
 	return result;
 }
 
-string file::read_file()
+array<char> file::read(const array<char> &delimiter)
 {
-	fseek(ptr, 0, SEEK_END);
-	int s = ftell(ptr);
-	fseek(ptr, 0, SEEK_SET);
-	string result;
-	result.reserve(s);
-	result.alloc_back(fread(result.c_str(), 1, s, ptr));
+	array<char> result;
+	result.reserve(256);
+	while (!feof(ptr))
+	{
+		result.push_back(fgetc(ptr));
+		for (array<char>::const_iterator i = delimiter.begin(); i; i++)
+			if (*i == result.back())
+				return result;
+	}
 	return result;
 }
 
-void file::write(string str)
+void file::write(char *str)
 {
-	fputs(str.c_str(), ptr);
+	fputs(str, ptr);
 }
 
-void file::writef(string format, ...)
+void file::write(char *str, int n)
 {
-	va_list args;
-	va_start(args, format);
-	vfprintf(ptr, format.c_str(), args);
-	va_end(args);
+	fwrite(str, 1, n, ptr);
 }
 
-void file::insert(string str)
+void file::write(const array<char> &data)
 {
-
+	fwrite(data.data, 1, data.size(), ptr);
 }
 
 void file::moveto(int location)
@@ -147,203 +164,14 @@ void file::moveto(int location)
 		fseek(ptr, location, SEEK_END);
 }
 
-
 void file::move(int distance)
 {
 	fseek(ptr, distance, SEEK_CUR);
 }
 
-
 int file::where()
 {
 	return ftell(ptr);
-}
-
-void file::flush()
-{
-	fflush(ptr);
-}
-
-file &file::operator=(file f)
-{
-	ptr = f.ptr;
-	return *this;
-}
-
-file::operator string()
-{
-	return read_file();
-}
-
-file &operator<<(file &fout, const char *str)
-{
-	fputs(str, fout.ptr);
-	return fout;
-}
-
-file &operator<<(file &fout, char *str)
-{
-	fputs(str, fout.ptr);
-	return fout;
-}
-
-file &operator<<(file &fout, string str)
-{
-	fputs(str.c_str(), fout.ptr);
-	return fout;
-}
-
-file &operator<<(file &fout, char i)
-{
-	fputc(i, fout.ptr);
-	return fout;
-}
-
-file &operator<<(file &fout, unsigned char i)
-{
-	fputc(i, fout.ptr);
-	return fout;
-}
-
-file &operator<<(file &fout, bool i)
-{
-	fputs(i ? "true" : "false", fout.ptr);
-	return fout;
-}
-
-file &operator<<(file &fout, int i)
-{
-	fprintf(fout.ptr, "%d", i);
-	return fout;
-}
-
-file &operator<<(file &fout, short i)
-{
-	fprintf(fout.ptr, "%hd", i);
-	return fout;
-}
-
-file &operator<<(file &fout, long i)
-{
-	fprintf(fout.ptr, "%ld", i);
-	return fout;
-}
-
-file &operator<<(file &fout, unsigned int i)
-{
-	fprintf(fout.ptr, "%u", i);
-	return fout;
-}
-
-file &operator<<(file &fout, unsigned short i)
-{
-	fprintf(fout.ptr, "%hu", i);
-	return fout;
-}
-
-file &operator<<(file &fout, unsigned long i)
-{
-	fprintf(fout.ptr, "%lu", i);
-	return fout;
-}
-
-file &operator<<(file &fout, float i)
-{
-	fprintf(fout.ptr, "%f", i);
-	return fout;
-}
-
-file &operator<<(file &fout, double i)
-{
-	fprintf(fout.ptr, "%f", i);
-	return fout;
-}
-
-file &operator<<(file &fout, hex<const char *> str)
-{
-	while (*str.value != '\0')
-		fprintf(fout.ptr, "%02X ", *str.value++);
-	return fout;
-}
-
-file &operator<<(file &fout, hex<char *> str)
-{
-	while (*str.value != '\0')
-		fprintf(fout.ptr, "%02X ", *str.value++);
-	return fout;
-}
-
-file &operator<<(file &fout, hex<string> str)
-{
-	for (int i = 0; i < str.value.size(); i++)
-		fprintf(fout.ptr, "%02X ", str.value.get(i));
-	return fout;
-}
-
-file &operator<<(file &fout, hex<char> i)
-{
-	fprintf(fout.ptr, "%02X", i.value);
-	return fout;
-}
-
-file &operator<<(file &fout, hex<unsigned char> i)
-{
-	fprintf(fout.ptr, "%02X", i.value);
-	return fout;
-}
-
-file &operator<<(file &fout, hex<bool> i)
-{
-	fprintf(fout.ptr, "%01X", i.value);
-	return fout;
-}
-
-file &operator<<(file &fout, hex<int> i)
-{
-	fprintf(fout.ptr, "%08X", i.value);
-	return fout;
-}
-
-file &operator<<(file &fout, hex<short> i)
-{
-	fprintf(fout.ptr, "%04hX", i.value);
-	return fout;
-}
-
-file &operator<<(file &fout, hex<long> i)
-{
-	fprintf(fout.ptr, "%08lX", i.value);
-	return fout;
-}
-
-file &operator<<(file &fout, hex<unsigned int> i)
-{
-	fprintf(fout.ptr, "%08X", i.value);
-	return fout;
-}
-
-file &operator<<(file &fout, hex<unsigned short> i)
-{
-	fprintf(fout.ptr, "%04hX", i.value);
-	return fout;
-}
-
-file &operator<<(file &fout, hex<unsigned long> i)
-{
-	fprintf(fout.ptr, "%08lX", i.value);
-	return fout;
-}
-
-file &operator<<(file &fout, hex<float> i)
-{
-	fprintf(fout.ptr, "%08X", *(uint32_t*)(&i.value));
-	return fout;
-}
-
-file &operator<<(file &fout, hex<double> i)
-{
-	fprintf(fout.ptr, "%08X%08X", *(uint32_t*)((&i.value) + 1), *(uint32_t*)(&i.value));
-	return fout;
 }
 
 }
