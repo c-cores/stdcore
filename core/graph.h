@@ -565,6 +565,186 @@ struct graph
 		}
 		return *this;
 	}
+
+	struct refactoring
+	{
+		refactoring() {}
+		~refactoring() {}
+
+		map<iterator, array<iterator> > replaced;
+
+		void clear()
+		{
+			replaced.clear();
+		}
+
+		void erase(iterator left)
+		{
+			for (map<iterator, array<iterator> >::iterator j = replaced.begin(); j; j++)
+				for (array<iterator>::iterator k = j->value.rbegin(); k; k--)
+					if (*k == left)
+						k.drop();
+
+			replaced.insert(left, array<iterator>());
+		}
+
+		void erase(array<iterator> left)
+		{
+			for (map<iterator, array<iterator> >::iterator j = replaced.begin(); j; j++)
+				for (array<iterator>::iterator k = j->second.rbegin(); k; k--)
+					if (find(left, *k) != left.end())
+						k.drop();
+
+			for (array<iterator>::iterator i = left.begin(); i; i++)
+				replaced.insert(*i, array<iterator>());
+		}
+
+		void replace(iterator key, iterator value)
+		{
+			for (map<iterator, array<iterator> >::iterator j = replaced.begin(); j; j++)
+				for (array<iterator>::iterator k = j->second.rbegin(); k; k--)
+					if (*k == key)
+						*k = value;
+
+			replaced.insert(key, array<iterator>(1, value));
+		}
+
+		void replace(iterator key, array<iterator> value)
+		{
+			for (map<iterator, array<iterator> >::iterator j = replaced.begin(); j; j++)
+			{
+				for (array<iterator>::iterator k = j->second.rbegin(); k; k--)
+				{
+					if (*k == key)
+					{
+						for (array<iterator>::iterator l = value.rbegin(); l; l--)
+							j->second.push_back(*l);
+
+						if (value.size() > 0)
+							*k = value[0];
+						else
+							k->drop();
+					}
+				}
+			}
+
+			replaced.insert(key, value);
+		}
+
+		void copy(iterator key, iterator value)
+		{
+			array<iterator> nvalue;
+			nvalue.reserve(2);
+			nvalue.push_back(key);
+			nvalue.push_back(value);
+
+			for (map<iterator, array<iterator> >::iterator j = replaced.begin(); j; j++)
+				for (array<iterator>::iterator k = j->second.rbegin(); k; k--)
+					if (*k == key)
+						j->second.push_back(value);
+
+			replaced.insert(key, nvalue);
+		}
+
+		void copy(iterator key, array<iterator> value)
+		{
+			for (map<iterator, array<iterator> >::iterator j = replaced.begin(); j; j++)
+				for (array<iterator>::iterator k = j->second.rbegin(); k; k--)
+					if (*k == key)
+						j->second.append_back(value);
+
+			value.push_back(key);
+			replaced.insert(key, value);
+		}
+
+		refactoring &merge(refactoring r)
+		{
+			replaced.insert(r.replaced.begin(), r.replaced.end());
+			return *this;
+		}
+
+		refactoring &append(refactoring r)
+		{
+			for (map<iterator, array<iterator> >::iterator j = replaced.begin(); j != replaced.end(); j++)
+			{
+				for (array<iterator>::iterator k = j->second.rbegin(); k; k--)
+				{
+					map<iterator, array<iterator> >::iterator loc = r.replaced.find(*k);
+					if (loc != r.replaced.end())
+					{
+						for (int l = (int)loc->second.size()-1; l > 0; l--)
+							j->second.push_back(loc->second[l]);
+
+						if (loc->second.size() > 0)
+							j->second[k] = loc->second[0];
+						else
+							j->second.erase(j->second.begin() + k);
+					}
+				}
+			}
+
+			replaced.insert(r.replaced.begin(), r.replaced.end());
+			return *this;
+		}
+
+		array<iterator> refactor(iterator left) const
+		{
+			map<iterator, array<iterator> >::const_iterator loc = receipt.replaced.find(left);
+			if (loc != receipt.replaced.end())
+				return loc->second;
+			else
+				return array<iterator>(1, left);
+		}
+
+		array<iterator> refactor(array<iterator> left) const
+		{
+			array<iterator> result;
+			for (int i = (int)left.size()-1; i >= 0; i--)
+			{
+				map<iterator, array<iterator> >::const_iterator loc = receipt.replaced.find(left[i]);
+				if (loc != receipt.replaced.end())
+					result.insert(result.end(), loc->second.begin(), loc->second.end());
+				else
+					result.push_back(left[i]);
+			}
+
+			return result;
+		}
+
+		iterator unfactor(iterator left) const
+		{
+			array<iterator> result;
+			for (map<iterator, array<iterator> >::const_iterator j = receipt.replaced.begin(); j != receipt.replaced.end(); j++)
+			{
+				bool found = false;
+				for (int k = (int)left.size() - 1; k >= 0; k--)
+					if (find(j->second.begin(), j->second.end(), left[k]) != j->second.end())
+					{
+						if (!found)
+						{
+							result.push_back(j->first);
+							found = true;
+						}
+
+						left.erase(left.begin() + k);
+					}
+			}
+
+			for (int i = 0; i < (int)left.size(); i++)
+				result.push_back(left[i]);
+
+			return result;
+		}
+
+		array<iterator> unfactor(array<iterator> left) const
+		{
+			for (map<iterator, array<iterator> >::const_iterator j = receipt.replaced.begin(); j != receipt.replaced.end(); j++)
+				if (find(j->second.begin(), j->second.end(), left) != j->second.end())
+					return j->first;
+
+			return left;
+		}
+	};
 };
 
 }

@@ -19,6 +19,7 @@ namespace core
 struct file
 {
 	file();
+	file(const char *filename, const char *options);
 	file(FILE *ptr);
 	~file();
 
@@ -37,14 +38,97 @@ struct file
 	array<char> read(const char *delimiter);
 	array<char> read(const array<char> &delimiter);
 
-	void write(char *str);
-	void write(char *str, int n);
+	void write(const char *str);
+	void write(const char *str, int n);
 	void write(const array<char> &data);
 
 	void moveto(int location);
 	void move(int distance);
 	int where();
 };
+
+inline file::file()
+{
+	ptr = NULL;
+}
+
+inline file::file(const char *filename, const char *options)
+{
+	ptr = fopen(filename, options);
+}
+
+inline file::file(FILE *ptr)
+{
+	this->ptr = ptr;
+}
+
+inline file::~file()
+{
+	if (ptr != NULL)
+		fclose(ptr);
+	ptr = NULL;
+}
+
+inline file::operator bool()
+{
+	return ptr != NULL && !feof(ptr);
+}
+
+inline bool file::open(const char *filename, const char *options)
+{
+	ptr = fopen(filename, options);
+	return (ptr != NULL);
+}
+
+inline void file::close()
+{
+	fclose(ptr);
+}
+
+inline void file::flush()
+{
+	fflush(ptr);
+}
+
+inline int file::read(char *str, int n)
+{
+	int result = (int)fread(str, 1, n-1, ptr);
+	str[result] = '\0';
+	return result;
+}
+
+inline void file::write(const char *str)
+{
+	fputs(str, ptr);
+}
+
+inline void file::write(const char *str, int n)
+{
+	fwrite(str, 1, n, ptr);
+}
+
+inline void file::write(const array<char> &data)
+{
+	fwrite(data.data, 1, data.size(), ptr);
+}
+
+inline void file::moveto(int location)
+{
+	if (location > 0)
+		fseek(ptr, location, SEEK_SET);
+	else if (location < 0)
+		fseek(ptr, location, SEEK_END);
+}
+
+inline void file::move(int distance)
+{
+	fseek(ptr, distance, SEEK_CUR);
+}
+
+inline int file::where()
+{
+	return ftell(ptr);
+}
 
 }
 

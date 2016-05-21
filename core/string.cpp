@@ -120,77 +120,77 @@ string &operator<<(string &s1, bool s2)
 string &operator<<(string &s1, int s2)
 {
 	s1.reserve(s1.size() + 12);
-	s1.alloc_back(snprintf(s1.data+s1.size(), 12, "%d", s2));
+	s1.alloc_back_unsafe(snprintf(s1.data+s1.size(), 12, "%d", s2));
 	return s1;
 }
 
 string &operator<<(string &s1, short s2)
 {
 	s1.reserve(s1.size() + 7);
-	snprintf(s1.data + s1.size(), 7, "%hd", s2);
+	s1.alloc_back_unsafe(snprintf(s1.data + s1.size(), 7, "%hd", s2));
 	return s1;
 }
 
 string &operator<<(string &s1, long s2)
 {
 	s1.reserve(s1.size() + 21);
-	snprintf(s1.data + s1.size(), 21, "%ld", s2);
+	s1.alloc_back_unsafe(snprintf(s1.data + s1.size(), 21, "%ld", s2));
 	return s1;
 }
 
 string &operator<<(string &s1, long long s2)
 {
 	s1.reserve(s1.size() + 21);
-	snprintf(s1.data + s1.size(), 21, "%lld", s2);
+	s1.alloc_back_unsafe(snprintf(s1.data + s1.size(), 21, "%lld", s2));
 	return s1;
 }
 
 string &operator<<(string &s1, unsigned char s2)
 {
 	s1.reserve(s1.size() + 5);
-	snprintf(s1.data + s1.size(), 5, "%hu", s2);
+	s1.alloc_back_unsafe(snprintf(s1.data + s1.size(), 5, "%hu", s2));
 	return s1;
 }
 
 string &operator<<(string &s1, unsigned int s2)
 {
 	s1.reserve(s1.size() + 12);
-	snprintf(s1.data + s1.size(), 12, "%u", s2);
+	s1.alloc_back_unsafe(snprintf(s1.data + s1.size(), 12, "%u", s2));
 	return s1;
 }
 
 string &operator<<(string &s1, unsigned short s2)
 {
 	s1.reserve(s1.size() + 7);
-	snprintf(s1.data + s1.size(), 7, "%hu", s2);
+	s1.alloc_back_unsafe(snprintf(s1.data + s1.size(), 7, "%hu", s2));
 	return s1;
 }
 
 string &operator<<(string &s1, unsigned long s2)
 {
 	s1.reserve(s1.size() + 21);
-	snprintf(s1.data + s1.size(), 21, "%lu", s2);
+	s1.alloc_back_unsafe(snprintf(s1.data + s1.size(), 21, "%lu", s2));
 	return s1;
 }
 
 string &operator<<(string &s1, unsigned long long s2)
 {
 	s1.reserve(s1.size() + 21);
-	snprintf(s1.data + s1.size(), 21, "%llu", s2);
+	s1.alloc_back_unsafe(snprintf(s1.data + s1.size(), 21, "%llu", s2));
 	return s1;
 }
 
 string &operator<<(string &s1, float s2)
 {
 	s1.reserve(s1.size() + 32);
-	snprintf(s1.data + s1.size(), 32, "%f", s2);
+	s1.alloc_back_unsafe(snprintf(s1.data + s1.size(), 32, "%f", s2));
 	return s1;
 }
 
 string &operator<<(string &s1, double s2)
 {
 	s1.reserve(s1.size() + 32);
-	snprintf(s1.data + s1.size(), 32, "%f", s2);
+	s1.alloc_back_unsafe(snprintf(s1.data + s1.size(), 32, "%f", s2));
 	return s1;
 }
 
