@@ -47,7 +47,7 @@ string &string::operator+=(char *str)
 	return *this;
 }
 
-string &string::operator+=(string str)
+string &string::operator+=(const string &str)
 {
 	array<char>::append_back(str.sub(0));
 	return *this;
@@ -60,7 +60,7 @@ char *string::c_str()
 	return data;
 }
 
-string operator+(string s1, string s2)
+string operator+(const string &s1, const string &s2)
 {
 	string result;
 	result.reserve(s1.size() + s2.size());
@@ -69,7 +69,7 @@ string operator+(string s1, string s2)
 	return result;
 }
 
-string operator+(string s1, const char *s2)
+string operator+(const string &s1, const char *s2)
 {
 	string result;
 	int n = strlen(s2);
@@ -79,7 +79,7 @@ string operator+(string s1, const char *s2)
 	return result;
 }
 
-string operator+(string s1, char *s2)
+string operator+(const string &s1, char *s2)
 {
 	string result;
 	int n = strlen(s2);
@@ -89,7 +89,7 @@ string operator+(string s1, char *s2)
 	return result;
 }
 
-string &operator<<(string &s1, string s2)
+string &operator<<(string &s1, const string &s2)
 {
 	s1.append_back(s2);
 	return s1;
@@ -103,94 +103,85 @@ string &operator<<(string &s1, char s2)
 
 string &operator<<(string &s1, bool s2)
 {
-	if (s2)
-	{
-		const char *v = "true";
-		s1.append_back(slice<const char*>(v, v+3));
-	}
-	else
-	{
-		const char *v = "false";
-		s1.append_back(slice<const char*>(v, v+4));
-	}
-
+	const char *v = s2 ? "true" : "false";
+	s1.append_back(slice<const char*>(v, v+3+(1-s2)));
 	return s1;
 }
 
 string &operator<<(string &s1, int s2)
 {
 	s1.reserve(s1.size() + 12);
-	s1.alloc_back_unsafe(snprintf(s1.data+s1.size(), 12, "%d", s2));
+	s1.alloc_back_unsafe(itoa(s2, s1.data+s1.size()));
 	return s1;
 }
 
 string &operator<<(string &s1, short s2)
 {
 	s1.reserve(s1.size() + 7);
-	s1.alloc_back_unsafe(snprintf(s1.data + s1.size(), 7, "%hd", s2));
+	s1.alloc_back_unsafe(itoa((int)s2, s1.data + s1.size()));
 	return s1;
 }
 
 string &operator<<(string &s1, long s2)
 {
 	s1.reserve(s1.size() + 21);
-	s1.alloc_back_unsafe(snprintf(s1.data + s1.size(), 21, "%ld", s2));
+	s1.alloc_back_unsafe(itoa((int)s2, s1.data + s1.size()));
 	return s1;
 }
 
 string &operator<<(string &s1, long long s2)
 {
 	s1.reserve(s1.size() + 21);
-	s1.alloc_back_unsafe(snprintf(s1.data + s1.size(), 21, "%lld", s2));
+	s1.alloc_back_unsafe(itoa(s2, s1.data + s1.size()));
 	return s1;
 }
 
 string &operator<<(string &s1, unsigned char s2)
 {
 	s1.reserve(s1.size() + 5);
-	s1.alloc_back_unsafe(snprintf(s1.data + s1.size(), 5, "%hu", s2));
+	s1.alloc_back_unsafe(itoa((unsigned int)s2, s1.data + s1.size()));
 	return s1;
 }
 
 string &operator<<(string &s1, unsigned int s2)
 {
 	s1.reserve(s1.size() + 12);
-	s1.alloc_back_unsafe(snprintf(s1.data + s1.size(), 12, "%u", s2));
+	s1.alloc_back_unsafe(itoa(s2, s1.data + s1.size()));
 	return s1;
 }
 
 string &operator<<(string &s1, unsigned short s2)
 {
 	s1.reserve(s1.size() + 7);
-	s1.alloc_back_unsafe(snprintf(s1.data + s1.size(), 7, "%hu", s2));
+	s1.alloc_back_unsafe(itoa((unsigned int)s2, s1.data + s1.size()));
 	return s1;
 }
 
 string &operator<<(string &s1, unsigned long s2)
 {
 	s1.reserve(s1.size() + 21);
-	s1.alloc_back_unsafe(snprintf(s1.data + s1.size(), 21, "%lu", s2));
+	s1.alloc_back_unsafe(itoa((unsigned int)s2, s1.data + s1.size()));
 	return s1;
 }
 
 string &operator<<(string &s1, unsigned long long s2)
 {
 	s1.reserve(s1.size() + 21);
-	s1.alloc_back_unsafe(snprintf(s1.data + s1.size(), 21, "%llu", s2));
+	s1.alloc_back_unsafe(itoa(s2, s1.data + s1.size()));
 	return s1;
 }
 
 string &operator<<(string &s1, float s2)
 {
 	s1.reserve(s1.size() + 32);
-	s1.alloc_back_unsafe(snprintf(s1.data + s1.size(), 32, "%f", s2));
+	s1.alloc_back_unsafe(ftoa(s2, s1.data + s1.size()));
 	return s1;
 }
 
 string &operator<<(string &s1, double s2)
 {
 	s1.reserve(s1.size() + 32);
-	s1.alloc_back_unsafe(snprintf(s1.data + s1.size(), 32, "%f", s2));
+	s1.alloc_back_unsafe(ftoa(s2, s1.data + s1.size()));
 	return s1;
 }
 
@@ -203,6 +194,33 @@ string &operator<<(string &s1, const char *s2)
 string &operator<<(string &s1, char *s2)
 {
 	s1.append_back(slice<char*>(s2, s2 + strlen(s2)-1));
+	return s1;
+}
+
+string format_string(const string &str, const char *esc)
+{
+	string result;
+	result.reserve(str.size()*2+2);
+	result.push_back('\"');
+	for (string::const_iterator i = str.begin(); i; i++)
+	{
+		bool do_esc = (*i == '\\');
+		for (const char *p = esc; !do_esc && *p != '\0'; p++)
+			do_esc = (*i == *p);
+
+		if (do_esc)
+			result.push_back('\\');
+
+		result.push_back(*i);
+	}
+	result.push_back('\"');
+	return result;
+}
+
+template <>
+string &operator<<(string &s1, const parsable<string> &p)
+{
+	s1 << format_string(*p.obj, "\"");
 	return s1;
 }
 
@@ -411,6 +429,244 @@ string line_wrap(const string &line, int length)
 		result.push_back_unsafe('\n');
 	}
 	return result;
+}
+
+int itoa(int value, char *str)
+{
+	if (value < 0)
+	{
+		*str = '-';
+		return itoa((unsigned int)-value, str+1)+1;
+	}
+	else
+		return itoa((unsigned int)value, str);
+}
+
+int itoa(unsigned int value, char *str)
+{
+	char *end = str-1;	
+	if (value == 0)
+		*++end = '0';
+	else do
+	{
+		char digit = value%10;
+		value /= 10;
+		*++end = '0' + digit;
+	} while (value > 0);
+
+	*(end+1) = '\0';
+	int size = end-str+1;
+
+	do
+	{
+		char temp = *end;
+		*end = *str;
+		*str = temp;
+	} while (--end >= ++str);
+
+	return size;
+}
+
+int itoa(long long value, char *str)
+{
+	if (value < 0)
+	{
+		*str = '-';
+		return itoa((unsigned long long)-value, str+1)+1;
+	}
+	else
+		return itoa((unsigned long long)value, str);
+}
+
+int itoa(unsigned long long value, char *str)
+{
+	char *end = str-1;	
+	if (value == 0)
+		*++end = '0';
+	else do
+	{
+		char digit = value%10;
+		value /= 10;
+		*++end = '0' + digit;
+	} while (value > 0);
+
+	*(end+1) = '\0';
+	int size = end-str+1;
+
+	do
+	{
+		char temp = *end;
+		*end = *str;
+		*str = temp;
+	} while (--end >= ++str);
+
+	return size;
+}
+
+int itob(unsigned int value, char *str)
+{
+	char *end = str-1;
+	while (value != 0)
+	{
+		*++end = '0' + (value & 1);
+		value >>= 1;
+	}
+
+	*(end+1) = '\0';
+	int size = end-str+1;
+
+	do
+	{
+		char temp = *end;
+		*end = *str;
+		*str = temp;
+	} while (--end >= ++str);
+
+	return size;
+}
+
+int itox(unsigned int value, char *str)
+{
+	char *end = str-1;
+	while (value != 0)
+	{
+		int digit = value%16;
+		value /= 16;
+
+		*++end = digit < 10 ? '0' + digit : 'a' + digit-10;
+	}
+
+	*(end+1) = '\0';
+	int size = end-str+1;
+
+	do
+	{
+		char temp = *end;
+		*end = *str;
+		*str = temp;
+	} while (--end >= ++str);
+
+	return size;
+}
+
+int ftoa(float value, char *str)
+{
+	char *end = str-1;
+	switch (fpclassify(value))
+	{
+	case FP_INFINITE:
+		if (signbit(value))
+			*++end = '-';
+		*++end = 'i';
+		*++end = 'n';
+		*++end = 'f';
+		*++end = '\0';
+		return end-str;
+	case FP_NAN:
+		*++end = 'N';
+		*++end = 'a';
+		*++end = 'N';
+		*++end = '\0';
+		return end-str;
+	case FP_ZERO:
+		*++end = '0';
+		*++end = '\0';
+		return 1;
+	default:
+		if (signbit(value))
+		{
+			*++end = '-';
+			value = -value;
+		}
+
+		int exp = (int)log10f(value);
+		float sig = value/pow(10.0f, (float)exp);
+	
+		int digit = (sig+1e-2f);
+		sig = (sig - (float)digit)*10.0f;
+		*++end = '0' + digit;
+		
+		if (end - str < 8 && sig > 1e-2f)
+		{
+			*++end = '.';
+			do
+			{
+				digit = (sig+1e-2f);
+				sig = (sig - (float)digit)*10.0f;
+				*++end = '0' + digit;
+			} while (end-str < 8 && sig > 1e-2f);
+		}
+	
+		if (exp != 0)
+		{
+			*++end = 'e';
+			end += itoa(exp, ++end);
+		}
+		else
+			*++end = '\0';
+
+		return end - str;
+	}
+}
+
+int ftoa(double value, char *str)
+{
+	char *end = str-1;
+	switch (fpclassify(value))
+	{
+	case FP_INFINITE:
+		if (signbit(value))
+			*++end = '-';
+		*++end = 'i';
+		*++end = 'n';
+		*++end = 'f';
+		*++end = '\0';
+		return end-str;
+	case FP_NAN:
+		*++end = 'N';
+		*++end = 'a';
+		*++end = 'N';
+		*++end = '\0';
+		return end-str;
+	case FP_ZERO:
+		*++end = '0';
+		*++end = '\0';
+		return 1;
+	default:
+		if (signbit(value))
+		{
+			*++end = '-';
+			value = -value;
+		}
+
+		int exp = (int)log10f(value);
+		double sig = value/pow(10.0, (double)exp);
+	
+		int digit = (sig+1e-2);
+		sig = (sig - (double)digit)*10.0;
+		*++end = '0' + digit;
+		
+		if (end - str < 8 && sig > 1e-2)
+		{
+			*++end = '.';
+			do
+			{
+				digit = (sig+1e-2);
+				sig = (sig - (double)digit)*10.0;
+				*++end = '0' + digit;
+			} while (end-str < 8 && sig > 1e-2);
+		}
+	
+		if (exp != 0)
+		{
+			*++end = 'e';
+			end += itoa(exp, ++end);
+		}
+		else
+			*++end = '\0';
+
+		return end - str;
+	}
 }
 
 }

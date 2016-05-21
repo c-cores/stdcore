@@ -16,9 +16,9 @@ namespace core
 {
 
 template <class key_type, class hasher>
-struct hash_set : list<pair<uint32_t, key_type> >
+struct hash_set : list<pair<int, key_type> >
 {
-	typedef list<pair<uint32_t, key_type> > super;
+	typedef list<pair<int, key_type> > super;
 	typedef key_type type;
 	using super::size;
 	using super::left;
@@ -539,10 +539,10 @@ struct hash_set : list<pair<uint32_t, key_type> >
 		hasher h;
 		h << key;
 		uint32_t hash = h.hash() + salt;
-		uint32_t bucket = hash >> shift;
+		int bucket = (int)(hash >> shift);
 
 		typename super::iterator pos = super::end();
-		pair<uint32_t, key_type> search(hash, key);
+		pair<int, key_type> search(hash, key);
 		if (buckets[bucket] != super::end())
 			pos = search_tree(super::sub(buckets[bucket], buckets[bucket+1]-1), search);
 
@@ -578,11 +578,11 @@ struct hash_set : list<pair<uint32_t, key_type> >
 		hasher h;
 		h << key;
 		uint32_t hash = h.hash() + salt;
-		uint32_t bucket = hash >> shift;
+		int bucket = (int)(hash >> shift);
 
 		if (buckets[bucket] != super::end())
 		{
-			pair<uint32_t, key_type> search(hash, key);
+			pair<int, key_type> search(hash, key);
 			typename super::iterator pos = search_tree(super::sub(buckets[bucket], buckets[bucket+1]-1), search);
 			if (*pos != search)
 				return end();
