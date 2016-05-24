@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "slice.h"
+#include <core/slice.h>
 
 namespace core
 {

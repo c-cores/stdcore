@@ -7,7 +7,8 @@
 
 #pragma once
 
-#include "slice.h"
+#include <core/slice.h>
+
 #include <memory.h>
 #include <stdlib.h>
 #include <stdio.h>

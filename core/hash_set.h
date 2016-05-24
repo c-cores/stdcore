@@ -7,10 +7,10 @@
 
 #pragma once
 
-#include "array.h"
-#include "list.h"
-#include "pair.h"
-#include "search.h"
+#include <core/array.h>
+#include <core/list.h>
+#include <core/pair.h>
+#include <core/search.h>
 
 namespace core
 {

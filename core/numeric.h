@@ -6,14 +6,27 @@ namespace core
 template <class value_type>
 struct hex
 {
-	hex(value_type v)
+	hex(const value_type &v)
 	{
-		value = v;
+		value = &v;
 	}
 
 	~hex() {}
 
-	value_type value;
+	const value_type *value;
+};
+
+template <class value_type>
+struct bin
+{
+	bin(const value_type &v)
+	{
+		value = &v;
+	}
+
+	~bin() {}
+
+	const value_type *value;
 };
 
 }

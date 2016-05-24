@@ -1,8 +1,8 @@
 #pragma once
 
-#include "array.h"
-#include "pair.h"
-#include "implier.h"
+#include <core/array.h>
+#include <core/pair.h>
+#include <core/implier.h>
 
 namespace core
 {
@@ -21,6 +21,8 @@ struct string : array<char>
 	string(const string &str);
 	
 	~string();
+
+	using array<char>::size;
 
 	using array<char>::operator=;
 	string &operator=(const char *str);
@@ -134,6 +136,8 @@ int itoa(int value, char *str);
 int itoa(unsigned int value, char *str);
 int itoa(long long value, char *str);
 int itoa(unsigned long long value, char *str);
+int itob(unsigned int value, char *str);
+int itox(unsigned int value, char *str);
 
 int ftoa(float value, char *str);
 int ftoa(double value, char *str);

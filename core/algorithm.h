@@ -7,11 +7,23 @@
 
 #pragma once
 
-#include "slice.h"
+#include <core/slice.h>
 
 namespace core
 {
 
+/*!
+ * \brief 
+ *
+ * [detailed description]
+ *
+ * \param[in] [name of input parameter] [its description]
+ * \param[out] [name of output parameter] [its description]
+ * \return [information about return value]
+ * \sa [see also section]
+ * \note [any note about the function you might have]
+ * \warning [any warning if necessary]
+ */
 template <class container>
 container collapse(container c)
 {

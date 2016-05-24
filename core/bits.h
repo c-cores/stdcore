@@ -7,9 +7,9 @@
 
 #pragma once
 
-#include "array.h"
-#include "pair.h"
-#include "implier.h"
+#include <core/array.h>
+#include <core/pair.h>
+#include <core/implier.h>
 
 namespace core
 {

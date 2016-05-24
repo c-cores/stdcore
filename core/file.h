@@ -5,10 +5,11 @@
  *      Author: nbingham
  */
 
+#include <core/search.h>
+#include <core/array.h>
+
 #include <stdlib.h>
 #include <stdio.h>
-#include "search.h"
-#include "array.h"
 
 #ifndef file_h
 #define file_h

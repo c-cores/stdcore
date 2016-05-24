@@ -7,14 +7,15 @@
 
 #pragma once
 
-#include "memory.h"
-#include "slice.h"
-#include "math.h"
-#include <csignal>
-#include "stdio.h"
-#include "stdlib.h"
+#include <core/slice.h>
+#include <core/math.h>
+
+#include <memory.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <stdarg.h>
 #include <stdint.h>
+#include <csignal>
 #include <new>
 
 namespace core
@@ -59,7 +60,7 @@ struct array
 	// Initialize this array with n elements each assigned the value t
 	array(int n, const value_type &t)
 	{
-		capacity = (1 << (log2i(count)+1));
+		capacity = (1 << (log2i(n)+1));
 		data = (value_type*)malloc(sizeof(value_type)*capacity);
 		for (count = 0; count < n; count++)
 			new (data+count) value_type(t);

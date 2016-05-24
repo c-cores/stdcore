@@ -5,7 +5,7 @@
  *      Author: nbingham
  */
 
-#include "binary_stream.h"
+#include <core/binary_stream.h>
 
 namespace core
 {

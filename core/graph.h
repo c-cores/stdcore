@@ -1,8 +1,8 @@
 #pragma once
 
-#include "array.h"
-#include "map.h"
-#include "algorithm.h"
+#include <core/array.h>
+#include <core/map.h>
+#include <core/algorithm.h>
 
 namespace core
 {

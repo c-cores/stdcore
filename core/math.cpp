@@ -5,7 +5,7 @@
  *      Author: nbingham
  */
 
-#include "math.h"
+#include <core/math.h>
 
 namespace core
 {

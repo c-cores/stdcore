@@ -7,9 +7,9 @@
 
 #pragma once
 
-#include "list.h"
-#include "implier.h"
-#include "search.h"
+#include <core/list.h>
+#include <core/implier.h>
+#include <core/search.h>
 
 namespace core
 {

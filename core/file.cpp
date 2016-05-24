@@ -5,8 +5,9 @@
  *      Author: nbingham
  */
 
-#include "file.h"
-#include "string.h"
+#include <core/file.h>
+#include <core/string.h>
+
 #include <stdarg.h>
 #include <stdint.h>
 
