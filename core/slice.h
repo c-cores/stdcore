@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <memory.h>
+
 namespace core
 {
 
@@ -22,13 +24,13 @@ struct slice
 	slice(container &copy)
 	{
 		left = copy.begin();
-		right = copy.rbegin();
+		right = copy.end();
 	}
 
-	slice(iterator left, iterator right)
+	slice(iterator start, iterator end)
 	{
-		this->left = left;
-		this->right = right;
+		left = start;
+		right = end;
 	}
 
 	~slice() {}
@@ -37,7 +39,7 @@ struct slice
 
 	int size() const
 	{
-		return right - left + 1;
+		return right - left;
 	}
 
 	iterator begin() const
@@ -47,12 +49,12 @@ struct slice
 
 	iterator end() const
 	{
-		return right+1;
+		return right;
 	}
 
 	iterator rbegin() const
 	{
-		return right;
+		return right-1;
 	}
 
 	iterator rend() const
@@ -60,17 +62,22 @@ struct slice
 		return left-1;
 	}
 
-	slice<container> sub(int left, int right = -1) const
+	slice<container> sub(int start, int end) const
 	{
-		if (right < 0)
-			return slice<container>(this->left+left, this->right+right+1);
-		else
-			return slice<container>(this->left+left, this->left+right);
+		iterator l = start < 0 ? right+start : left+start;
+		iterator r = end < 0 ? right+end : left+end;
+		return slice<container>(l, r);
 	}
 
-	static slice<container> sub(iterator left, iterator right)
+	slice<container> sub(int start) const
 	{
-		return slice<container>(left, right);
+		iterator l = start < 0 ? right+start : left+start;
+		return slice<container>(l, right);
+	}
+
+	static slice<container> sub(iterator start, iterator end)
+	{
+		return slice<container>(start, end);
 	}
 
 	slice<container> ref() const
@@ -91,13 +98,13 @@ struct slice<const container>
 	slice(const container &copy)
 	{
 		left = copy.begin();
-		right = copy.rbegin();
+		right = copy.end();
 	}
 
-	slice(iterator left, iterator right)
+	slice(iterator start, iterator end)
 	{
-		this->left = left;
-		this->right = right;
+		left = start;
+		right = end;
 	}
 
 	~slice() {}
@@ -106,7 +113,7 @@ struct slice<const container>
 
 	int size() const
 	{
-		return right - left + 1;
+		return right - left;
 	}
 
 	iterator begin() const
@@ -116,12 +123,12 @@ struct slice<const container>
 	
 	iterator end() const
 	{
-		return right+1;
+		return right;
 	}
 
 	iterator rbegin() const
 	{
-		return right;
+		return right-1;
 	}
 
 	iterator rend() const
@@ -129,19 +136,23 @@ struct slice<const container>
 		return left-1;
 	}
 
-	slice<const container> sub(int left, int right = -1) const
+	slice<container> sub(int start, int end) const
 	{
-		if (right < 0)
-			return slice<const container>(this->left+left, this->right+right+1);
-		else
-			return slice<const container>(this->left+left, this->left+right);
+		iterator l = start < 0 ? right+start : left+start;
+		iterator r = end < 0 ? right+end : left+end;
+		return slice<container>(l, r);
 	}
 
-	static slice<const container> sub(iterator left, iterator right)
+	slice<container> sub(int start) const
 	{
-		return slice<const container>(left, right);
+		iterator l = start < 0 ? right+start : left+start;
+		return slice<container>(l, right);
 	}
 
+	static slice<container> sub(iterator start, iterator end)
+	{
+		return slice<container>(start, end);
+	}
 
 	slice<const container> ref() const
 	{
@@ -156,12 +167,12 @@ struct slice<value_type*>
 	typedef const value_type* const_iterator;
 	typedef value_type type;
 
-	slice() {}
+	slice() { left = NULL; right = NULL; }
 
-	slice(iterator left, iterator right)
+	slice(iterator start, iterator end)
 	{
-		this->left = left;
-		this->right = right;
+		left = start;
+		right = end;
 	}
 
 	~slice() {}
@@ -170,7 +181,7 @@ struct slice<value_type*>
 
 	int size() const
 	{
-		return right - left + 1;
+		return right - left;
 	}
 
 	iterator begin() const
@@ -180,12 +191,12 @@ struct slice<value_type*>
 
 	iterator end() const
 	{
-		return right+1;
+		return right;
 	}
 
 	iterator rbegin() const
 	{
-		return right;
+		return right-1;
 	}
 
 	iterator rend() const
@@ -193,17 +204,22 @@ struct slice<value_type*>
 		return left-1;
 	}
 
-	slice<value_type*> sub(int left, int right = -1) const
+	slice<value_type*> sub(int start, int end) const
 	{
-		if (right < 0)
-			return slice<value_type*>(this->left+left, this->right+right+1);
-		else
-			return slice<value_type*>(this->left+left, this->left+right);
+		iterator l = start < 0 ? right+start : left+start;
+		iterator r = end < 0 ? right+end : left+end;
+		return slice<value_type*>(l, r);
 	}
 
-	static slice<value_type*> sub(value_type* left, value_type* right)
+	slice<value_type*> sub(int start) const
 	{
-		return slice<value_type*>(left, right);
+		iterator l = start < 0 ? right+start : left+start;
+		return slice<value_type*>(l, right);
+	}
+
+	static slice<value_type*> sub(iterator start, iterator end)
+	{
+		return slice<value_type*>(start, end);
 	}
 
 	slice<value_type*> ref() const

@@ -96,8 +96,8 @@ container sort_quick(container c)
 
 		store.swap(c.rbegin());
 
-		sort_quick(c.sub(c.begin(), store-1));
-		sort_quick(c.sub(store+1, c.rbegin()));
+		sort_quick(c.sub(c.begin(), store));
+		sort_quick(c.sub(store+1, c.end()));
 	}
 	else if (c.size() > 1)
 		if (*c.rbegin() < *c.begin())

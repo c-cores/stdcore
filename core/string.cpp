@@ -1,13 +1,10 @@
 #include <core/string.h>
+#include <core/fill.h>
 
 namespace core
 {
 
 string::string()
-{
-}
-
-string::string(int n, char c) : array<char>(n, c)
 {
 }
 
@@ -49,7 +46,7 @@ string &string::operator+=(char *str)
 
 string &string::operator+=(const string &str)
 {
-	array<char>::append_back(str.sub(0));
+	array<char>::append_back(str);
 	return *this;
 }
 
@@ -202,7 +199,7 @@ string format_string(const string &str, const char *esc)
 	string result;
 	result.reserve(str.size()*2+2);
 	result.push_back('\"');
-	for (string::const_iterator i = str.begin(); i; i++)
+	for (string::const_iterator i = str.begin(); i != str.end(); i++)
 	{
 		bool do_esc = (*i == '\\');
 		for (const char *p = esc; !do_esc && *p != '\0'; p++)
@@ -383,7 +380,7 @@ int edit_distance(const string &s1, const string &s2)
 	array<int> col;
 	array<int> prev_col;
 
-	col.push_back(s2.size()+1, 0);
+	col.append_back(fill<int>(s2.size()+1, 0));
 	prev_col.reserve(s2.size()+1);
 	for (int i = 0; i < s2.size()+1; i++)
 		prev_col.push_back_unsafe(i);
@@ -423,7 +420,7 @@ string line_wrap(const string &line, int length)
 {
 	string result;
 	result.reserve(line.size() + line.size()/length);
-	for (string::const_iterator i = line.begin(); i; i += length)
+	for (string::const_iterator i = line.begin(); i != line.end(); i += length)
 	{
 		result.append_back_unsafe(i.sub(length));
 		result.push_back_unsafe('\n');

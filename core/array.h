@@ -57,13 +57,19 @@ struct array
 			new (ptr) value_type(*i);
 	}
 
-	// Initialize this array with n elements each assigned the value t
-	array(int n, const value_type &t)
+	static array<value_type> values(int n, ...)
 	{
-		capacity = (1 << (log2i(n)+1));
-		data = (value_type*)malloc(sizeof(value_type)*capacity);
-		for (count = 0; count < n; count++)
-			new (data+count) value_type(t);
+		array<value_type> result;
+		result.capacity = (1 << (log2i(n)+1));
+		result.data = (value_type*)malloc(sizeof(value_type)*result.capacity);
+
+		va_list args;
+		va_start(args, n);
+		for (result.count = 0; result.count < n; result.count++)
+			new (result.data+result.count) value_type(va_arg(args, value_type));
+		va_end(args);
+
+		return result;
 	}
 
 	// delete all of the initialized objects in the array
@@ -94,30 +100,23 @@ struct array
 	protected:
 		friend class array<value_type>;
 		friend class const_iterator;
+
 		array<value_type> *arr;
 		value_type *loc;
+
+		iterator(array<value_type> *arr, value_type *loc)
+		{
+			this->arr = arr;
+			this->loc = loc;
+		}
 	public:
 		iterator()
 		{
-			arr = NULL;
-			loc = NULL;
-		}
-
-		iterator(array<value_type> *arr, int offset)
-		{
-			this->arr = arr;
-			if (offset < 0)
-				this->loc = arr->data + arr->count + offset;
-			else
-				this->loc = arr->data + offset;
+			this->arr = NULL;
+			this->loc = NULL;
 		}
 
 		~iterator() {}
-
-		operator bool()
-		{
-			return arr != NULL && loc < arr->data + arr->count && loc >= arr->data;
-		}
 
 		value_type &operator*()
 		{
@@ -136,6 +135,11 @@ struct array
 		value_type &get()
 		{
 			return *loc;
+		}
+
+		int idx()
+		{
+			return loc - arr->data;
 		}
 
 		iterator &operator++(int)
@@ -227,21 +231,34 @@ struct array
 			return loc - i.loc;
 		}
 
-		template <class iterator_type>
-		void swap(iterator_type i)
+		slice<array<value_type> > sub(int n)
 		{
-			value_type temp;
-			memcpy(&temp, loc, sizeof(value_type));
-			memcpy(loc, i.ptr(), sizeof(value_type));
-			memcpy(i.ptr(), &temp, sizeof(value_type));
+			iterator l = n < 0 ? *this+n : *this;
+			iterator r = n < 0 ? *this : *this+n;
+			return slice<array<value_type> >(l, r);
 		}
 
-		void alloc(unsigned int n = 1)
+		array<value_type> subcpy(int n)
 		{
+			return array<value_type>(sub(n));
+		}
+
+		void alloc(int n = 1)
+		{
+			if (n == 0)
+				return;
+
+			bool neg = n < 0;
+			if (neg)
+			{
+				loc += n;
+				n = -n;
+			}
+
 			int offset = loc - arr->data;
-			if (arr->count > 0 && arr->count+(int)n <= arr->capacity)
+			if (arr->count > 0 && arr->count+n <= arr->capacity)
 				memmove(loc+n, loc, (arr->count-offset)*sizeof(value_type));
-			else if (arr->count+(int)n > arr->capacity)
+			else if (arr->count+n > arr->capacity)
 			{
 				arr->capacity = (1 << (log2i(arr->count + n)+1));
 				value_type *newdata = (value_type*)malloc(sizeof(value_type)*arr->capacity);
@@ -256,24 +273,31 @@ struct array
 				loc = arr->data + offset;
 			}
 
+			if (neg)
+				loc += n;
+
 			arr->count += n;
 		}
 
 		/* Erase all elements in the range [this, this+n) */
 		void drop(int n = 1)
 		{
-			int offset = loc - arr->data;
-			if (n < 0)
+			if (n == 0)
+				return;
+
+			bool neg = n < 0;
+			if (neg)
 			{
-				n = min(-n, offset);
-				loc -= n;
-				offset -= n;
+				loc += n;
+				n = -n;
 			}
 
+			int offset = loc - arr->data;
 			n = min(offset + n, arr->count) - offset;
 			for (value_type *i = loc; i < loc+n; i++)
 				i->~value_type();
 			memmove(loc, loc+n, (arr->count-offset-n)*sizeof(value_type));
+
 			arr->count -= n;
 		}
 
@@ -283,14 +307,17 @@ struct array
 		{
 			array<value_type> result;
 
-			int offset = loc - arr->data;
-			if (n < 0)
+			if (n == 0)
+				return result;
+
+			bool neg = n < 0;
+			if (neg)
 			{
-				n = min(-n, offset);
-				loc -= n;
-				offset -= n;
+				loc += n;
+				n = -n;
 			}
 
+			int offset = loc - arr->data;
 			n = min(offset + n, arr->count) - offset;
 			result.reserve(n);
 			memcpy(result.data, loc, n*sizeof(value_type));
@@ -308,14 +335,6 @@ struct array
 			loc++;
 		}
 
-
-		void push(int n, value_type v)
-		{
-			alloc(n);
-			for (int i = 0; i < n; i++, loc++)
-				new (loc) value_type(v);
-		}
-
 		template <class container>
 		void append(const container &c)
 		{
@@ -331,98 +350,102 @@ struct array
 			}
 		}
 
-		slice<array<value_type> > sub(int n = -1)
+		void replace(int n, value_type v)
 		{
-			iterator right;
-			if (n < 0)
-				right = arr->end()+n;
-			else
-				right = *this+n-1;
-			return slice<array<value_type> >(*this, right);
-		}
-
-		array<value_type> subcpy(int n = -1)
-		{
-			return array<value_type>(sub(n));
-		}
-
-		void replace(int n, int m, value_type v)
-		{
-			int offset = loc - arr->data;
-			if (n < 0)
+			bool neg = n < 0;
+			if (neg)
 			{
-				n = min(-n, offset);
-				loc -= n;
-				offset -= n;
+				loc += n;
+				n = -n;
 			}
 
-			n = min(offset + n, arr->count) - offset;
-			while (n > 0 && m > 0)
+			int lower, upper;
+			if (n < 1)
 			{
+				lower = n;
+				upper = 1;
+			}
+			else
+			{
+				lower = 1;
+				upper = n;
+			}
+
+			int diff = upper-lower;
+			value_type *mid = loc+lower;
+			value_type *fin = loc+upper;
+			for (; loc < mid; loc++)
 				*loc = v;
-				loc++;
-				m--;
-				n--;
-			}
 
-			if (m == 0 && n > 0)
+			if (1 < n)
 			{
-				for (value_type *i = loc; i < loc+n; i++)
+				for (value_type *i = loc; i < fin; i++)
 					i->~value_type();
-				memmove(loc, loc+n, (arr->count-offset-n)*sizeof(value_type));
-				arr->count -= n;
+				memmove(loc, fin, (arr->count - upper)*sizeof(value_type));
+				arr->count -= diff;
 			}
-			else
+			else if (n < 1)
 			{
-				alloc(m);
-				while (m > 0)
-				{
+				alloc(diff);
+				fin = loc+upper;
+				for (; loc < fin; loc++)
 					new (loc) value_type(v);
-					loc++;
-					m--;
-				}
 			}
-
 		}
 
 		template <class container>
 		void replace(int n, const container &c)
 		{
-			int offset = loc - arr->data;
-			if (n < 0)
+			bool neg = n < 0;
+			if (neg)
 			{
-				n = min(-n, offset);
-				loc -= n;
-				offset -= n;
+				loc += n;
+				n = -n;
 			}
 
-			n = min(offset + n, arr->count) - offset;
-			typename container::const_iterator j = c.begin();
-			while (n > 0 && j != c.end())
+			int lower, upper;
+			if (n < c.size())
 			{
-				*loc = *j;
-				loc++;
-				j++;
-				n--;
-			}
-
-			if (j == c.end() && n > 0)
-			{
-				for (value_type *i = loc; i < loc+n; i++)
-					i->~value_type();
-				memmove(loc, loc+n, (arr->count-offset-n)*sizeof(value_type));
-				arr->count -= n;
+				lower = n;
+				upper = c.size();
 			}
 			else
 			{
-				alloc(c.end()-j);
-				while (j != c.end())
-				{
-					new (loc) value_type(*j);
-					loc++;
-					j++;
-				}
+				lower = c.size();
+				upper = n;
 			}
+
+			int diff = upper-lower;
+			value_type *mid = loc+lower;
+			value_type *fin = loc+upper;
+			typename container::const_iterator j = c.begin();
+			for (; loc < mid && j != c.end(); loc++, j++)
+				*loc = *j;
+
+			if (c.size() < n)
+			{
+				for (value_type *i = loc; i < fin; i++)
+					i->~value_type();
+				memmove(loc, fin, (arr->count - upper)*sizeof(value_type));
+				arr->count -= diff;
+
+			}
+			else if (n < c.size())
+			{
+				alloc(diff);
+				fin = loc+upper;
+				for (; loc < fin && j != c.end(); loc++, j++)
+					new (loc) value_type(*j);
+			}
+		}
+
+		template <class iterator_type>
+		void swap(iterator_type i)
+		{
+			value_type temp;
+			memcpy(&temp, loc, sizeof(value_type));
+			memcpy(loc, i.ptr(), sizeof(value_type));
+			memcpy(i.ptr(), &temp, sizeof(value_type));
 		}
 	};
 
@@ -433,6 +456,12 @@ struct array
 		friend class iterator;
 		const array<value_type> *arr;
 		const value_type *loc;
+
+		const_iterator(const array<value_type> *arr, const value_type *loc)
+		{
+			this->arr = arr;
+			this->loc = loc;
+		}
 	public:
 		const_iterator()
 		{
@@ -446,21 +475,7 @@ struct array
 			loc = copy.loc;
 		}
 
-		const_iterator(const array<value_type> *arr, int offset)
-		{
-			this->arr = arr;
-			if (offset < 0)
-				this->loc = arr->data + arr->count + offset;
-			else
-				this->loc = arr->data + offset;
-		}
-
 		~const_iterator() {}
-
-		operator bool()
-		{
-			return arr != NULL && loc < arr->data+arr->count && loc >= arr->data;
-		}
 
 		const value_type &operator*()
 		{
@@ -577,17 +592,14 @@ struct array
 			return loc - i.loc;
 		}
 
-		slice<const array<value_type> > sub(int n = -1) const
+		slice<const array<value_type> > sub(int n)
 		{
-			const_iterator right;
-			if (n < 0)
-				right = arr->end()+n;
-			else
-				right = *this+n-1;
-			return slice<const array<value_type> >(*this, right);
+			const_iterator l = n < 0 ? *this+n : *this;
+			const_iterator r = n < 0 ? *this : *this+n;
+			return slice<const array<value_type> >(l, r);
 		}
 
-		array<value_type> subcpy(int n = -1)
+		array<value_type> subcpy(int n)
 		{
 			return array<value_type>(sub(n));
 		}
@@ -600,150 +612,243 @@ struct array
 
 	iterator at(int i)
 	{
-		return iterator(this, i);
+		return iterator(this, data + (i < 0 ? i+count : i));
 	}
 
 	const_iterator at(int i) const
 	{
-		return const_iterator(this, i);
+		return const_iterator(this, data + (i < 0 ? i+count : i));
 	}
 
-	value_type &get(int i) const
+	value_type &get(int i)
 	{
-		if (i < 0)
-			i += count;
-
-		return *(data + i);
+		return *(data + (i < 0 ? i+count : i));
 	}
 
-	value_type *ptr(int i) const
+	const value_type &get(int i) const
 	{
-		return data+i;
+		return *(data + (i < 0 ? i+count : i));
 	}
 
-	value_type &operator[](int i) const
+	value_type *ptr(int i)
 	{
-		if (i < 0)
-			i += count;
-
-		return *(data + i);
+		return data + (i < 0 ? i+count : i);
 	}
 
-	value_type &front() const
+	const value_type *ptr(int i) const
+	{
+		return data + (i < 0 ? i+count : i);
+	}
+
+	value_type &operator[](int i)
+	{
+		return *(data + (i < 0 ? i+count : i));
+	}
+
+	const value_type &operator[](int i) const
+	{
+		return *(data + (i < 0 ? i+count : i));
+	}
+
+	value_type &front()
 	{
 		return *data;
 	}
 
-	value_type &back() const
+	const value_type &front() const
+	{
+		return *data;
+	}
+
+	value_type &back()
+	{
+		return *(data + count-1);
+	}
+
+	const value_type &back() const
 	{
 		return *(data + count-1);
 	}
 
 	iterator begin()
 	{
-		return iterator(this, 0);
+		return iterator(this, data);
 	}
 
 	iterator end()
 	{
-		return iterator(this, count);
+		return iterator(this, data+count);
 	}
 
 	iterator rbegin()
 	{
-		return iterator(this, -1);
+		return iterator(this, data+count-1);
 	}
 
 	iterator rend()
 	{
-		return iterator(this, -count-1);
+		return iterator(this, data-1);
 	}
 
 	const_iterator begin() const
 	{
-		return const_iterator(this, 0);
+		return const_iterator(this, data);
 	}
 
 	const_iterator end() const
 	{
-		return const_iterator(this, count);
+		return const_iterator(this, data+count);
 	}
 
 	const_iterator rbegin() const
 	{
-		return const_iterator(this, -1);
+		return const_iterator(this, data+count-1);
 	}
 
 	const_iterator rend() const
 	{
-		return const_iterator(this, -count-1);
+		return const_iterator(this, data-1);
 	}
 
-	slice<array<value_type> > sub(int left, int right = -1)
+	slice<array<value_type> > sub(int start, int end)
 	{
-		return slice<array<value_type> >(iterator(this, left), iterator(this, right));
+		iterator l = start < 0 ? this->end()+start : this->begin()+start;
+		iterator r = end < 0 ? this->end()+end : this->begin()+end;
+		return slice<array<value_type> >(l, r);
 	}
 
-	slice<const array<value_type> > sub(int left, int right = -1) const
+	slice<array<value_type> > sub(int start)
 	{
-		return slice<const array<value_type> >(const_iterator(this, left), const_iterator(this, right));
+		iterator l = start < 0 ? this->end()+start : this->begin()+start;
+		return slice<array<value_type> >(l, end());
 	}
 
-	array<value_type> subcpy(int left, int right = -1) const
+	slice<const array<value_type> > sub(int start, int end) const
 	{
-		return array<value_type>(sub(left, right));
+		const_iterator l = start < 0 ? this->end()+start : this->begin()+start;
+		const_iterator r = end < 0 ? this->end()+end : this->begin()+end;
+		return slice<const array<value_type> >(l, r);
 	}
 
-	static slice<array<value_type> > sub(iterator left, iterator right)
+	slice<const array<value_type> > sub(int start) const
 	{
-		return slice<array<value_type> >(left, right);
+		const_iterator l = start < 0 ? this->end()+start : this->begin()+start;
+		return slice<const array<value_type> >(l, end());
 	}
 
-	static slice<const array<value_type> > sub(const_iterator left, const_iterator right)
+	array<value_type> subcpy(int start, int end) const
 	{
-		return slice<const array<value_type> >(left, right);
+		return array<value_type>(sub(start, end));
 	}
 
-	static array<value_type> subcpy(iterator left, iterator right)
+	array<value_type> subcpy(int start) const
 	{
-		return array<value_type>(sub(left, right));
+		return array<value_type>(sub(start));
 	}
 
-	static array<value_type> subcpy(const_iterator left, const_iterator right)
+	static slice<array<value_type> > sub(iterator start, iterator end)
 	{
-		return array<value_type>(sub(left, right));
+		return slice<array<value_type> >(start, end);
+	}
+
+	static slice<const array<value_type> > sub(const_iterator start, const_iterator end)
+	{
+		return slice<const array<value_type> >(start, end);
+	}
+
+	static array<value_type> subcpy(iterator start, iterator end)
+	{
+		return array<value_type>(sub(start, end));
+	}
+
+	static array<value_type> subcpy(const_iterator start, const_iterator end)
+	{
+		return array<value_type>(sub(start, end));
 	}
 
 	slice<array<value_type> > ref()
 	{
-		return slice<array<value_type> >(begin(), rbegin());
+		return slice<array<value_type> >(begin(), end());
 	}
 
 	slice<const array<value_type> > ref() const
 	{
-		return slice<const array<value_type> >(begin(), rbegin());
+		return slice<const array<value_type> >(begin(), end());
 	}
 
-	void push_back(int n, value_type v)
+	void alloc_back(unsigned int n = 1)
 	{
-		end().push(n, v);
+		end().alloc(n);
 	}
 
-	void push_front(int n, value_type v)
+	void alloc_back_unsafe(unsigned int n = 1)
 	{
-		begin().push(n, v);
+		count += n;
+	}
+
+	void alloc_front(unsigned int n = 1)
+	{
+		begin().alloc(n);
+	}
+	
+	void drop(int start, int end)
+	{
+		if (start < 0)
+			start += count;
+
+		if (end < 0)
+			end += count;
+
+		int n = end - start;
+		for (value_type *i = data+start; i < data+end; i++)
+			i->~value_type();
+		memmove(data+start, data+end, (count-end)*sizeof(value_type));
+		count -= n;
+	}
+
+	void drop_back(int n = 1)
+	{
+		drop(-n, count);
+	}
+
+	void drop_front(int n = 1)
+	{
+		drop(0, n);
+	}
+
+	array<value_type> pop(int start, int end)
+	{
+		if (start < 0)
+			start += count;
+
+		if (end < 0)
+			end += count;
+
+		array<value_type> result;
+
+		int n = end - start;
+		result.reserve(n);
+		memcpy(result.data, data+start, n*sizeof(value_type));
+		result.count = n;
+		memmove(data+start, data+end, (count-end)*sizeof(value_type));
+		count -= n;
+
+		return result;
+	}
+
+	array<value_type> pop_back(int n = 1)
+	{
+		return pop(-n, count);
+	}
+
+	array<value_type> pop_front(int n = 1)
+	{
+		return pop(0, n);
 	}
 
 	void push_back(value_type v)
 	{
 		end().push(v);
-	}
-
-	void push_back_unsafe(int n, value_type v)
-	{
-		for (int i = 0; i < n; i++)
-			new (data+count+i) value_type(v);
-		count += n;
 	}
 
 	void push_back_unsafe(value_type v)
@@ -766,8 +871,8 @@ struct array
 	template <class container>
 	void append_back_unsafe(const container &c)
 	{
-		for (typename container::const_iterator i = c.begin(); i; i++, count++)
-            new (data+count) value_type(*i);
+		for (typename container::const_iterator i = c.begin(); i != c.end(); i++, count++)
+			new (data+count) value_type(*i);
 	}
 
 	template <class container>
@@ -775,40 +880,142 @@ struct array
 	{
 		begin().append(c);
 	}
-	
-	array<value_type> pop_back(unsigned int n = 1)
+
+	void replace(int start, int end, value_type v)
 	{
-		return end().pop(-n);
+		if (start < 0)
+			start += count;
+
+		if (end < 0)
+			end += count;
+
+		int n = end-start;
+		int lower, upper;
+		if (n > 1)
+		{
+			lower = start+1;
+			upper = end;
+		}
+		else
+		{
+			lower = end;
+			upper = start+1;
+		}
+
+		int diff = upper-lower;
+		value_type *mid = data+lower;
+		value_type *i;
+		for (i = data+start; i < mid; i++)
+			*i = v;
+
+		if (1 < n)
+		{
+			value_type *fin = data+upper;
+			for (; i < fin; i++)
+				i->~value_type();
+			memmove(mid, fin, (count-upper)*sizeof(value_type));
+			count -= diff;
+		}
+		else if (n < 1)
+		{
+			at(lower).alloc(diff);
+			value_type *fin = data+upper;
+			for (i = data+lower; i < fin; i++)
+				new (i) value_type(v);
+		}
 	}
 
-	array<value_type> pop_front(unsigned int n = 1)
+	template <class container>
+	void replace(int start, int end, const container &c)
 	{
-		return begin().pop(n);
+		if (start < 0)
+			start += count;
+
+		if (end < 0)
+			end += count;
+
+		int n = end-start;
+		int lower, upper;
+		if (n > c.size())
+		{
+			lower = start+c.size();
+			upper = end;
+		}
+		else
+		{
+			lower = end;
+			upper = start+c.size();
+		}
+
+		int diff = upper-lower;
+		value_type *mid = data+lower;
+		value_type *i;
+		typename container::const_iterator j = c.begin();
+		for (i = data+start; i < mid && j != c.end(); i++, j++)
+			*i = *j;
+
+		if (c.size() < n)
+		{
+			value_type *fin = data+upper;
+			for (; i < fin; i++)
+				i->~value_type();
+			memmove(mid, fin, (count-upper)*sizeof(value_type));
+			count -= diff;
+		}
+		else if (n < c.size())
+		{
+			at(lower).alloc(diff);
+			value_type *fin = data+upper;
+			for (i = data+lower; i < fin && j != c.end(); i++, j++)
+				new (i) value_type(*j);
+		}
 	}
 
-	void drop_back(unsigned int n = 1)
+	void replace_back(int n, const value_type &v)
 	{
-		end().drop(-n);
+		replace(-n, count, v);
 	}
 
-	void drop_front(unsigned int n = 1)
+	template <class container>
+	void replace_back(int n, const container &c)
 	{
-		begin().drop(n);
+		replace(-n, count, c);
 	}
 
-	void alloc_back(unsigned int n = 1)
+	void replace_front(int n, const value_type &v)
 	{
-		end().alloc(n);
+		replace(0, n, v);
 	}
 
-	void alloc_back_unsafe(unsigned int n = 1)
+	template <class container>
+	void replace_front(int n, const container &c)
 	{
-		count += n;
+		replace(0, n, c);
 	}
 
-	void alloc_front(unsigned int n = 1)
+	void swap(array<value_type> &arr)
 	{
-		begin().alloc(n);
+		int tmp_capacity = capacity;
+		int tmp_count = count;
+		value_type* tmp_data = data;
+		capacity = arr.capacity;
+		count = arr.count;
+		data = arr.data;
+		arr.capacity = tmp_capacity;
+		arr.count = tmp_count;
+		arr.data = tmp_data;
+	}
+
+	void resize(int n, const value_type &v = value_type())
+	{
+		if (n > count)
+		{
+			reserve(n);
+			while (count < n)
+				push_back_unsafe(v);
+		}
+		else if (n < count)
+			drop_back(count-n);
 	}
 
 	/**
@@ -835,7 +1042,7 @@ struct array
 	 * \fn void array<value_type>::reserve(int n)
 	 * \brief Increase the capacity of the array to at least count + n possible elements.
 	 */
-	void extend_reserve(int n)
+	void extend(int n)
 	{
 		reserve(count + n);
 	}
@@ -918,126 +1125,70 @@ struct array
 
 		return *this;
 	}
-
-	void swap(array<value_type> &arr)
-	{
-		int tmp_capacity = capacity;
-		int tmp_count = count;
-		value_type* tmp_data = data;
-		capacity = arr.capacity;
-		count = arr.count;
-		data = arr.data;
-		arr.capacity = tmp_capacity;
-		arr.count = tmp_count;
-		arr.data = tmp_data;
-	}
 };
 
-template<class value_type>
-bool operator<(array<value_type> a0, array<value_type> a1)
+template <class value_type>
+array<value_type> &operator<<(array<value_type> &os, const value_type &v)
 {
-	for (typename array<value_type>::iterator i0 = a0.begin(), i1 = a1.begin(); i0 != a0.end() && i1 != a1.end(); i0++, i1++)
-	{
-		if (*i0 < *i1)
-			return true;
-		else if (*i0 > *i1)
-			return false;
-	}
-
-	if (a0.size() < a1.size())
-		return true;
-
-	return false;
+	os.push_back(v);
+	return os;
 }
 
-template<class value_type>
-bool operator>(array<value_type> a0, array<value_type> a1)
+template <class value_type, class container>
+array<value_type> &operator<<(array<value_type> &os, const container &c)
 {
-	for (typename array<value_type>::iterator i0 = a0.begin(), i1 = a1.begin(); i0 != a0.end() && i1 != a1.end(); i0++, i1++)
-	{
-		if (*i0 > *i1)
-			return true;
-		else if (*i0 < *i1)
-			return false;
-	}
-
-	if (a0.size() > a1.size())
-		return true;
-
-	return false;
+	os.append_back(c);
+	return os;
 }
 
-template<class value_type>
-bool operator<=(array<value_type> a0, array<value_type> a1)
+template <class value_type>
+array<value_type> operator<<(array<value_type> os, const value_type &v)
 {
-	for (typename array<value_type>::iterator i0 = a0.begin(), i1 = a1.begin(); i0 != a0.end() && i1 != a1.end(); i0++, i1++)
-	{
-		if (*i0 < *i1)
-			return true;
-		else if (*i0 > *i1)
-			return false;
-	}
-
-	if (a0.size() > a1.size())
-		return false;
-
-	return true;
-}
-
-
-template<class value_type>
-bool operator>=(array<value_type> a0, array<value_type> a1)
-{
-	for (typename array<value_type>::iterator i0 = a0.begin(), i1 = a1.begin(); i0 != a0.end() && i1 != a1.end(); i0++, i1++)
-	{
-		if (*i0 > *i1)
-			return true;
-		else if (*i0 < *i1)
-			return false;
-	}
-
-	if (a0.size() < a1.size())
-		return false;
-
-	return true;
+	os.push_back(v);
+	return os;
 }
 
 template<class value_type>
 bool operator==(array<value_type> a0, array<value_type> a1)
 {
-	if (a0.size() != a1.size())
-		return false;
-
-	for (typename array<value_type>::iterator i0 = a0.begin(), i1 = a1.begin(); i0 != a0.end() && i1 != a1.end(); i0++, i1++)
-		if (*i0 != *i1)
-			return false;
-
-	return true;
+	return (compare(a0, a1) == 0);
 }
 
 template<class value_type>
 bool operator!=(array<value_type> a0, array<value_type> a1)
 {
-	if (a0.size() != a1.size())
-		return true;
-
-	for (typename array<value_type>::iterator i0 = a0.begin(), i1 = a1.begin(); i0 != a0.end() && i1 != a1.end(); i0++, i1++)
-		if (*i0 != *i1)
-			return true;
-
-	return false;
+	return (compare(a0, a1) != 0);
 }
 
-template <class value_type>
-array<value_type> &operator<<(array<value_type> &a1, const array<value_type> &a2)
+template <class value_type, class container>
+array<value_type> operator<<(array<value_type> os, const container &c)
 {
-	a1.push_back(a2);
+	os.append_back(c);
+	return os;
 }
 
-template <class value_type>
-array<value_type> &operator<<(array<value_type> &a1, const value_type &a2)
+template<class value_type>
+bool operator<(array<value_type> a0, array<value_type> a1)
 {
-	a1.push_back(a2);
+	return (compare(a0, a1) < 0);
+}
+
+template<class value_type>
+bool operator>(array<value_type> a0, array<value_type> a1)
+{
+	return (compare(a0, a1) > 0);
+}
+
+template<class value_type>
+bool operator<=(array<value_type> a0, array<value_type> a1)
+{
+	return (compare(a0, a1) <= 0);
+}
+
+template<class value_type>
+bool operator>=(array<value_type> a0, array<value_type> a1)
+{
+	return (compare(a0, a1) >= 0);
 }
 
 }
