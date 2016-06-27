@@ -141,4 +141,9 @@ int itox(unsigned int value, char *str);
 int ftoa(float value, char *str);
 int ftoa(double value, char *str);
 
+slice<range<const char*, int> > wrapstr(const char *cstr);
+slice<range<char*, int> > wrapstr(char *cstr);
+slice<range<const char*, int> > wrapstr(const char *cstr, int n);
+slice<range<char*, int> > wrapstr(char *cstr, int n);
+
 }

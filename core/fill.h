@@ -18,11 +18,18 @@ template <class value_type>
 struct fill
 {
 	typedef value_type type;
+	struct const_iterator;
 
 	fill(int count, value_type value)
 	{
 		this->count = count;
 		this->value = value;
+	}
+
+	fill(const_iterator left, const_iterator right)
+	{
+		this->count = right - left;
+		this->value = left.root->value;
 	}
 
 	virtual ~fill()
@@ -140,24 +147,19 @@ struct fill
 			return index - i.index;
 		}
 
-		slice<const fill<value_type> > sub(int n)
+		fill<value_type> sub(int n)
 		{
-			const_iterator l = n < 0 ? *this+n : *this;
-			const_iterator r = n < 0 ? *this : *this + n;
-
-			return slice<const fill<value_type> >(l, r);
+			return fill<value_type>(abs(n), root->value);
 		}
 
 		fill<value_type> subcpy(int n)
 		{
-			if (n < 0)
-				n = -n;
-			return fill<value_type>(n, root->value);
+			return fill<value_type>(abs(n), root->value);
 		}
 
-		slice<const fill<value_type> > sub()
+		fill<value_type> sub()
 		{
-			return slice<const fill<value_type> >(*this, root->end());
+			return fill<value_type>(root->count - index, root->value);
 		}
 
 		fill<value_type> subcpy()
@@ -221,17 +223,17 @@ struct fill
 		return const_iterator(this, -1);
 	}
 
-	slice<const fill<value_type> > sub(int start, int end) const
+	fill<value_type> sub(int start, int end) const
 	{
-		const_iterator l = start < 0 ? this->end()+start : this->begin()+start;
-		const_iterator r = end < 0 ? this->end()+end : this->begin()+end;
-		return slice<const fill<value_type> >(l, r);
+		int l = start < 0 ? count+start : start;
+		int r = end < 0 ? count+end : end;
+		return fill<value_type>(r-l, value);
 	}
 
-	slice<const fill<value_type> > sub(int start) const
+	fill<value_type> sub(int start) const
 	{
-		const_iterator l = start < 0 ? this->end()+start : this->begin()+start;
-		return slice<const fill<value_type> >(l, end());
+		int l = start < 0 ? count+start : start;
+		return fill<value_type>(count-l, value);
 	}
 
 	fill<value_type> subcpy(int start, int end) const
@@ -247,19 +249,19 @@ struct fill
 		return fill<value_type>(count-l, value);
 	}
 
-	static slice<const fill<value_type> > sub(const_iterator start, const_iterator end)
+	static fill<value_type> sub(const_iterator start, const_iterator end)
 	{
-		return slice<const fill<value_type> >(start, end);
+		return fill<value_type>(start, end);
 	}
 
 	static fill<value_type> subcpy(const_iterator start, const_iterator end)
 	{
-		return fill<value_type>(end.index-start.index, start.root->value);
+		return fill<value_type>(start, end);
 	}
 
-	slice<const fill<value_type> > sub() const
+	fill<value_type> &sub()
 	{
-		return slice<const fill<value_type> >(begin(), end());
+		return *this;
 	}
 
 	fill<value_type> subcpy() const

@@ -36,7 +36,7 @@ TEST(array_struct, range_constructor)
 	for (int i = 0; i < x.count; i++)
 		EXPECT_EQ(x[i], i);
 
-	x = range<int>(10, 0);
+	x = range<int>(10, 0, -1);
 	EXPECT_EQ(10, x.count);
 	for (int i = 0; i < x.count; i++)
 		EXPECT_EQ(x[i], 10-i);
@@ -150,7 +150,7 @@ TEST(array_struct, alloc_back)
 		x[i] = 30 - i;
 
 	EXPECT_EQ(range<int>(0, 10), x.sub(0, 10));
-	EXPECT_EQ(range<int>(20, 0), x.sub(10, 30));
+	EXPECT_EQ(range<int>(20, 0, -1), x.sub(10, 30));
 }
 
 TEST(array_struct, alloc_front)
@@ -172,7 +172,7 @@ TEST(array_struct, alloc_front)
 		x[i] = 20 - i;
 
 	EXPECT_EQ(range<int>(0, 10), x.sub(20, 30));
-	EXPECT_EQ(range<int>(20, 0), x.sub(0, 20));
+	EXPECT_EQ(range<int>(20, 0, -1), x.sub(0, 20));
 }
 
 TEST(array_struct, drop)
@@ -530,7 +530,7 @@ TEST(array_struct, assign)
 TEST(array_struct, compare)
 {
 	array<int> x = range<int>(0, 10);
-	array<int> y = range<int>(10, 0);
+	array<int> y = range<int>(10, 0, -1);
 
 	EXPECT_TRUE(x < y);
 	EXPECT_FALSE(x > y);

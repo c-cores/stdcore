@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <core/slice.h>
+#include <core/range.h>
 #include <core/math.h>
 
 #include <memory.h>
@@ -26,6 +26,8 @@ template <class value_type>
 struct array
 {
 	typedef value_type type;
+	struct iterator;
+	struct const_iterator;
 
 	array()
 	{
@@ -43,6 +45,18 @@ struct array
 		data = (value_type*)malloc(sizeof(value_type)*capacity);
 		value_type *ptr = data;
 		for (typename container::const_iterator i = a.begin(); i != a.end(); i++, ptr++)
+			new (ptr) value_type(*i);
+	}
+
+	// Initialize this array as a copy of some other container
+	template <class container>
+	array(typename container::const_iterator left, typename container::const_iterator right)
+	{
+		count = right - left;
+		capacity = (1 << (log2i(count)+1));
+		data = (value_type*)malloc(sizeof(value_type)*capacity);
+		value_type *ptr = data;
+		for (typename container::const_iterator i = left; i != right; i++, ptr++)
 			new (ptr) value_type(*i);
 	}
 
@@ -92,9 +106,6 @@ struct array
 	int count;			// number of stored objects
 	int capacity;		// number of allocated spaces
 
-	struct iterator;
-	struct const_iterator;
-
 	struct iterator
 	{
 	protected:
@@ -110,6 +121,8 @@ struct array
 			this->loc = loc;
 		}
 	public:
+		typedef value_type type;
+
 		iterator()
 		{
 			this->arr = NULL;
@@ -231,11 +244,11 @@ struct array
 			return loc - i.loc;
 		}
 
-		slice<array<value_type> > sub(int n)
+		slice<range<iterator, int> > sub(int n)
 		{
 			iterator l = n < 0 ? *this+n : *this;
 			iterator r = n < 0 ? *this : *this+n;
-			return slice<array<value_type> >(l, r);
+			return range<iterator, int>(l, r);
 		}
 
 		array<value_type> subcpy(int n)
@@ -243,9 +256,9 @@ struct array
 			return array<value_type>(sub(n));
 		}
 
-		slice<array<value_type> > sub()
+		slice<range<iterator, int> > sub()
 		{
-			return slice<array<value_type> >(*this, arr->end());
+			return range<iterator, int>(*this, arr->end());
 		}
 
 		array<value_type> subcpy()
@@ -473,6 +486,9 @@ struct array
 			this->loc = loc;
 		}
 	public:
+		typedef value_type type;
+
+
 		const_iterator()
 		{
 			arr = NULL;
@@ -602,11 +618,11 @@ struct array
 			return loc - i.loc;
 		}
 
-		slice<const array<value_type> > sub(int n)
+		slice<range<const_iterator, int> > sub(int n)
 		{
 			const_iterator l = n < 0 ? *this+n : *this;
 			const_iterator r = n < 0 ? *this : *this+n;
-			return slice<const array<value_type> >(l, r);
+			return range<const_iterator, int>(l, r);
 		}
 
 		array<value_type> subcpy(int n)
@@ -614,9 +630,9 @@ struct array
 			return array<value_type>(sub(n));
 		}
 
-		slice<const array<value_type> > sub()
+		slice<range<const_iterator, int> > sub()
 		{
-			return slice<const array<value_type> >(*this, arr->end());
+			return range<const_iterator, int>(*this, arr->end());
 		}
 
 		array<value_type> subcpy()
@@ -730,30 +746,30 @@ struct array
 		return const_iterator(this, data-1);
 	}
 
-	slice<array<value_type> > sub(int start, int end)
+	slice<range<iterator, int> > sub(int start, int end)
 	{
 		iterator l = start < 0 ? this->end()+start : this->begin()+start;
 		iterator r = end < 0 ? this->end()+end : this->begin()+end;
-		return slice<array<value_type> >(l, r);
+		return range<iterator, int>(l, r);
 	}
 
-	slice<array<value_type> > sub(int start)
+	slice<range<iterator, int> > sub(int start)
 	{
 		iterator l = start < 0 ? this->end()+start : this->begin()+start;
-		return slice<array<value_type> >(l, end());
+		return range<iterator, int>(l, end());
 	}
 
-	slice<const array<value_type> > sub(int start, int end) const
+	slice<range<const_iterator, int> > sub(int start, int end) const
 	{
 		const_iterator l = start < 0 ? this->end()+start : this->begin()+start;
 		const_iterator r = end < 0 ? this->end()+end : this->begin()+end;
-		return slice<const array<value_type> >(l, r);
+		return range<const_iterator, int>(l, r);
 	}
 
-	slice<const array<value_type> > sub(int start) const
+	slice<range<const_iterator, int> > sub(int start) const
 	{
 		const_iterator l = start < 0 ? this->end()+start : this->begin()+start;
-		return slice<const array<value_type> >(l, end());
+		return range<const_iterator, int>(l, end());
 	}
 
 	array<value_type> subcpy(int start, int end) const
@@ -766,14 +782,14 @@ struct array
 		return array<value_type>(sub(start));
 	}
 
-	static slice<array<value_type> > sub(iterator start, iterator end)
+	static slice<range<iterator, int> > sub(iterator start, iterator end)
 	{
-		return slice<array<value_type> >(start, end);
+		return range<iterator, int>(start, end);
 	}
 
-	static slice<const array<value_type> > sub(const_iterator start, const_iterator end)
+	static slice<range<const_iterator, int> > sub(const_iterator start, const_iterator end)
 	{
-		return slice<const array<value_type> >(start, end);
+		return range<const_iterator, int>(start, end);
 	}
 
 	static array<value_type> subcpy(iterator start, iterator end)
@@ -786,14 +802,14 @@ struct array
 		return array<value_type>(sub(start, end));
 	}
 
-	slice<array<value_type> > sub()
+	slice<range<iterator, int> > sub()
 	{
-		return slice<array<value_type> >(begin(), end());
+		return range<iterator, int>(begin(), end());
 	}
 
-	slice<const array<value_type> > sub() const
+	slice<range<const_iterator, int> > sub() const
 	{
-		return slice<const array<value_type> >(begin(), end());
+		return range<const_iterator, int>(begin(), end());
 	}
 
 	void alloc_back(unsigned int n = 1)

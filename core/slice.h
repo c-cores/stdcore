@@ -13,140 +13,220 @@ namespace core
 {
 
 template <class container>
-struct slice
+struct elem_type
 {
-	typedef typename container::iterator iterator;
-	typedef typename container::const_iterator const_iterator;
 	typedef typename container::type type;
+};
 
-	slice() {}
-
-	slice(container &copy)
-	{
-		left = copy.begin();
-		right = copy.end();
-	}
-
-	slice(iterator start, iterator end)
-	{
-		left = start;
-		right = end;
-	}
-
-	~slice() {}
-
-	iterator left, right;
-
-	int size() const
-	{
-		return right - left;
-	}
-
-	iterator begin() const
-	{
-		return left;
-	}
-
-	iterator end() const
-	{
-		return right;
-	}
-
-	iterator rbegin() const
-	{
-		return right-1;
-	}
-
-	iterator rend() const
-	{
-		return left-1;
-	}
-
-	slice<container> sub(int start, int end) const
-	{
-		iterator l = start < 0 ? right+start : left+start;
-		iterator r = end < 0 ? right+end : left+end;
-		return slice<container>(l, r);
-	}
-
-	slice<container> sub(int start) const
-	{
-		iterator l = start < 0 ? right+start : left+start;
-		return slice<container>(l, right);
-	}
-
-	static slice<container> sub(iterator start, iterator end)
-	{
-		return slice<container>(start, end);
-	}
-
-	slice<container> ref() const
-	{
-		return *this;
-	}
+template <class value>
+struct elem_type<value*>
+{
+	typedef value type;
 };
 
 template <class container>
-struct slice<const container>
+struct slice : container
 {
-	typedef typename container::const_iterator iterator;
-	typedef typename container::const_iterator const_iterator;
-	typedef typename container::type type;
+	typedef typename elem_type<container>::type index_type;
+	typedef typename elem_type<index_type>::type type;
+	struct iterator;
+	struct const_iterator;
 
 	slice() {}
-
-	slice(const container &copy)
-	{
-		left = copy.begin();
-		right = copy.end();
-	}
-
-	slice(iterator start, iterator end)
-	{
-		left = start;
-		right = end;
-	}
-
+	slice(const_iterator left, const_iterator right) : container(left, right) {}
+	slice(const container &copy) : container(copy) {}
 	~slice() {}
 
-	iterator left, right;
-
-	int size() const
+	struct iterator : container::iterator
 	{
-		return right - left;
+		using container::iterator::root;
+
+		iterator() {}
+		iterator(const typename container::iterator &copy) : container::iterator(copy) {}
+		~iterator() {}
+
+		type &operator*()
+		{
+			return *container::iterator::get();
+		}
+		type *operator->()
+		{
+			return &(*container::iterator::get());
+		}
+
+		type *ptr()
+		{
+			return &(*container::iterator::get());
+		}
+
+		type &get()
+		{
+			return *container::iterator::get();
+		}
+
+		slice<container> sub(int n)
+		{
+			iterator l = n < 0 ? *this+n : *this;
+			iterator r = n < 0 ? *this : *this+n;
+			return slice<container>(l, r);
+		}
+
+		index_type subcpy(int n)
+		{
+			return object(sub(n));
+		}
+
+		slice<container> sub()
+		{
+			return slice<container>(*this, root->end());
+		}
+
+		index_type subcpy()
+		{
+			return index_type(sub());
+		}
+	};
+
+	struct const_iterator : container::const_iterator
+	{
+		using container::const_iterator::root;
+
+		const_iterator() {}
+		const_iterator(const typename container::const_iterator &copy) : container::const_iterator(copy) {}
+		~const_iterator() {}
+
+		const type &operator*()
+		{
+			return *container::const_iterator::get();
+		}
+
+		const type *operator->()
+		{
+			return &(*container::const_iterator::get());
+		}
+
+		const type *ptr()
+		{
+			return &(*container::const_iterator::get());
+		}
+
+		const type &get()
+		{
+			return *container::const_iterator::get();
+		}
+
+		slice<const container> sub(int n)
+		{
+			iterator l = n < 0 ? *this+n : *this;
+			iterator r = n < 0 ? *this : *this+n;
+			return slice<const container>(l, r);
+		}
+
+		index_type subcpy(int n)
+		{
+			return index_type(sub(n));
+		}
+
+		slice<const container> sub()
+		{
+			return slice<const container>(*this, root->end());
+		}
+
+		index_type subcpy()
+		{
+			return index_type(sub());
+		}
+	};
+
+	const_iterator at(int i) const
+	{
+		return const_iterator(container::at(i));
 	}
 
-	iterator begin() const
+	type get(int i) const
 	{
-		return left;
-	}
-	
-	iterator end() const
-	{
-		return right;
+		return container::get(i).get();
 	}
 
-	iterator rbegin() const
+	type operator[](int i) const
 	{
-		return right-1;
+		return container::get(i).get();
 	}
 
-	iterator rend() const
+	type front() const
 	{
-		return left-1;
+		return container::front().get();
 	}
 
-	slice<container> sub(int start, int end) const
+	type back() const
 	{
-		iterator l = start < 0 ? right+start : left+start;
-		iterator r = end < 0 ? right+end : left+end;
+		return container::back().get();
+	}
+
+	iterator begin()
+	{
+		return iterator(container::begin());
+	}
+
+	iterator end()
+	{
+		return iterator(container::end());
+	}
+
+	iterator rbegin()
+	{
+		return iterator(container::rbegin());
+	}
+
+	iterator rend()
+	{
+		return iterator(container::rend());
+	}
+
+	const_iterator begin() const
+	{
+		return const_iterator(container::begin());
+	}
+
+	const_iterator end() const
+	{
+		return const_iterator(container::end());
+	}
+
+	const_iterator rbegin() const
+	{
+		return const_iterator(container::rbegin());
+	}
+
+	const_iterator rend() const
+	{
+		return const_iterator(container::rend());
+	}
+
+	slice<container> sub(int start, int end)
+	{
+		iterator l = start < 0 ? this->end()+start : this->begin()+start;
+		iterator r = end < 0 ? this->end()+end : this->begin()+end;
 		return slice<container>(l, r);
 	}
 
-	slice<container> sub(int start) const
+	slice<const container> sub(int start, int end) const
 	{
-		iterator l = start < 0 ? right+start : left+start;
-		return slice<container>(l, right);
+		const_iterator l = start < 0 ? this->end()+start : this->begin()+start;
+		const_iterator r = end < 0 ? this->end()+end : this->begin()+end;
+		return slice<const container>(l, r);
+	}
+
+	slice<container> sub(int start)
+	{
+		iterator l = start < 0 ? this->end()+start : this->begin()+start;
+		return slice<container>(l, this->end());
+	}
+
+	slice<const container> sub(int start) const
+	{
+		const_iterator l = start < 0 ? this->end()+start : this->begin()+start;
+		return slice<const container>(l, this->end());
 	}
 
 	static slice<container> sub(iterator start, iterator end)
@@ -154,75 +234,17 @@ struct slice<const container>
 		return slice<container>(start, end);
 	}
 
-	slice<const container> ref() const
+	static slice<const container> sub(const_iterator start, const_iterator end)
+	{
+		return slice<const container>(start, end);
+	}
+
+	slice<container> &sub()
 	{
 		return *this;
 	}
-};
 
-template <class value_type>
-struct slice<value_type*>
-{
-	typedef value_type* iterator;
-	typedef const value_type* const_iterator;
-	typedef value_type type;
-
-	slice() { left = NULL; right = NULL; }
-
-	slice(iterator start, iterator end)
-	{
-		left = start;
-		right = end;
-	}
-
-	~slice() {}
-
-	iterator left, right;
-
-	int size() const
-	{
-		return right - left;
-	}
-
-	iterator begin() const
-	{
-		return left;
-	}
-
-	iterator end() const
-	{
-		return right;
-	}
-
-	iterator rbegin() const
-	{
-		return right-1;
-	}
-
-	iterator rend() const
-	{
-		return left-1;
-	}
-
-	slice<value_type*> sub(int start, int end) const
-	{
-		iterator l = start < 0 ? right+start : left+start;
-		iterator r = end < 0 ? right+end : left+end;
-		return slice<value_type*>(l, r);
-	}
-
-	slice<value_type*> sub(int start) const
-	{
-		iterator l = start < 0 ? right+start : left+start;
-		return slice<value_type*>(l, right);
-	}
-
-	static slice<value_type*> sub(iterator start, iterator end)
-	{
-		return slice<value_type*>(start, end);
-	}
-
-	slice<value_type*> ref() const
+	slice<const container> sub() const
 	{
 		return *this;
 	}

@@ -1,5 +1,6 @@
 #include <core/string.h>
 #include <core/fill.h>
+#include <core/range.h>
 
 namespace core
 {
@@ -8,7 +9,7 @@ string::string()
 {
 }
 
-string::string(const char *str) : array<char>(slice<const char*>(str, str + strlen(str)-1))
+string::string(const char *cstr) : array<char>(wrapstr(cstr))
 {
 }
 	
@@ -22,25 +23,25 @@ string::~string()
 
 string &string::operator=(const char *str)
 {
-	array<char>::operator=(slice<const char*>(str, str + strlen(str)-1));
+	array<char>::operator=(wrapstr(str));
 	return *this;
 }
 
 string &string::operator=(char *str)
 {
-	array<char>::operator=(slice<char*>(str, str + strlen(str)-1));
+	array<char>::operator=(wrapstr(str));
 	return *this;
 }
 
 string &string::operator+=(const char *str)
 {
-	array<char>::append_back(slice<const char*>(str, str + strlen(str)-1));
+	array<char>::append_back(wrapstr(str));
 	return *this;
 }
 
 string &string::operator+=(char *str)
 {
-	array<char>::append_back(slice<const char*>(str, str + strlen(str)-1));
+	array<char>::append_back(wrapstr(str));
 	return *this;
 }
 
@@ -72,7 +73,7 @@ string operator+(const string &s1, const char *s2)
 	int n = strlen(s2);
 	result.reserve(s1.size() + n);
 	result.append_back(s1);
-	result.append_back(slice<const char*>(s2, s2 + n-1));
+	result.append_back(wrapstr(s2, n));
 	return result;
 }
 
@@ -82,7 +83,7 @@ string operator+(const string &s1, char *s2)
 	int n = strlen(s2);
 	result.reserve(s1.size() + n);
 	result.append_back(s1);
-	result.append_back(slice<const char*>(s2, s2 + n-1));
+	result.append_back(wrapstr(s2, n));
 	return result;
 }
 
@@ -101,7 +102,7 @@ string &operator<<(string &s1, char s2)
 string &operator<<(string &s1, bool s2)
 {
 	const char *v = s2 ? "true" : "false";
-	s1.append_back(slice<const char*>(v, v+3+(1-s2)));
+	s1.append_back(wrapstr(v, 4+(1-s2)));
 	return s1;
 }
 
@@ -184,13 +185,13 @@ string &operator<<(string &s1, double s2)
 
 string &operator<<(string &s1, const char *s2)
 {
-	s1.append_back(slice<const char*>(s2, s2 + strlen(s2)-1));
+	s1.append_back(wrapstr(s2));
 	return s1;
 }
 
 string &operator<<(string &s1, char *s2)
 {
-	s1.append_back(slice<char*>(s2, s2 + strlen(s2)-1));
+	s1.append_back(wrapstr(s2));
 	return s1;
 }
 
@@ -253,62 +254,62 @@ bool operator>=(string s1, string s2)
 
 bool operator==(string s1, const char* s2)
 {
-	return (compare(s1, slice<const char*>(s2, s2+strlen(s2))) == 0);
+	return (compare(s1, wrapstr(s2)) == 0);
 }
 
 bool operator!=(string s1, const char* s2)
 {
-	return (compare(s1, slice<const char*>(s2, s2+strlen(s2))) != 0);
+	return (compare(s1, wrapstr(s2)) != 0);
 }
 
 bool operator<(string s1, const char* s2)
 {
-	return (compare(s1, slice<const char*>(s2, s2+strlen(s2))) < 0);
+	return (compare(s1, wrapstr(s2)) < 0);
 }
 
 bool operator>(string s1, const char* s2)
 {
-	return (compare(s1, slice<const char*>(s2, s2+strlen(s2))) > 0);
+	return (compare(s1, wrapstr(s2)) > 0);
 }
 
 bool operator<=(string s1, const char* s2)
 {
-	return (compare(s1, slice<const char*>(s2, s2+strlen(s2))) <= 0);
+	return (compare(s1, wrapstr(s2)) <= 0);
 }
 
 bool operator>=(string s1, const char* s2)
 {
-	return (compare(s1, slice<const char*>(s2, s2+strlen(s2))) >= 0);
+	return (compare(s1, wrapstr(s2)) >= 0);
 }
 
 bool operator==(const char* s1, string s2)
 {
-	return (compare(slice<const char*>(s1, s1+strlen(s1)), s2) == 0);
+	return (compare(wrapstr(s1), s2) == 0);
 }
 
 bool operator!=(const char* s1, string s2)
 {
-	return (compare(slice<const char*>(s1, s1+strlen(s1)), s2) != 0);
+	return (compare(wrapstr(s1), s2) != 0);
 }
 
 bool operator<(const char* s1, string s2)
 {
-	return (compare(slice<const char*>(s1, s1+strlen(s1)), s2) < 0);
+	return (compare(wrapstr(s1), s2) < 0);
 }
 
 bool operator>(const char* s1, string s2)
 {
-	return (compare(slice<const char*>(s1, s1+strlen(s1)), s2) > 0);
+	return (compare(wrapstr(s1), s2) > 0);
 }
 
 bool operator<=(const char* s1, string s2)
 {
-	return (compare(slice<const char*>(s1, s1+strlen(s1)), s2) <= 0);
+	return (compare(wrapstr(s1), s2) <= 0);
 }
 
 bool operator>=(const char* s1, string s2)
 {
-	return (compare(slice<const char*>(s1, s1+strlen(s1)), s2) >= 0);
+	return (compare(wrapstr(s1), s2) >= 0);
 }
 
 /*Is this character a legal name starter character?
@@ -664,6 +665,26 @@ int ftoa(double value, char *str)
 
 		return end - str;
 	}
+}
+
+slice<range<const char*, int> > wrapstr(const char *cstr)
+{
+	return slice<range<const char*, int> >(range<const char*, int>(cstr, cstr+strlen(cstr)));
+}
+
+slice<range<char*, int> > wrapstr(char *cstr)
+{
+	return slice<range<char*, int> >(range<char*, int>(cstr, cstr+strlen(cstr)));
+}
+
+slice<range<const char*, int> > wrapstr(const char *cstr, int n)
+{
+	return slice<range<const char*, int> >(range<const char*, int>(cstr, cstr+n));
+}
+
+slice<range<char*, int> > wrapstr(char *cstr, int n)
+{
+	return slice<range<char*, int> >(range<char*, int>(cstr, cstr+n));
 }
 
 }
