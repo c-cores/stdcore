@@ -12,11 +12,11 @@ test: test_stdcore
 test_stdcore: $(OBJECTS) gtest_main.o
 	$(CXX) $(LIBRARY_PATH) $(OBJECTS) gtest_main.o -pthread -lstdcore -lgtest -o test_stdcore
 	
-%.o: %.cpp 
+%.o: %.cpp
 	$(CXX) $(INCLUDE_PATH) $< -c -g -o $@
 	
 gtest_main.o: $(GTEST)/src/gtest_main.cc
 	$(CXX) $(INCLUDE_PATH) $< -c -g -o $@
 	
 clean:
-	rm -f *.test
+	rm -f *.o test_stdcore

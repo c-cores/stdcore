@@ -20,19 +20,54 @@ TEST(array_iterator, iterate)
 	EXPECT_EQ(10, j);
 }
 
+TEST(array_iterator, index)
+{
+	array<int> x = array<int>::values(8, 5, 2, 3, 5, 6, 2, 1, 7);
+
+	EXPECT_EQ(5, *x.at(0));
+	EXPECT_EQ(3, *x.at(2));
+	EXPECT_EQ(7, *x.at(-1));
+	EXPECT_EQ(2, *x.at(-3));
+
+	EXPECT_EQ(5, x.at(0).get());
+	EXPECT_EQ(3, x.at(2).get());
+	EXPECT_EQ(7, x.at(-1).get());
+	EXPECT_EQ(2, x.at(-3).get());
+
+	EXPECT_EQ(5, *x.at(0).ptr());
+	EXPECT_EQ(3, *x.at(2).ptr());
+	EXPECT_EQ(7, *x.at(-1).ptr());
+	EXPECT_EQ(2, *x.at(-3).ptr());
+
+	EXPECT_EQ(0, x.at(0).idx());
+	EXPECT_EQ(2, x.at(2).idx());
+	EXPECT_EQ(x.size()-1, x.at(-1).idx());
+	EXPECT_EQ(x.size()-3, x.at(-3).idx());
+
+	x.at(2).get() = 5;
+	x.at(-3).get() = 9;
+
+	EXPECT_EQ(5, *x.at(2));
+	EXPECT_EQ(9, *x.at(-3));
+}
+
 TEST(array_iterator, sub)
 {
 	array<int> x = range<int>(0, 10);
 	EXPECT_EQ(x.at(4).sub(3), range<int>(4, 7));
 	EXPECT_EQ(x.at(7).sub(-3), range<int>(4, 7));
+	EXPECT_EQ(x.at(4).sub(), range<int>(4, 10));
 	EXPECT_EQ(x.at(4).subcpy(3), range<int>(4, 7));
 	EXPECT_EQ(x.at(7).subcpy(-3), range<int>(4, 7));
+	EXPECT_EQ(x.at(4).subcpy(), range<int>(4, 10));
 
 	const array<int> y = range<int>(0, 10);
 	EXPECT_EQ(y.at(4).sub(3), range<int>(4, 7));
 	EXPECT_EQ(y.at(7).sub(-3), range<int>(4, 7));
+	EXPECT_EQ(x.at(4).sub(), range<int>(4, 10));
 	EXPECT_EQ(y.at(4).subcpy(3), range<int>(4, 7));
 	EXPECT_EQ(y.at(7).subcpy(-3), range<int>(4, 7));
+	EXPECT_EQ(x.at(4).subcpy(), range<int>(4, 10));
 }
 
 TEST(array_iterator, alloc)
@@ -265,7 +300,7 @@ TEST(array_iterator, append)
 	x = range<int>(0, 10);
 
 	i = x.begin();
-	i.append(y.ref());
+	i.append(y.sub());
 	EXPECT_EQ(14, x.count);
 	EXPECT_GE(x.capacity, x.count);
 	EXPECT_NE((int*)NULL, x.data);
@@ -274,7 +309,7 @@ TEST(array_iterator, append)
 	EXPECT_EQ(i.idx(), 4);
 
 	i = x.at(7);
-	i.append(y.ref());
+	i.append(y.sub());
 	EXPECT_EQ(18, x.count);
 	EXPECT_GE(x.capacity, x.count);
 	EXPECT_NE((int*)NULL, x.data);
@@ -285,7 +320,7 @@ TEST(array_iterator, append)
 	EXPECT_EQ(i.idx(), 11);
 
 	i = x.end();
-	i.append(y.ref());
+	i.append(y.sub());
 	EXPECT_EQ(22, x.count);
 	EXPECT_GE(x.capacity, x.count);
 	EXPECT_NE((int*)NULL, x.data);

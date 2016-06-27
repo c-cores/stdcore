@@ -243,6 +243,16 @@ struct array
 			return array<value_type>(sub(n));
 		}
 
+		slice<array<value_type> > sub()
+		{
+			return slice<array<value_type> >(*this, arr->end());
+		}
+
+		array<value_type> subcpy()
+		{
+			return array<value_type>(sub());
+		}
+
 		void alloc(int n = 1)
 		{
 			if (n == 0)
@@ -603,6 +613,16 @@ struct array
 		{
 			return array<value_type>(sub(n));
 		}
+
+		slice<const array<value_type> > sub()
+		{
+			return slice<const array<value_type> >(*this, arr->end());
+		}
+
+		array<value_type> subcpy()
+		{
+			return array<value_type>(sub());
+		}
 	};
 
 	int size() const
@@ -766,12 +786,12 @@ struct array
 		return array<value_type>(sub(start, end));
 	}
 
-	slice<array<value_type> > ref()
+	slice<array<value_type> > sub()
 	{
 		return slice<array<value_type> >(begin(), end());
 	}
 
-	slice<const array<value_type> > ref() const
+	slice<const array<value_type> > sub() const
 	{
 		return slice<const array<value_type> >(begin(), end());
 	}

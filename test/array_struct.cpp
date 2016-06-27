@@ -125,10 +125,10 @@ TEST(array_struct, sub)
 	EXPECT_EQ(z, x.subcpy(4));
 	EXPECT_EQ(z, x.subcpy(-4));
 
-	// ref
-	EXPECT_EQ(x, x.ref());
-	EXPECT_EQ(y, y.ref());
-	EXPECT_EQ(z, z.ref());
+	// no inputs
+	EXPECT_EQ(x, x.sub());
+	EXPECT_EQ(y, y.sub());
+	EXPECT_EQ(z, z.sub());
 }
 
 TEST(array_struct, alloc_back)
@@ -521,7 +521,7 @@ TEST(array_struct, assign)
 	array<int> y, z;
 
 	y = x;
-	z = x.ref();
+	z = x.sub();
 	EXPECT_EQ(y, x);
 	EXPECT_EQ(z, x);
 	EXPECT_EQ(y, z);
