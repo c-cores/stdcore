@@ -10,7 +10,7 @@
 namespace core
 {
 
-uint32_t count_1bits(uint32_t x)
+uint32_t count_ones(uint32_t x)
 {
     x = x - ((x >> 1) & 0x55555555);
     x = (x & 0x33333333) + ((x >> 2) & 0x33333333);
@@ -20,7 +20,7 @@ uint32_t count_1bits(uint32_t x)
     return x & 0x0000003F;
 }
 
-uint32_t count_0bits(uint32_t x)
+uint32_t count_zeros(uint32_t x)
 {
 	x = x - ((x >> 1) & 0x55555555);
 	x = (x & 0x33333333) + ((x >> 2) & 0x33333333);
@@ -65,12 +65,77 @@ bool is_odd(int i)
 	return ((i & 0xFFFFFFFE) != (unsigned int)i);
 }
 
-uint32_t hash(const char *ptr, int len)
+/**
+ * copied from wikipedia
+ * https://en.wikipedia.org/wiki/MurmurHash
+ *
+ * under the creative commons license
+ * http://creativecommons.org/licenses/by-sa/3.0/
+ */
+#define ROT32(x, y) ((x << y) | (x >> (32 - y))) // avoid effort
+uint32_t murmur3_32(const char *key, int len, uint32_t seed) {
+	static const uint32_t c1 = 0xcc9e2d51;
+	static const uint32_t c2 = 0x1b873593;
+	static const uint32_t r1 = 15;
+	static const uint32_t r2 = 13;
+	static const uint32_t m = 5;
+	static const uint32_t n = 0xe6546b64;
+
+	uint32_t hash = seed;
+
+	const int nblocks = len / 4;
+	const uint32_t *blocks = (const uint32_t *) key;
+	int i;
+	uint32_t k;
+	for (i = 0; i < nblocks; i++) {
+		k = blocks[i];
+		k *= c1;
+		k = ROT32(k, r1);
+		k *= c2;
+
+		hash ^= k;
+		hash = ROT32(hash, r2) * m + n;
+	}
+
+	const uint8_t *tail = (const uint8_t *) (key + nblocks * 4);
+	uint32_t k1 = 0;
+
+	switch (len & 3) {
+	case 3:
+		k1 ^= tail[2] << 16;
+	case 2:
+		k1 ^= tail[1] << 8;
+	case 1:
+		k1 ^= tail[0];
+
+		k1 *= c1;
+		k1 = ROT32(k1, r1);
+		k1 *= c2;
+		hash ^= k1;
+	}
+
+	hash ^= len;
+	hash ^= (hash >> 16);
+	hash *= 0x85ebca6b;
+	hash ^= (hash >> 13);
+	hash *= 0xc2b2ae35;
+	hash ^= (hash >> 16);
+
+	return hash;
+}
+
+/* copied from azillionmonkeys
+ * http://www.azillionmonkeys.com/qed/hash.html
+ *
+ * under the lgpl 2.1 license
+ * http://www.gnu.org/licenses/lgpl-2.1.txt
+ */
+uint32_t superfasthash(const char *key, int len, uint32_t seed)
 {
-	uint32_t hash = len, tmp;
+	uint32_t hash = seed, tmp;
 	int rem;
 
-	if (len <= 0 || ptr == NULL)
+	if (len <= 0 || key == NULL)
 		return 0;
 
 	rem = len & 3;
@@ -79,26 +144,26 @@ uint32_t hash(const char *ptr, int len)
 	/* Main loop */
 	for (;len > 0; len--)
 	{
-		hash  += (*((const uint16_t *) (ptr)));
-		tmp    = ((*((const uint16_t *) (ptr+2))) << 11) ^ hash;
+		hash  += (*((const uint16_t *) (key)));
+		tmp    = ((*((const uint16_t *) (key+2))) << 11) ^ hash;
 		hash   = (hash << 16) ^ tmp;
-		ptr  += 2*sizeof (uint16_t);
+		key  += 2*sizeof (uint16_t);
 		hash  += hash >> 11;
 	}
 
 	/* Handle end cases */
 	switch (rem)
 	{
-		case 3: hash += (*((const uint16_t *) (ptr)));
+		case 3: hash += (*((const uint16_t *) (key)));
 				hash ^= hash << 16;
-				hash ^= ((signed char)ptr[sizeof (uint16_t)]) << 18;
+				hash ^= ((signed char)key[sizeof (uint16_t)]) << 18;
 				hash += hash >> 11;
 				break;
-		case 2: hash += (*((const uint16_t *) (ptr)));
+		case 2: hash += (*((const uint16_t *) (key)));
 				hash ^= hash << 11;
 				hash += hash >> 17;
 				break;
-		case 1: hash += (signed char)*ptr;
+		case 1: hash += (signed char)*key;
 				hash ^= hash << 10;
 				hash += hash >> 1;
 	}

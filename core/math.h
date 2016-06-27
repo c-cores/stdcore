@@ -43,7 +43,7 @@ type powi(type base, int exp)
 int log2i(uint64_t value);
 
 template <class type>
-type abs(type &t)
+type abs(type t)
 {
 	return (t < 0 ? -t : t);
 }
@@ -65,7 +65,12 @@ using ::sqrt;
 template <class type>
 type clamp(type t, type left, type right)
 {
-	return max(min(t, right), left);
+	if (t < left)
+		return left;
+	else if (t > right)
+		return right;
+	else
+		return t;
 }
 
 template <class type>
@@ -94,7 +99,8 @@ type median(type t1, type t2, type t3)
 bool is_even(int i);
 bool is_odd(int i);
 
-uint32_t hash(const char *ptr, int len);
+uint32_t murmur3_32(const char *key, int len, uint32_t seed);
+uint32_t superfasthash(const char *key, int len, uint32_t seed);
 
 }
 
