@@ -112,12 +112,12 @@ struct array
 		friend class array<value_type>;
 		friend class const_iterator;
 
-		array<value_type> *arr;
+		array<value_type> *root;
 		value_type *loc;
 
 		iterator(array<value_type> *arr, value_type *loc)
 		{
-			this->arr = arr;
+			this->root = root;
 			this->loc = loc;
 		}
 	public:
@@ -125,7 +125,7 @@ struct array
 
 		iterator()
 		{
-			this->arr = NULL;
+			this->root = NULL;
 			this->loc = NULL;
 		}
 
@@ -152,7 +152,7 @@ struct array
 
 		int idx()
 		{
-			return loc - arr->data;
+			return loc - root->data;
 		}
 
 		iterator &operator++(int)
@@ -194,7 +194,7 @@ struct array
 		iterator operator+(int n) const
 		{
 			iterator result;
-			result.arr = arr;
+			result.root = root;
 			result.loc = loc + n;
 			return result;
 		}
@@ -202,14 +202,14 @@ struct array
 		iterator operator-(int n) const
 		{
 			iterator result;
-			result.arr = arr;
+			result.root = root;
 			result.loc = loc - n;
 			return result;
 		}
 
 		iterator &operator=(iterator i)
 		{
-			arr = i.arr;
+			root = i.root;
 			loc = i.loc;
 			return *this;
 		}
@@ -258,7 +258,7 @@ struct array
 
 		slice<range<iterator, int> > sub()
 		{
-			return range<iterator, int>(*this, arr->end());
+			return range<iterator, int>(*this, root->end());
 		}
 
 		array<value_type> subcpy()
@@ -278,28 +278,28 @@ struct array
 				n = -n;
 			}
 
-			int offset = loc - arr->data;
-			if (arr->count > 0 && arr->count+n <= arr->capacity)
-				memmove(loc+n, loc, (arr->count-offset)*sizeof(value_type));
-			else if (arr->count+n > arr->capacity)
+			int offset = loc - root->data;
+			if (root->count > 0 && root->count+n <= root->capacity)
+				memmove(loc+n, loc, (root->count-offset)*sizeof(value_type));
+			else if (root->count+n > root->capacity)
 			{
-				arr->capacity = (1 << (log2i(arr->count + n)+1));
-				value_type *newdata = (value_type*)malloc(sizeof(value_type)*arr->capacity);
+				root->capacity = (1 << (log2i(root->count + n)+1));
+				value_type *newdata = (value_type*)malloc(sizeof(value_type)*root->capacity);
 
-				if (arr->data != NULL)
+				if (root->data != NULL)
 				{
-					memcpy(newdata, arr->data, offset*sizeof(value_type));
-					memcpy(newdata+offset+n, loc, (arr->count-offset)*sizeof(value_type));
-					free(arr->data);
+					memcpy(newdata, root->data, offset*sizeof(value_type));
+					memcpy(newdata+offset+n, loc, (root->count-offset)*sizeof(value_type));
+					free(root->data);
 				}
-				arr->data = newdata;
-				loc = arr->data + offset;
+				root->data = newdata;
+				loc = root->data + offset;
 			}
 
 			if (neg)
 				loc += n;
 
-			arr->count += n;
+			root->count += n;
 		}
 
 		/* Erase all elements in the range [this, this+n) */
@@ -315,13 +315,13 @@ struct array
 				n = -n;
 			}
 
-			int offset = loc - arr->data;
-			n = min(offset + n, arr->count) - offset;
+			int offset = loc - root->data;
+			n = min(offset + n, root->count) - offset;
 			for (value_type *i = loc; i < loc+n; i++)
 				i->~value_type();
-			memmove(loc, loc+n, (arr->count-offset-n)*sizeof(value_type));
+			memmove(loc, loc+n, (root->count-offset-n)*sizeof(value_type));
 
-			arr->count -= n;
+			root->count -= n;
 		}
 
 
@@ -340,13 +340,13 @@ struct array
 				n = -n;
 			}
 
-			int offset = loc - arr->data;
-			n = min(offset + n, arr->count) - offset;
+			int offset = loc - root->data;
+			n = min(offset + n, root->count) - offset;
 			result.reserve(n);
 			memcpy(result.data, loc, n*sizeof(value_type));
 			result.count = n;
-			memmove(loc, loc+n, (arr->count-offset-n)*sizeof(value_type));
-			arr->count -= n;
+			memmove(loc, loc+n, (root->count-offset-n)*sizeof(value_type));
+			root->count -= n;
 
 			return result;
 		}
@@ -404,8 +404,8 @@ struct array
 			{
 				for (value_type *i = loc; i < fin; i++)
 					i->~value_type();
-				memmove(loc, fin, (arr->count - upper)*sizeof(value_type));
-				arr->count -= diff;
+				memmove(loc, fin, (root->count - upper)*sizeof(value_type));
+				root->count -= diff;
 			}
 			else if (n < 1)
 			{
@@ -449,8 +449,8 @@ struct array
 			{
 				for (value_type *i = loc; i < fin; i++)
 					i->~value_type();
-				memmove(loc, fin, (arr->count - upper)*sizeof(value_type));
-				arr->count -= diff;
+				memmove(loc, fin, (root->count - upper)*sizeof(value_type));
+				root->count -= diff;
 
 			}
 			else if (n < c.size())
@@ -477,12 +477,12 @@ struct array
 	protected:
 		friend class array<value_type>;
 		friend class iterator;
-		const array<value_type> *arr;
+		const array<value_type> *root;
 		const value_type *loc;
 
 		const_iterator(const array<value_type> *arr, const value_type *loc)
 		{
-			this->arr = arr;
+			this->root = root;
 			this->loc = loc;
 		}
 	public:
@@ -491,13 +491,13 @@ struct array
 
 		const_iterator()
 		{
-			arr = NULL;
+			root = NULL;
 			loc = NULL;
 		}
 
 		const_iterator(iterator copy)
 		{
-			arr = copy.arr;
+			root = copy.root;
 			loc = copy.loc;
 		}
 
@@ -561,7 +561,7 @@ struct array
 		const_iterator operator+(int n) const
 		{
 			const_iterator result;
-			result.arr = arr;
+			result.root = root;
 			result.loc = loc + n;
 			return result;
 		}
@@ -569,14 +569,14 @@ struct array
 		const_iterator operator-(int n) const
 		{
 			const_iterator result;
-			result.arr = arr;
+			result.root = root;
 			result.loc = loc - n;
 			return result;
 		}
 
 		const_iterator &operator=(const_iterator i)
 		{
-			arr = i.arr;
+			root = i.root;
 			loc = i.loc;
 			return *this;
 		}
@@ -598,7 +598,7 @@ struct array
 
 		const_iterator &operator=(iterator i)
 		{
-			arr = i.arr;
+			root = i.root;
 			loc = i.loc;
 			return *this;
 		}
@@ -632,7 +632,7 @@ struct array
 
 		slice<range<const_iterator, int> > sub()
 		{
-			return range<const_iterator, int>(*this, arr->end());
+			return range<const_iterator, int>(*this, root->end());
 		}
 
 		array<value_type> subcpy()
@@ -827,6 +827,11 @@ struct array
 		begin().alloc(n);
 	}
 	
+	static void drop(iterator start, iterator end)
+	{
+		start.root->drop(start.idx(), end.idx());
+	}
+
 	void drop(int start, int end)
 	{
 		if (start < 0)
@@ -850,6 +855,11 @@ struct array
 	void drop_front(int n = 1)
 	{
 		drop(0, n);
+	}
+
+	static array<value_type> pop(iterator start, iterator end)
+	{
+		return start.root->pop(start.idx(), end.idx());
 	}
 
 	array<value_type> pop(int start, int end)
@@ -917,6 +927,11 @@ struct array
 		begin().append(c);
 	}
 
+	static void replace(iterator start, iterator end, value_type v)
+	{
+		start.root->replace(start.idx(), end.idx(), v);
+	}
+
 	void replace(int start, int end, value_type v)
 	{
 		if (start < 0)
@@ -959,6 +974,12 @@ struct array
 			for (i = data+lower; i < fin; i++)
 				new (i) value_type(v);
 		}
+	}
+
+	template <class container>
+	static void replace(iterator start, iterator end, const container &c)
+	{
+		start.root->replace(start.idx(), end.idx(), c);
 	}
 
 	template <class container>

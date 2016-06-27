@@ -8,6 +8,7 @@
 #pragma once
 
 #include <core/slice.h>
+#include <core/range.h>
 
 #include <memory.h>
 #include <stdlib.h>
@@ -60,7 +61,6 @@ struct list
 	{
 		left.next = &right;
 		right.prev = &left;
-		count = 0;
 	}
 
 	template <class container>
@@ -68,8 +68,17 @@ struct list
 	{
 		left.next = &right;
 		right.prev = &left;
-		count = 0;
 		for (typename container::const_iterator i = c.begin(); i != c.end(); i++)
+			end().push(*i);
+	}
+
+	// Initialize this list as a copy of some other container
+	template <class container>
+	list(typename container::const_iterator left, typename container::const_iterator right)
+	{
+		this->left.next = &this->right;
+		this->right.prev = &this->left;
+		for (typename container::const_iterator i = left; i != right; i++)
 			end().push(*i);
 	}
 
@@ -77,7 +86,6 @@ struct list
 	{
 		left.next = &right;
 		right.prev = &left;
-		count = 0;
 		for (const_iterator i = c.begin(); i != c.end(); i++)
 			end().push(*i);
 	}
@@ -94,35 +102,6 @@ struct list
 		return result;
 	}
 
-	static list<value_type> fill(int n, const value_type &t)
-	{
-		list<value_type> result;
-		result.push_back(n, t);
-		return result;
-	}
-
-	static list<value_type> range(const value_type &start, const value_type &end)
-	{
-		list<value_type> result;
-		value_type inc;
-		if (end < start)
-			inc = (value_type)-1;
-		else
-			inc = (value_type)1;
-
-		for (value_type i = start; i < end; i += inc)
-			result.push_back(i);
-		return result;
-	}
-
-	static list<value_type> range(const value_type &start, const value_type &end, const value_type &inc)
-	{
-		list<value_type> result;
-		for (value_type i = start; i < end; i += inc)
-			result.push_back(i);
-		return result;
-	}
-
 	virtual ~list()
 	{
 		clear();
@@ -130,7 +109,6 @@ struct list
 
 	end_item left;
 	end_item right;
-	int count;
 
 	struct iterator;
 	struct const_iterator;
@@ -149,6 +127,8 @@ struct list
 			this->loc = loc;
 		}
 	public:
+		typedef value_type type;
+
 		iterator()
 		{
 			root = NULL;
@@ -180,6 +160,14 @@ struct list
 		value_type &get()
 		{
 			return ((item*)loc)->value;
+		}
+
+		int idx()
+		{
+			int count = 0;
+			for (end_item *i = &root->left; i != loc; i = i->next)
+				count++;
+			return count;
 		}
 
 		iterator &operator++(int)
@@ -299,27 +287,26 @@ struct list
 			return count;
 		}
 
-		slice<list<value_type> > sub(int n = -1)
+		slice<range<iterator, int> > sub(int n)
 		{
-			iterator left, right;
-			if (n < 0)
-			{
-				right = *this+1;
-				for (left = *this; n < -1 && left != root->begin(); n++)
-					left--;
-			}
-			else
-			{
-				left = *this;
-				for (right = *this; n > 0 && right != root->end(); n--)
-					right++;
-			}
-			return slice<list<value_type> >(*this, right);
+			iterator l = n < 0 ? *this + n : *this;
+			iterator r = n < 0 ? *this : *this + n;
+			return range<iterator, int>(l, r);
 		}
 
-		list<value_type> subcpy(int n = -1)
+		list<value_type> subcpy(int n)
 		{
 			return list<value_type>(sub(n));
+		}
+
+		slice<range<iterator, int> > sub()
+		{
+			return range<iterator, int>(*this, root->end());
+		}
+
+		list<value_type> subcpy()
+		{
+			return list<value_type>(sub());
 		}
 
 		list<value_type> pop(int n = 1)
@@ -339,16 +326,6 @@ struct list
 				loc->prev = start->prev;
 				result.left.next->prev = &result.left;
 				result.right.prev->next = &result.right;
-				if (n > 0)
-				{
-					root->count -= n;
-					result.count += n;
-				}
-				else
-				{
-					root->count += n;
-					result.count -= n;
-				}
 			}
 
 			return result;
@@ -369,7 +346,6 @@ struct list
 					
 				start->next = loc;
 				loc->prev = start;
-				root->count -= n;
 			}
 			else if (n < 0)
 			{
@@ -384,7 +360,6 @@ struct list
 				
 				start->next = loc;
 				loc->prev = start;
-				root->count += n;
 			}
 		}
 
@@ -396,22 +371,6 @@ struct list
 			start = start->next;
 			start->next = loc;
 			loc->prev = start;
-			root->count++;
-		}
-
-		void push(int n, value_type v)
-		{
-			end_item *start = loc->prev;
-			for (int i = 0; i < n; i++)
-			{
-				start->next = new item(v);
-				start->next->prev = start;
-				start = start->next;
-			}
-
-			start->next = loc;
-			loc->prev = start;
-			root->count += n;
 		}
 
 		template <class container>
@@ -427,26 +386,20 @@ struct list
 
 			start->next = loc;
 			loc->prev = start;
-			root->count += c.size();
 		}
 
-		void replace(int n, int m, value_type v)
+		void replace(int n, value_type v)
 		{
-			int j = 0;
-			iterator i = *this;
-			while (i != root->end() && j < n && j < m)
+			if (n > 0)
 			{
-				*i = v;
-				i++;
-				j++;
+				*(*this) = v;
+				(*this+1).pop(n-1);
 			}
-
-			if (i == root->end() && j < m)
-				i.push(m-j, v);
-			else if (j < m)
-				(i+1).push(m-j, v);
-			else if (j < n)
-				i.pop(n-j);
+			else if (n < 0)
+			{
+				*(*this-1) = v;
+				(*this-1).pop(n+1);
+			}
 		}
 		
 		template <class container>
@@ -495,6 +448,8 @@ struct list
 			loc = n;
 		}
 	public:
+		typedef value_type type;
+
 		const_iterator()
 		{
 			root = NULL;
@@ -539,6 +494,14 @@ struct list
 		const value_type *ptr()
 		{
 			return &((const item*)loc)->value;
+		}
+
+		int idx()
+		{
+			int count = 0;
+			for (end_item *i = &root->left; i != loc; i = i->next)
+				count++;
+			return count;
 		}
 
 		const_iterator &operator++(int)
@@ -649,33 +612,32 @@ struct list
 			return count;
 		}
 
-		slice<const list<value_type> > sub(int n = -1)
+		slice<range<const_iterator, int> > sub(int n)
 		{
-			const_iterator left, right;
-			if (n < 0)
-			{
-				right = *this+1;
-				for (left = *this; n < -1 && left != root->begin(); n++)
-					left--;
-			}
-			else
-			{
-				left = *this;
-				for (right = *this; n > 0 && right != root->end(); n--)
-					right++;
-			}
-			return slice<const list<value_type> >(*this, right);
+			const_iterator l = n < 0 ? *this + n : *this;
+			const_iterator r = n < 0 ? *this : *this + n;
+			return range<const_iterator, int>(l, r);
 		}
 
-		list<value_type> subcpy(int n = -1)
+		list<value_type> subcpy(int n)
 		{
 			return list<value_type>(sub(n));
+		}
+
+		slice<range<const_iterator, int> > sub()
+		{
+			return range<const_iterator, int>(*this, root->end());
+		}
+
+		list<value_type> subcpy()
+		{
+			return list<value_type>(sub());
 		}
 	};
 
 	int size() const
 	{
-		return count;
+		return end() - begin();
 	}
 
 	iterator at(int i)
@@ -796,51 +758,50 @@ struct list
 		return const_iterator(this, &left);
 	}
 
-	slice<list<value_type> > sub(int left, int right = -1)
+	slice<range<iterator, int> > sub(int start, int end)
 	{
-		end_item *start, *finish;
-		if (left < 0)
-			start = end() + left;
-		else
-			start = begin() + left;
-
-		if (right < 0)
-			finish = end() + right;
-		else
-			finish = begin() + right-1;
-
-		return slice<list<value_type> >(iterator(this, start), iterator(this, finish));
+		iterator l = start < 0 ? this->end()+start : this->begin()+start;
+		iterator r = end < 0 ? this->end()+end : this->begin()+end;
+		return range<iterator, int>(l, r);
 	}
 
-	slice<const list<value_type> > sub(int left, int right = -1) const
+	slice<range<iterator, int> > sub(int start)
 	{
-		end_item *start, *finish;
-		if (left < 0)
-			start = end() + left;
-		else
-			start = begin() + left;
-
-		if (right < 0)
-			finish = end() + right;
-		else
-			finish = begin() + right-1;
-
-		return slice<const list<value_type> >(const_iterator(this, start), const_iterator(this, finish));
+		iterator l = start < 0 ? end()+start : begin()+start;
+		return range<iterator, int>(l, end());
 	}
 
-	list<value_type> subcpy(int left, int right = -1) const
+	slice<range<const_iterator, int> > sub(int start, int end) const
 	{
-		return list<value_type>(sub(left, right));
+		const_iterator l = start < 0 ? this->end()+start : this->begin()+start;
+		const_iterator r = end < 0 ? this->end()+end : this->begin()+end;
+		return range<const_iterator, int>(l, r);
 	}
 
-	static slice<list<value_type> > sub(iterator left, iterator right)
+	slice<range<const_iterator, int> > sub(int start) const
 	{
-		return slice<list<value_type> >(left, right);
+		const_iterator l = start < 0 ? end()+start : begin()+start;
+		return range<const_iterator, int>(l, end());
 	}
 
-	static slice<const list<value_type> > sub(const_iterator left, const_iterator right)
+	list<value_type> subcpy(int start, int end) const
 	{
-		return slice<const list<value_type> >(left, right);
+		return list<value_type>(sub(start, end));
+	}
+
+	list<value_type> subcpy(int start) const
+	{
+		return list<value_type>(sub(start));
+	}
+
+	static slice<range<iterator, int> > sub(iterator left, iterator right)
+	{
+		return range<iterator, int>(left, right);
+	}
+
+	static slice<range<const_iterator, int> > sub(const_iterator left, const_iterator right)
+	{
+		return range<const_iterator, int>(left, right);
 	}
 
 	static list<value_type> subcpy(iterator left, iterator right)
@@ -853,39 +814,73 @@ struct list
 		return list<value_type>(sub(left, right));
 	}
 
-	slice<list<value_type> > ref()
+	slice<range<iterator, int> > sub()
 	{
-		return slice<list<value_type> >(begin(), rbegin());
+		return range<iterator, int>(begin(), end());
 	}
 
-	slice<const list<value_type> > ref() const
+	slice<range<const_iterator, int> > sub() const
 	{
-		return slice<const list<value_type> >(begin(), rbegin());
+		return range<const_iterator, int>(begin(), end());
 	}
 
-	void drop(int start, int end)
+	static void drop(iterator start, iterator end)
 	{
+		list<value_type> result;
+		result.left.next = start.loc;
+		result.right.prev = end.loc->prev;
+		start.loc->prev->next = end.loc;
+		end.loc->prev = start.loc->prev;
+		result.left.next->prev = &result.left;
+		result.right.prev->next = &result.right;
+		result.release();
+	}
 
+	list<value_type> drop(int start, int end)
+	{
+		iterator l = start < 0 ? this->end()+start : this->begin()+start;
+		iterator r = end < 0 ? this->end()+end : this->begin()+end;
+		return pop(l, r);
 	}
 
 	void drop_front(unsigned int n = 1)
 	{
-		begin().drop(n);
+		drop(begin(), begin()+n);
 	}
 
 	void drop_back(unsigned int n = 1)
 	{
-		end().drop(-n);
+		drop(end()-n, end());
+	}
+
+	static list<value_type> pop(iterator start, iterator end)
+	{
+		list<value_type> result;
+		result.left.next = start.loc;
+		result.right.prev = end.loc->prev;
+		start.loc->prev->next = end.loc;
+		end.loc->prev = start.loc->prev;
+		result.left.next->prev = &result.left;
+		result.right.prev->next = &result.right;
+
+		return result;
+	}
+
+	list<value_type> pop(int start, int end)
+	{
+		iterator l = start < 0 ? this->end()+start : this->begin()+start;
+		iterator r = end < 0 ? this->end()+end : this->begin()+end;
+		return pop(l, r);
 	}
 
 	list<value_type> pop_back(unsigned int n = 1)
 	{
-		return end().pop(-n);
+		return pop(end()-n, end());
 	}
 
 	list<value_type> pop_front(unsigned int n = 1)
 	{
-		return begin().pop(n);
+		return pop(begin(), begin()+n);
 	}
 
 	void push_back(const value_type &value)
@@ -896,16 +891,6 @@ struct list
 	void push_front(const value_type &value)
 	{
 		begin().push(value);
-	}
-
-	void push_back(int num, const value_type &value)
-	{
-		end().push(num, value);
-	}
-	
-	void push_front(int num, const value_type &value)
-	{
-		begin().push(num, value);
 	}
 
 	template <class container>
@@ -931,7 +916,19 @@ struct list
 		}
 		left.next = &right;
 		right.prev = &left;
-		count = 0;
+	}
+
+	void release()
+	{
+		end_item *curr = left.next, *prev;
+		while (curr != &right)
+		{
+			prev = curr;
+			curr = curr->next;
+			delete prev;
+		}
+		left.next = &right;
+		right.prev = &left;
 	}
 
 	template <class container>
@@ -955,7 +952,6 @@ struct list
 	{
 		end_item* tmp_left = left.next;
 		end_item* tmp_right = right.prev;
-		int tmp_count = count;
 
 		left.next = lst.left.next;
 		left.prev = &left;
@@ -963,7 +959,6 @@ struct list
 		right.prev = lst.right.prev;
 		right.next = &right;
 		right.prev->next = &right;
-		count = lst.count;
 
 		lst.left.next = tmp_left;
 		lst.left.prev = &lst.left;
@@ -971,7 +966,6 @@ struct list
 		lst.right.prev = tmp_right;
 		lst.right.next = &lst.right;
 		lst.right.prev->next = &lst.right;
-		lst.count = tmp_count;
 	}
 
 protected:
@@ -980,6 +974,70 @@ protected:
 		return i.loc;
 	}
 };
+
+template <class value_type>
+list<value_type> &operator<<(list<value_type> &os, const value_type &v)
+{
+	os.push_back(v);
+	return os;
+}
+
+template <class value_type, class container>
+list<value_type> &operator<<(list<value_type> &os, const container &c)
+{
+	os.append_back(c);
+	return os;
+}
+
+template <class value_type>
+list<value_type> operator<<(list<value_type> os, const value_type &v)
+{
+	os.push_back(v);
+	return os;
+}
+
+template<class value_type>
+bool operator==(list<value_type> a0, list<value_type> a1)
+{
+	return (compare(a0, a1) == 0);
+}
+
+template<class value_type>
+bool operator!=(list<value_type> a0, list<value_type> a1)
+{
+	return (compare(a0, a1) != 0);
+}
+
+template <class value_type, class container>
+list<value_type> operator<<(list<value_type> os, const container &c)
+{
+	os.append_back(c);
+	return os;
+}
+
+template<class value_type>
+bool operator<(list<value_type> a0, list<value_type> a1)
+{
+	return (compare(a0, a1) < 0);
+}
+
+template<class value_type>
+bool operator>(list<value_type> a0, list<value_type> a1)
+{
+	return (compare(a0, a1) > 0);
+}
+
+template<class value_type>
+bool operator<=(list<value_type> a0, list<value_type> a1)
+{
+	return (compare(a0, a1) <= 0);
+}
+
+template<class value_type>
+bool operator>=(list<value_type> a0, list<value_type> a1)
+{
+	return (compare(a0, a1) >= 0);
+}
 
 }
 
