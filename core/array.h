@@ -115,7 +115,7 @@ struct array
 		array<value_type> *root;
 		value_type *loc;
 
-		iterator(array<value_type> *arr, value_type *loc)
+		iterator(array<value_type> *root, value_type *loc)
 		{
 			this->root = root;
 			this->loc = loc;
@@ -480,7 +480,7 @@ struct array
 		const array<value_type> *root;
 		const value_type *loc;
 
-		const_iterator(const array<value_type> *arr, const value_type *loc)
+		const_iterator(const array<value_type> *root, const value_type *loc)
 		{
 			this->root = root;
 			this->loc = loc;

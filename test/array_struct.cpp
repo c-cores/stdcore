@@ -135,6 +135,7 @@ TEST(array_struct, alloc_back)
 {
 	array<int> x;
 	x.alloc_back(10);
+	printf("%d %d\n", x.count, x.capacity);
 	EXPECT_EQ(10, x.count);
 	EXPECT_GE(x.capacity, 10);
 	for (int i = 0; i < 10; i++)

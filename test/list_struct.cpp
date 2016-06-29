@@ -65,7 +65,6 @@ TEST(list_struct, value_constructor)
 TEST(list_struct, index)
 {
 	list<int> x = list<int>::values(8, 5, 2, 3, 5, 6, 2, 1, 7);
-
 	EXPECT_EQ(8, x.size());
 
 	EXPECT_EQ(5, *x.at(0));

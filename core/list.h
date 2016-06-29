@@ -165,7 +165,7 @@ struct list
 		int idx()
 		{
 			int count = 0;
-			for (end_item *i = &root->left; i != loc; i = i->next)
+			for (end_item *i = root->left.next; i != loc && i != &root->right; i = i->next)
 				count++;
 			return count;
 		}
@@ -196,16 +196,34 @@ struct list
 
 		iterator &operator+=(int n)
 		{
-			for (int i = 0; i < n && loc != &root->right; i++)
+			while (n > 0 && loc != &root->right)
+			{
 				loc = loc->next;
+				n--;
+			}
+
+			while (n < 0 && loc != &root->left)
+			{
+				loc = loc->prev;
+				n++;
+			}
 
 			return *this;
 		}
 
 		iterator &operator-=(int n)
 		{
-			for (int i = 0; i < n && loc != &root->left; i++)
+			while (n < 0 && loc != &root->right)
+			{
+				loc = loc->next;
+				n++;
+			}
+
+			while (n > 0 && loc != &root->left)
+			{
 				loc = loc->prev;
+				n--;
+			}
 
 			return *this;
 		}
@@ -243,20 +261,22 @@ struct list
 
 		int operator-(iterator i) const
 		{
-			int count = 0;
-			while (i.loc != loc && i.loc != &i.root->right)
+			int c0 = 0, c1 = 0;
+			iterator j = i;
+			while (i.loc != loc && j.loc != loc)
 			{
-				count++;
-				i.loc = i.loc->next;
-			}
-
-			while (i.loc != loc && i.loc != &i.root->left)
-			{
-				count--;
+				j.loc = j.loc->next;
+				c1++;
 				i.loc = i.loc->prev;
+				c0--;
 			}
 
-			return count;
+			if (i.loc == loc)
+				return c0;
+			else if (j.loc == loc)
+				return c1;
+			else
+				return c1 - c0;
 		}
 
 		bool operator==(const_iterator i) const
@@ -271,20 +291,22 @@ struct list
 
 		int operator-(const_iterator i) const
 		{
-			int count = 0;
-			while (i.loc != loc && i.loc != &i.root->right)
+			int c0 = 0, c1 = 0;
+			const_iterator j = i;
+			while (i.loc != loc && j.loc != loc)
 			{
-				count++;
-				i.loc = i.loc->next;
-			}
-
-			while (i.loc != loc && i.loc != &i.root->left)
-			{
-				count--;
+				j.loc = j.loc->next;
+				c1++;
 				i.loc = i.loc->prev;
+				c0--;
 			}
 
-			return count;
+			if (i.loc == loc)
+				return c0;
+			else if (j.loc == loc)
+				return c1;
+			else
+				return c1 - c0;
 		}
 
 		slice<range<iterator, int> > sub(int n)
@@ -390,38 +412,47 @@ struct list
 
 		void replace(int n, value_type v)
 		{
-			if (n > 0)
+			if (n < 0)
 			{
-				*(*this) = v;
-				(*this+1).pop(n-1);
+				*this += n;
+				n = -n;
 			}
-			else if (n < 0)
+
+			if (loc == &root->right)
 			{
-				*(*this-1) = v;
-				(*this-1).pop(n+1);
+				push(v);
+				loc = loc->next;
+			}
+			else
+			{
+				((item*)loc)->value = v;
+				loc = loc->next;
+				drop(n-1);
 			}
 		}
 		
 		template <class container>
 		void replace(int n, const container &c)
 		{
-			typename container::const_iterator j = c.begin();
-			int k = 0;
-			iterator i = *this;
-			while (i != root->end() && k < n && j != c.end())
+			if (n < 0)
 			{
-				*i = *j;
-				i++;
-				j++;
-				k++;
+				*this += n;
+				n = -n;
 			}
 
-			if (i == root->end() && j != c.end())
-				i.append(j.sub());
-			else if (j != c.end())
-				(i+1).append(j.sub());
-			else if (k < n)
-				i.pop(n-k);
+			typename container::const_iterator j = c.begin();
+			while (n > 0 && j != c.end() && loc != &root->right)
+			{
+				((item*)loc)->value = *j;
+				loc = loc->next;
+				n--;
+				j++;
+			}
+
+			if (j != c.end())
+				append(j.sub());
+			else if (n > 0)
+				drop(n);
 		}
 
 		template <class iterator_type>
@@ -499,7 +530,7 @@ struct list
 		int idx()
 		{
 			int count = 0;
-			for (end_item *i = &root->left; i != loc; i = i->next)
+			for (end_item *i = root->left.next; i != loc && i != &root->right; i = i->next)
 				count++;
 			return count;
 		}
@@ -530,16 +561,34 @@ struct list
 
 		const_iterator &operator+=(int n)
 		{
-			for (int i = 0; i < n; i++)
-				(*this)++;
+			while (n > 0 && loc != &root->right)
+			{
+				loc = loc->next;
+				n--;
+			}
+
+			while (n < 0 && loc != &root->left)
+			{
+				loc = loc->prev;
+				n++;
+			}
 
 			return *this;
 		}
 
 		const_iterator &operator-=(int n)
 		{
-			for (int i = 0; i < n; i++)
-				(*this)--;
+			while (n < 0 && loc != &root->right)
+			{
+				loc = loc->next;
+				n++;
+			}
+
+			while (n > 0 && loc != &root->left)
+			{
+				loc = loc->prev;
+				n--;
+			}
 
 			return *this;
 		}
@@ -547,18 +596,14 @@ struct list
 		const_iterator operator+(int n) const
 		{
 			const_iterator result(*this);
-			for (int i = 0; i < n; i++)
-				result++;
-
+			result += n;
 			return result;
 		}
 
 		const_iterator operator-(int n) const
 		{
 			const_iterator result(*this);
-			for (int i = 0; i < n; i++)
-				result--;
-
+			result -= n;
 			return result;
 		}
 
@@ -581,10 +626,22 @@ struct list
 
 		int operator-(const_iterator i) const
 		{
-			int count = 0;
-			for (const_iterator j = i; j.loc != loc && j.loc != &j.root->right; j++)
-				count++;
-			return count;
+			int c0 = 0, c1 = 0;
+			const_iterator j = i;
+			while (i.loc != loc && j.loc != loc)
+			{
+				j.loc = j.loc->next;
+				c1++;
+				i.loc = i.loc->prev;
+				c0--;
+			}
+
+			if (i.loc == loc)
+				return c0;
+			else if (j.loc == loc)
+				return c1;
+			else
+				return c1 - c0;
 		}
 
 		const_iterator &operator=(iterator i)
@@ -606,10 +663,22 @@ struct list
 
 		int operator-(iterator i) const
 		{
-			int count = 0;
-			for (const_iterator j = i; j.loc != loc && j.loc != &j.root->right; j++)
-				count++;
-			return count;
+			int c0 = 0, c1 = 0;
+			const_iterator j = i;
+			while (i.loc != loc && j.loc != loc)
+			{
+				j.loc = j.loc->next;
+				c1++;
+				i.loc = i.loc->prev;
+				c0--;
+			}
+
+			if (i.loc == loc)
+				return c0;
+			else if (j.loc == loc)
+				return c1;
+			else
+				return c1 - c0;
 		}
 
 		slice<range<const_iterator, int> > sub(int n)
@@ -642,60 +711,42 @@ struct list
 
 	iterator at(int i)
 	{
-		if (i < 0)
-			return end() + i;
-		else
-			return begin() + i;
+		return i < 0 ? end()+i : begin()+i;
 	}
 
 	const_iterator at(int i) const
 	{
-		if (i < 0)
-			return end() + i;
-		else
-			return begin() + i;
+		return i < 0 ? end()+i : begin()+i;
 	}
 
 	value_type &get(int i)
 	{
-		if (i < 0)
-			return (end() + i).get();
-		else
-			return (begin() + i).get();
+		return i < 0 ? (end()+i).get() : (begin()+i).get();
 	}
 
 	const value_type &get(int i) const
 	{
-		if (i < 0)
-			return (end() + i).get();
-		else
-			return (begin() + i).get();
+		return i < 0 ? (end()+i).get() : (begin()+i).get();
 	}
 
 	value_type *ptr(int i)
 	{
-		if (i < 0)
-			return (end() + i).ptr();
-		else
-			return (begin() + i).ptr();
+		return i < 0 ? (end()+i).ptr() : (begin()+i).ptr();
 	}
 
 	const value_type *ptr(int i) const
 	{
-		if (i < 0)
-			return (end() + i).ptr();
-		else
-			return (begin() + i).ptr();
+		return i < 0 ? (end()+i).ptr() : (begin()+i).ptr();
 	}
 
 	value_type &operator[](int i)
 	{
-		return get(i);
+		return i < 0 ? (end()+i).get() : (begin()+i).get();
 	}
 
 	const value_type &operator[](int i) const
 	{
-		return get(i);
+		return i < 0 ? (end()+i).get() : (begin()+i).get();
 	}
 
 	value_type &front()
@@ -903,6 +954,87 @@ struct list
 	void append_front(const container &c)
 	{
 		begin().append(c);
+	}
+
+	static void replace(iterator start, iterator end, value_type v)
+	{
+		if (start != end)
+		{
+			start.get() = v;
+			start++;
+			drop(start, end);
+		}
+		else
+			start.push(v);
+	}
+
+	void replace(int start, int end, value_type v)
+	{
+		replace(at(start), at(end), v);
+	}
+
+	template <class container>
+	static void replace(iterator start, iterator end, const container &c)
+	{
+		typename container::const_iterator i = c.begin();
+		while (start != end && i != c.end())
+		{
+			start.get() = *i;
+			start++;
+			i++;
+		}
+
+		if (start != end)
+			drop(start, end);
+		else if (i != c.end())
+			start.append(slice<range<typename container::const_iterator, int> >(range<typename container::const_iterator, int>(i, c.end())));
+	}
+
+	template <class container>
+	void replace(int start, int end, const container &c)
+	{
+		replace(at(start), at(end), c);
+	}
+
+	void replace_back(int n, const value_type &v)
+	{
+		replace(at(-n), end(), v);
+	}
+
+	template <class container>
+	void replace_back(int n, const container &c)
+	{
+		replace(at(-n), end(), c);
+	}
+
+	void replace_front(int n, const value_type &v)
+	{
+		replace(begin(), at(n), v);
+	}
+
+	template <class container>
+	void replace_front(int n, const container &c)
+	{
+		replace(begin(), at(n), c);
+	}
+
+	void resize(int n, value_type v)
+	{
+		iterator i = begin();
+		while (i != end() && n > 0)
+		{
+			i++;
+			n--;
+		}
+
+		if (i != end())
+			drop(i, end());
+
+		while (n > 0)
+		{
+			push_back(v);
+			n--;
+		}
 	}
 
 	void clear()
