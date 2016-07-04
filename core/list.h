@@ -57,60 +57,9 @@ struct list
 		value_type value;
 	};
 
-	list()
-	{
-		left.next = &right;
-		right.prev = &left;
-	}
-
-	template <class container>
-	list(const container &c)
-	{
-		left.next = &right;
-		right.prev = &left;
-		for (typename container::const_iterator i = c.begin(); i != c.end(); i++)
-			end().push(*i);
-	}
-
-	// Initialize this list as a copy of some other container
-	template <class container>
-	list(typename container::const_iterator left, typename container::const_iterator right)
-	{
-		this->left.next = &this->right;
-		this->right.prev = &this->left;
-		for (typename container::const_iterator i = left; i != right; i++)
-			end().push(*i);
-	}
-
-	list(const list<value_type> &c)
-	{
-		left.next = &right;
-		right.prev = &left;
-		for (const_iterator i = c.begin(); i != c.end(); i++)
-			end().push(*i);
-	}
-
-	static list<value_type> values(int n, ...)
-	{
-		list<value_type> result;
-		va_list args;
-		va_start(args, n);
-		for (int i = 0; i < n; i++)
-			result.push_back(va_arg(args, value_type));
-		va_end(args);
-
-		return result;
-	}
-
-	virtual ~list()
-	{
-		clear();
-	}
-
 	end_item left;
 	end_item right;
 
-	struct iterator;
 	struct const_iterator;
 
 	struct iterator
@@ -703,6 +652,82 @@ struct list
 			return list<value_type>(sub());
 		}
 	};
+
+	list()
+	{
+		left.next = &right;
+		right.prev = &left;
+	}
+
+	template <class container>
+	list(const container &c)
+	{
+		left.next = &right;
+		right.prev = &left;
+		for (typename container::const_iterator i = c.begin(); i != c.end(); i++)
+			end().push(*i);
+	}
+
+	// Initialize this list as a copy of some other container
+	template <class container>
+	list(typename container::const_iterator left, typename container::const_iterator right)
+	{
+		this->left.next = &this->right;
+		this->right.prev = &this->left;
+		for (typename container::const_iterator i = left; i != right; i++)
+			end().push(*i);
+	}
+
+	list(const_iterator left, const_iterator right)
+	{
+		this->left.next = &this->right;
+		this->right.prev = &this->left;
+		for (const_iterator i = left; i != right; i++)
+			end().push(*i);
+	}
+
+	// Initialize this list as a copy of some other container
+	template <class container>
+	list(typename container::iterator left, typename container::iterator right)
+	{
+		this->left.next = &this->right;
+		this->right.prev = &this->left;
+		for (typename container::iterator i = left; i != right; i++)
+			end().push(*i);
+	}
+
+	list(iterator left, iterator right)
+	{
+		this->left.next = &this->right;
+		this->right.prev = &this->left;
+		for (iterator i = left; i != right; i++)
+			end().push(*i);
+	}
+
+	list(const list<value_type> &c)
+	{
+		left.next = &right;
+		right.prev = &left;
+		for (const_iterator i = c.begin(); i != c.end(); i++)
+			end().push(*i);
+	}
+
+	static list<value_type> values(int n, ...)
+	{
+		list<value_type> result;
+		va_list args;
+		va_start(args, n);
+		for (int i = 0; i < n; i++)
+			result.push_back(va_arg(args, value_type));
+		va_end(args);
+
+		return result;
+	}
+
+	virtual ~list()
+	{
+		clear();
+	}
 
 	int size() const
 	{

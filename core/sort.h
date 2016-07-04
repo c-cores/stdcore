@@ -60,22 +60,6 @@ container sort_selection(container c)
 	return c;
 }
 
-template <class container1, class container2>
-container2 order_selection(const container1 &c, container2 order)
-{
-	for (typename container2::iterator i = order.begin(); i != order.end(); i++)
-	{
-		typename container2::iterator max_j = i;
-		for (typename container2::iterator j = i+1; j != order.end(); j++)
-			if (c.at(*j) < c.at(*max_j))
-				max_j = j;
-
-		i.swap(max_j);
-	}
-
-	return order;
-}
-
 template <class container>
 container sort_quick(container c)
 {
@@ -105,37 +89,6 @@ container sort_quick(container c)
 
 	return c;
 }
-
-template <class container, class container2>
-container2 order_quick(const container &c, container2 order)
-{
-	if (order.size() > 2)
-	{
-		typename container2::iterator pivot = median_iterator(order.begin(), order.begin() + order.size()/2, order.rbegin());
-
-		pivot.swap(order.rbegin());
-		pivot = order.rbegin();
-
-		typename container2::iterator store = order.begin();
-		for (typename container2::iterator i = order.begin(); i != order.rbegin(); i++)
-			if (*(c.begin() + *i) < *(c.begin() + *pivot))
-			{
-				i.swap(store);
-				store++;
-			}
-
-		store.swap(order.rbegin());
-
-		order_quick(c, order.sub(order.begin(), store-1));
-		order_quick(c, order.sub(store+1, order.rbegin()));
-	}
-	else if (order.size() > 1)
-		if (*(c.begin() + *order.rbegin()) < *(c.begin() + *order.begin()))
-			order.begin().swap(order.rbegin());
-
-	return order;
-}
-
 
 template <class container>
 bool is_sorted(const container &c)

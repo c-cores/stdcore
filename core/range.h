@@ -7,8 +7,6 @@
 
 #pragma once
 
-#include <core/slice.h>
-
 #include <memory.h>
 
 namespace core
@@ -19,32 +17,6 @@ struct range
 {
 	typedef value_type type;
 	struct const_iterator;
-
-	range(value_type start, value_type finish)
-	{
-		this->start = start;
-		this->finish = finish;
-		this->step = (step_type)1;
-	}
-
-	range(const_iterator start, const_iterator finish)
-	{
-		this->start = start.get();
-		this->finish = finish.get();
-		this->step = start.root->step;
-	}
-
-	range(value_type start, value_type finish, step_type step)
-	{
-		this->start = start;
-		this->finish = finish;
-		this->step = step;
-	}
-
-	virtual ~range()
-	{
-
-	}
 
 	value_type start;
 	value_type finish;
@@ -64,10 +36,11 @@ struct range
 			this->value = value;
 		}
 	public:
+		typedef value_type type;
+
 		const_iterator()
 		{
 			this->root = NULL;
-			this->value = 0;
 		}
 
 		~const_iterator()
@@ -183,6 +156,79 @@ struct range
 	};
 
 	typedef const_iterator iterator;
+
+	range(value_type start, value_type finish)
+	{
+		this->start = start;
+		this->finish = finish;
+		this->step = (step_type)1;
+	}
+
+	range(value_type start, value_type finish, step_type step)
+	{
+		this->start = start;
+		this->finish = finish;
+		this->step = step;
+	}
+
+	template <class container>
+	range(const container &a)
+	{
+		this->start = a.front();
+		if (a.size() > 1)
+			this->step = a.get(1) - a.get(0);
+		else
+			this->step = (step_type)1;
+
+		this->finish = a.back()+this->step;
+	}
+
+	range(const range<value_type, step_type> &a)
+	{
+		this->start = a.start;
+		this->finish = a.finish;
+		this->step = a.step;
+	}
+
+	// Initialize this array as a copy of some other container
+	template <class container>
+	range(typename container::const_iterator left, typename container::const_iterator right)
+	{
+		int count = right - left;
+		this->start = *left;
+		if (count > 1)
+			this->step = *(left+1) - *left;
+		else
+			this->step = (step_type)1;
+
+		this->finish = *(right-1) + this->step;
+	}
+
+	// Initialize this array as a copy of some other container
+	template <class container>
+	range(typename container::iterator left, typename container::iterator right)
+	{
+		int count = right - left;
+		this->start = *left;
+		if (count > 1)
+			this->step = *(left+1) - *left;
+		else
+			this->step = (step_type)1;
+
+		this->finish = *(right-1) + this->step;
+	}
+
+	range(const_iterator start, const_iterator finish)
+	{
+		this->start = start.get();
+		this->finish = finish.get();
+		this->step = start.root->step;
+	}
+
+	virtual ~range()
+	{
+
+	}
 
 	int size() const
 	{
@@ -351,78 +397,6 @@ bool operator>=(range<value_type1, step_type1> s1, range<value_type2, step_type2
 	return (s1.start > s2.start || (s1.start == s2.start &&
 		   (s1.step > s2.step   || (s1.step == s2.step   &&
 			s1.finish >= s2.finish))));
-}
-
-template <class value_type1, class step_type1, class container2>
-bool operator==(range<value_type1, step_type1> s1, slice<container2> s2)
-{
-	return (compare(s1, s2) == 0);
-}
-
-template <class value_type1, class step_type1, class container2>
-bool operator!=(range<value_type1, step_type1> s1, slice<container2> s2)
-{
-	return (compare(s1, s2) != 0);
-}
-
-template <class value_type1, class step_type1, class container2>
-bool operator<(range<value_type1, step_type1> s1, slice<container2> s2)
-{
-	return (compare(s1, s2) < 0);
-}
-
-template <class value_type1, class step_type1, class container2>
-bool operator>(range<value_type1, step_type1> s1, slice<container2> s2)
-{
-	return (compare(s1, s2) > 0);
-}
-
-template <class value_type1, class step_type1, class container2>
-bool operator<=(range<value_type1, step_type1> s1, slice<container2> s2)
-{
-	return (compare(s1, s2) <= 0);
-}
-
-template <class value_type1, class step_type1, class container2>
-bool operator>=(range<value_type1, step_type1> s1, slice<container2> s2)
-{
-	return (compare(s1, s2) >= 0);
-}
-
-template <class container1, class value_type2, class step_type2>
-bool operator==(slice<container1> s1, range<value_type2, step_type2> s2)
-{
-	return (compare(s1, s2) == 0);
-}
-
-template <class container1, class value_type2, class step_type2>
-bool operator!=(slice<container1> s1, range<value_type2, step_type2> s2)
-{
-	return (compare(s1, s2) != 0);
-}
-
-template <class container1, class value_type2, class step_type2>
-bool operator<(slice<container1> s1, range<value_type2, step_type2> s2)
-{
-	return (compare(s1, s2) < 0);
-}
-
-template <class container1, class value_type2, class step_type2>
-bool operator>(slice<container1> s1, range<value_type2, step_type2> s2)
-{
-	return (compare(s1, s2) > 0);
-}
-
-template <class container1, class value_type2, class step_type2>
-bool operator<=(slice<container1> s1, range<value_type2, step_type2> s2)
-{
-	return (compare(s1, s2) <= 0);
-}
-
-template <class container1, class value_type2, class step_type2>
-bool operator>=(slice<container1> s1, range<value_type2, step_type2> s2)
-{
-	return (compare(s1, s2) >= 0);
 }
 
 }

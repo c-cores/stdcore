@@ -67,25 +67,6 @@ container remove(container c, const typename container::type &value)
 	return c;
 }
 
-template <class container>
-container range(typename container::type lower, typename container::type upper, typename container::type step)
-{
-	if (lower < upper)
-	{
-		container result;
-		for (typename container::type i = lower; i < upper; i += step)
-			result.push_back(i);
-		return result;
-	}
-	else
-	{
-		container result;
-		for (typename container::type i = lower; i > upper; i += step)
-			result.push_back(i);
-		return result;
-	}
-}
-
 template <class container1, class container2>
 container1 intersection(const container1 &c1, const container2 &c2)
 {

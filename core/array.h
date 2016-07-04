@@ -8,6 +8,7 @@
 #pragma once
 
 #include <core/range.h>
+#include <core/slice.h>
 #include <core/math.h>
 
 #include <memory.h>
@@ -26,81 +27,7 @@ template <class value_type>
 struct array
 {
 	typedef value_type type;
-	struct iterator;
 	struct const_iterator;
-
-	array()
-	{
-		data = NULL;
-		count = 0;
-		capacity = 0;
-	}
-
-	// Initialize this array as a copy of some other container
-	template <class container>
-	array(const container &a)
-	{
-		count = a.size();
-		capacity = (1 << (log2i(count)+1));
-		data = (value_type*)malloc(sizeof(value_type)*capacity);
-		value_type *ptr = data;
-		for (typename container::const_iterator i = a.begin(); i != a.end(); i++, ptr++)
-			new (ptr) value_type(*i);
-	}
-
-	// Initialize this array as a copy of some other container
-	template <class container>
-	array(typename container::const_iterator left, typename container::const_iterator right)
-	{
-		count = right - left;
-		capacity = (1 << (log2i(count)+1));
-		data = (value_type*)malloc(sizeof(value_type)*capacity);
-		value_type *ptr = data;
-		for (typename container::const_iterator i = left; i != right; i++, ptr++)
-			new (ptr) value_type(*i);
-	}
-
-	// Initialize this array as a copy of another array
-	array(const array<value_type> &a)
-	{
-		count = a.size();
-		capacity = a.capacity;
-		data = (value_type*)malloc(sizeof(value_type)*capacity);
-		value_type *ptr = data;
-		for (const_iterator i = a.begin(); i != a.end(); i++, ptr++)
-			new (ptr) value_type(*i);
-	}
-
-	static array<value_type> values(int n, ...)
-	{
-		array<value_type> result;
-		result.capacity = (1 << (log2i(n)+1));
-		result.data = (value_type*)malloc(sizeof(value_type)*result.capacity);
-
-		va_list args;
-		va_start(args, n);
-		for (result.count = 0; result.count < n; result.count++)
-			new (result.data+result.count) value_type(va_arg(args, value_type));
-		va_end(args);
-
-		return result;
-	}
-
-	// delete all of the initialized objects in the array
-	// and free the memory block allocated for them		
-	virtual ~array()
-	{
-		if (data != NULL)
-		{
-			for (int i = 0; i < count; i++)
-				data[i].~value_type();
-
-			free(data);
-		}
-		data = NULL;
-		capacity = 0;
-		count = 0;
-	}
 
 	value_type *data;	// pointer to first object
 	int count;			// number of stored objects
@@ -131,26 +58,26 @@ struct array
 
 		~iterator() {}
 
-		value_type &operator*()
+		value_type &operator*() const
 		{
 			return *loc;
 		}
-		value_type *operator->()
+		value_type *operator->() const
 		{
 			return loc;
 		}
 
-		value_type *ptr()
+		value_type *ptr() const
 		{
 			return loc;
 		}
 
-		value_type &get()
+		value_type &get() const
 		{
 			return *loc;
 		}
 
-		int idx()
+		int idx() const
 		{
 			return loc - root->data;
 		}
@@ -244,24 +171,24 @@ struct array
 			return loc - i.loc;
 		}
 
-		slice<range<iterator, int> > sub(int n)
+		slice<range<iterator, int> > sub(int n) const
 		{
 			iterator l = n < 0 ? *this+n : *this;
 			iterator r = n < 0 ? *this : *this+n;
 			return range<iterator, int>(l, r);
 		}
 
-		array<value_type> subcpy(int n)
+		array<value_type> subcpy(int n) const
 		{
 			return array<value_type>(sub(n));
 		}
 
-		slice<range<iterator, int> > sub()
+		slice<range<iterator, int> > sub() const
 		{
 			return range<iterator, int>(*this, root->end());
 		}
 
-		array<value_type> subcpy()
+		array<value_type> subcpy() const
 		{
 			return array<value_type>(sub());
 		}
@@ -503,21 +430,21 @@ struct array
 
 		~const_iterator() {}
 
-		const value_type &operator*()
+		const value_type &operator*() const
 		{
 			return *loc;
 		}
-		const value_type *operator->()
+		const value_type *operator->() const
 		{
 			return loc;
 		}
 
-		const value_type *ptr()
+		const value_type *ptr() const
 		{
 			return loc;
 		}
 
-		const value_type &get()
+		const value_type &get() const
 		{
 			return *loc;
 		}
@@ -618,28 +545,133 @@ struct array
 			return loc - i.loc;
 		}
 
-		slice<range<const_iterator, int> > sub(int n)
+		slice<range<const_iterator, int> > sub(int n) const
 		{
 			const_iterator l = n < 0 ? *this+n : *this;
 			const_iterator r = n < 0 ? *this : *this+n;
 			return range<const_iterator, int>(l, r);
 		}
 
-		array<value_type> subcpy(int n)
+		array<value_type> subcpy(int n) const
 		{
 			return array<value_type>(sub(n));
 		}
 
-		slice<range<const_iterator, int> > sub()
+		slice<range<const_iterator, int> > sub() const
 		{
 			return range<const_iterator, int>(*this, root->end());
 		}
 
-		array<value_type> subcpy()
+		array<value_type> subcpy() const
 		{
 			return array<value_type>(sub());
 		}
 	};
+
+	array()
+	{
+		data = NULL;
+		count = 0;
+		capacity = 0;
+	}
+
+	// Initialize this array as a copy of some other container
+	template <class container>
+	array(const container &a)
+	{
+		count = a.size();
+		capacity = (1 << (log2i(count)+1));
+		data = (value_type*)malloc(sizeof(value_type)*capacity);
+		value_type *ptr = data;
+		for (typename container::const_iterator i = a.begin(); i != a.end(); i++, ptr++)
+			new (ptr) value_type(*i);
+	}
+
+	// Initialize this array as a copy of some other container
+	template <class container>
+	array(typename container::const_iterator left, typename container::const_iterator right)
+	{
+		count = right - left;
+		capacity = (1 << (log2i(count)+1));
+		data = (value_type*)malloc(sizeof(value_type)*capacity);
+		value_type *ptr = data;
+		for (typename container::const_iterator i = left; i != right; i++, ptr++)
+			new (ptr) value_type(*i);
+	}
+
+	array(const_iterator left, const_iterator right)
+	{
+		count = right - left;
+		capacity = (1 << (log2i(count)+1));
+		data = (value_type*)malloc(sizeof(value_type)*capacity);
+		value_type *ptr = data;
+		for (const_iterator i = left; i != right; i++, ptr++)
+			new (ptr) value_type(*i);
+	}
+
+	// Initialize this array as a copy of some other container
+	template <class container>
+	array(typename container::iterator left, typename container::iterator right)
+	{
+		count = right - left;
+		capacity = (1 << (log2i(count)+1));
+		data = (value_type*)malloc(sizeof(value_type)*capacity);
+		value_type *ptr = data;
+		for (typename container::iterator i = left; i != right; i++, ptr++)
+			new (ptr) value_type(*i);
+	}
+
+	array(iterator left, iterator right)
+	{
+		count = right - left;
+		capacity = (1 << (log2i(count)+1));
+		data = (value_type*)malloc(sizeof(value_type)*capacity);
+		value_type *ptr = data;
+		for (iterator i = left; i != right; i++, ptr++)
+			new (ptr) value_type(*i);
+	}
+
+	// Initialize this array as a copy of another array
+	array(const array<value_type> &a)
+	{
+		count = a.size();
+		capacity = a.capacity;
+		data = (value_type*)malloc(sizeof(value_type)*capacity);
+		value_type *ptr = data;
+		for (const_iterator i = a.begin(); i != a.end(); i++, ptr++)
+			new (ptr) value_type(*i);
+	}
+
+	static array<value_type> values(int n, ...)
+	{
+		array<value_type> result;
+		result.capacity = (1 << (log2i(n)+1));
+		result.data = (value_type*)malloc(sizeof(value_type)*result.capacity);
+
+		va_list args;
+		va_start(args, n);
+		for (result.count = 0; result.count < n; result.count++)
+			new (result.data+result.count) value_type(va_arg(args, value_type));
+		va_end(args);
+
+		return result;
+	}
+
+	// delete all of the initialized objects in the array
+	// and free the memory block allocated for them
+	virtual ~array()
+	{
+		if (data != NULL)
+		{
+			for (int i = 0; i < count; i++)
+				data[i].~value_type();
+
+			free(data);
+		}
+		data = NULL;
+		capacity = 0;
+		count = 0;
+	}
 
 	int size() const
 	{
