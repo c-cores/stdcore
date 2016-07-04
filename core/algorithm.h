@@ -13,16 +13,38 @@ namespace core
 {
 
 /*!
- * \brief 
+ * \brief Collapse multiple consecutive duplicate elements into one element.
  *
- * [detailed description]
+ * This looks for consecutive elements with the same value and removes all
+ * but one in place.
  *
- * \param[in] [name of input parameter] [its description]
- * \param[out] [name of output parameter] [its description]
- * \return [information about return value]
- * \sa [see also section]
- * \note [any note about the function you might have]
- * \warning [any warning if necessary]
+ * \param[inout] c The container to collapse.
+ * \return the collapsed version of the container
+ * \sa unique
+ */
+template <class container>
+container &collapse_inplace(container &c)
+{
+	typename container::iterator i = c.begin(), j = c.begin()+1;
+	for (; j != c.end(); j++)
+		if (!(*i == *j) && ++i != j)
+			*i = *j;
+
+	if (++i != c.end())
+		c.drop(i, c.end());
+
+	return c;
+}
+
+/*!
+ * \brief Collapse multiple consecutive duplicate elements into one element.
+ *
+ * This makes a copy of the input container, then looks for consecutive
+ * elements with the same value and removes all but one.
+ *
+ * \param[inout] c The container to collapse.
+ * \return the collapsed version of the container
+ * \sa unique
  */
 template <class container>
 container collapse(container c)
@@ -33,7 +55,7 @@ container collapse(container c)
 			*i = *j;
 
 	if (++i != c.end())
-		i.chop();
+		c.drop(i, c.end());
 
 	return c;
 }
