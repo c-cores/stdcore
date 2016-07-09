@@ -269,9 +269,9 @@ struct graph
 
 		value_type pop()
 		{
-			for (typename array<iterator>::iterator i = next().begin(); i != next().end(); i++)
+			for (typename array<iterator>::iterator i = next().begin(); i; i++)
 				remove(i->prev(), *this);
-			for (typename array<iterator>::iterator i = prev().begin(); i != prev().end(); i++)
+			for (typename array<iterator>::iterator i = prev().begin(); i; i++)
 				remove(i->next(), *this);
 			value_type result = value();
 			loc->left->right = loc->right;
@@ -592,7 +592,7 @@ struct graph
 		{
 			for (map<iterator, array<iterator> >::iterator j = replaced.begin(); j; j++)
 				for (array<iterator>::iterator k = j->second.rbegin(); k; k--)
-					if (find(left, *k) != left.end())
+					if (find(left, *k))
 						k.drop();
 
 			for (array<iterator>::iterator i = left.begin(); i; i++)
@@ -665,12 +665,12 @@ struct graph
 
 		refactoring &append(refactoring r)
 		{
-			for (map<iterator, array<iterator> >::iterator j = replaced.begin(); j != replaced.end(); j++)
+			for (map<iterator, array<iterator> >::iterator j = replaced.begin(); j; j++)
 			{
 				for (array<iterator>::iterator k = j->second.rbegin(); k; k--)
 				{
 					map<iterator, array<iterator> >::iterator loc = r.replaced.find(*k);
-					if (loc != r.replaced.end())
+					if (loc)
 					{
 						for (int l = (int)loc->second.size()-1; l > 0; l--)
 							j->second.push_back(loc->second[l]);
@@ -690,7 +690,7 @@ struct graph
 		array<iterator> refactor(iterator left) const
 		{
 			map<iterator, array<iterator> >::const_iterator loc = receipt.replaced.find(left);
-			if (loc != receipt.replaced.end())
+			if (loc)
 				return loc->second;
 			else
 				return array<iterator>(1, left);
@@ -702,7 +702,7 @@ struct graph
 			for (int i = (int)left.size()-1; i >= 0; i--)
 			{
 				map<iterator, array<iterator> >::const_iterator loc = receipt.replaced.find(left[i]);
-				if (loc != receipt.replaced.end())
+				if (loc)
 					result.insert(result.end(), loc->second.begin(), loc->second.end());
 				else
 					result.push_back(left[i]);
@@ -714,11 +714,11 @@ struct graph
 		iterator unfactor(iterator left) const
 		{
 			array<iterator> result;
-			for (map<iterator, array<iterator> >::const_iterator j = receipt.replaced.begin(); j != receipt.replaced.end(); j++)
+			for (map<iterator, array<iterator> >::const_iterator j = receipt.replaced.begin(); j; j++)
 			{
 				bool found = false;
 				for (int k = (int)left.size() - 1; k >= 0; k--)
-					if (find(j->second.begin(), j->second.end(), left[k]) != j->second.end())
+					if (find(j->second.begin(), j->second.end(), left[k]))
 					{
 						if (!found)
 						{
@@ -738,8 +738,8 @@ struct graph
 
 		array<iterator> unfactor(array<iterator> left) const
 		{
-			for (map<iterator, array<iterator> >::const_iterator j = receipt.replaced.begin(); j != receipt.replaced.end(); j++)
-				if (find(j->second.begin(), j->second.end(), left) != j->second.end())
+			for (map<iterator, array<iterator> >::const_iterator j = receipt.replaced.begin(); j; j++)
+				if (find(j->second.begin(), j->second.end(), left))
 					return j->first;
 
 			return left;

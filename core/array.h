@@ -58,6 +58,11 @@ struct array
 
 		~iterator() {}
 
+		operator bool() const
+		{
+			return root != NULL && loc >= root->data && loc < root->data+root->count;
+		}
+
 		value_type &operator*() const
 		{
 			return *loc;
@@ -151,6 +156,26 @@ struct array
 			return loc != i.loc;
 		}
 
+		bool operator <(iterator i) const
+		{
+			return loc < i.loc;
+		}
+
+		bool operator >(iterator i) const
+		{
+			return loc > i.loc;
+		}
+
+		bool operator <=(iterator i) const
+		{
+			return loc <= i.loc;
+		}
+
+		bool operator >=(iterator i) const
+		{
+			return loc >= i.loc;
+		}
+
 		int operator-(iterator i) const
 		{
 			return loc - i.loc;
@@ -166,31 +191,29 @@ struct array
 			return loc != i.loc;
 		}
 
+		bool operator <(const_iterator i) const
+		{
+			return loc < i.loc;
+		}
+
+		bool operator >(const_iterator i) const
+		{
+			return loc > i.loc;
+		}
+
+		bool operator <=(const_iterator i) const
+		{
+			return loc <= i.loc;
+		}
+
+		bool operator >=(const_iterator i) const
+		{
+			return loc >= i.loc;
+		}
+
 		int operator-(const_iterator i) const
 		{
 			return loc - i.loc;
-		}
-
-		slice<range<iterator, int> > sub(int n) const
-		{
-			iterator l = n < 0 ? *this+n : *this;
-			iterator r = n < 0 ? *this : *this+n;
-			return range<iterator, int>(l, r);
-		}
-
-		array<value_type> subcpy(int n) const
-		{
-			return array<value_type>(sub(n));
-		}
-
-		slice<range<iterator, int> > sub() const
-		{
-			return range<iterator, int>(*this, root->end());
-		}
-
-		array<value_type> subcpy() const
-		{
-			return array<value_type>(sub());
 		}
 
 		void alloc(int n = 1)
@@ -289,14 +312,19 @@ struct array
 		void append(const container &c)
 		{
 			int n = c.size();
-			alloc(n);
-		
 			typename container::const_iterator i = c.begin();
-			while (i != c.end())
+			if (n < 0)
+				for (i = c.begin(); i; i++)
+					push(*i);
+			else
 			{
-				new (loc) value_type(*i);
-				i++;
-				loc++;
+				alloc(n);
+
+				for (i = c.begin(); i; i++)
+				{
+					new (loc) value_type(*i);
+					loc++;
+				}
 			}
 		}
 
@@ -346,46 +374,55 @@ struct array
 		template <class container>
 		void replace(int n, const container &c)
 		{
-			bool neg = n < 0;
-			if (neg)
+			int s = c.size();
+			if (s < 0)
 			{
-				loc += n;
-				n = -n;
-			}
-
-			int lower, upper;
-			if (n < c.size())
-			{
-				lower = n;
-				upper = c.size();
+				drop(n);
+				append(c);
 			}
 			else
 			{
-				lower = c.size();
-				upper = n;
-			}
+				bool neg = n < 0;
+				if (neg)
+				{
+					loc += n;
+					n = -n;
+				}
 
-			int diff = upper-lower;
-			value_type *mid = loc+lower;
-			value_type *fin = loc+upper;
-			typename container::const_iterator j = c.begin();
-			for (; loc < mid && j != c.end(); loc++, j++)
-				*loc = *j;
+				int lower, upper;
+				if (n < s)
+				{
+					lower = n;
+					upper = s;
+				}
+				else
+				{
+					lower = s;
+					upper = n;
+				}
 
-			if (c.size() < n)
-			{
-				for (value_type *i = loc; i < fin; i++)
-					i->~value_type();
-				memmove(loc, fin, (root->count - upper)*sizeof(value_type));
-				root->count -= diff;
+				int diff = upper-lower;
+				value_type *mid = loc+lower;
+				value_type *fin = loc+upper;
+				typename container::const_iterator j = c.begin();
+				for (; loc < mid && j; loc++, j++)
+					*loc = *j;
 
-			}
-			else if (n < c.size())
-			{
-				alloc(diff);
-				fin = loc+upper;
-				for (; loc < fin && j != c.end(); loc++, j++)
-					new (loc) value_type(*j);
+				if (s < n)
+				{
+					for (value_type *i = loc; i < fin; i++)
+						i->~value_type();
+					memmove(loc, fin, (root->count - upper)*sizeof(value_type));
+					root->count -= diff;
+
+				}
+				else if (n < s)
+				{
+					alloc(diff);
+					fin = loc+upper;
+					for (; loc < fin && j; loc++, j++)
+						new (loc) value_type(*j);
+				}
 			}
 		}
 
@@ -396,6 +433,32 @@ struct array
 			memcpy(&temp, loc, sizeof(value_type));
 			memcpy(loc, i.ptr(), sizeof(value_type));
 			memcpy(i.ptr(), &temp, sizeof(value_type));
+		}
+
+		core::slice<bound<iterator, int> > sub(int length)
+		{
+			if (length < 0)
+				return bound<iterator, int>(*this+length, -length);
+			else
+				return bound<iterator, int>(*this, length);
+		}
+
+		array<value_type> subcpy(int length)
+		{
+			if (length < 0)
+				return array<value_type>(bound<iterator, int>(*this+length, -length).deref());
+			else
+				return array<value_type>(bound<iterator, int>(*this, length).deref());
+		}
+
+		core::slice<bound<iterator, int> > sub()
+		{
+			return bound<iterator, int>(*this);
+		}
+
+		array<value_type> subcpy()
+		{
+			return bound<iterator, int>(*this).deref();
 		}
 	};
 
@@ -415,7 +478,6 @@ struct array
 	public:
 		typedef value_type type;
 
-
 		const_iterator()
 		{
 			root = NULL;
@@ -429,6 +491,11 @@ struct array
 		}
 
 		~const_iterator() {}
+
+		operator bool() const
+		{
+			return root != NULL && loc >= root->data && loc < root->data+root->count;
+		}
 
 		const value_type &operator*() const
 		{
@@ -518,6 +585,26 @@ struct array
 			return loc != i.loc;
 		}
 
+		bool operator <(const_iterator i) const
+		{
+			return loc < i.loc;
+		}
+
+		bool operator >(const_iterator i) const
+		{
+			return loc > i.loc;
+		}
+
+		bool operator <=(const_iterator i) const
+		{
+			return loc <= i.loc;
+		}
+
+		bool operator >=(const_iterator i) const
+		{
+			return loc >= i.loc;
+		}
+
 		int operator-(const_iterator i) const
 		{
 			return loc - i.loc;
@@ -540,31 +627,55 @@ struct array
 			return loc != i.loc;
 		}
 
+		bool operator <(iterator i) const
+		{
+			return loc < i.loc;
+		}
+
+		bool operator >(iterator i) const
+		{
+			return loc > i.loc;
+		}
+
+		bool operator <=(iterator i) const
+		{
+			return loc <= i.loc;
+		}
+
+		bool operator >=(iterator i) const
+		{
+			return loc >= i.loc;
+		}
+
 		int operator-(iterator i) const
 		{
 			return loc - i.loc;
 		}
 
-		slice<range<const_iterator, int> > sub(int n) const
+		core::slice<bound<const_iterator, int> > sub(int length)
 		{
-			const_iterator l = n < 0 ? *this+n : *this;
-			const_iterator r = n < 0 ? *this : *this+n;
-			return range<const_iterator, int>(l, r);
+			if (length < 0)
+				return bound<const_iterator, int>(*this+length, -length);
+			else
+				return bound<const_iterator, int>(*this, length);
 		}
 
-		array<value_type> subcpy(int n) const
+		array<value_type> subcpy(int length)
 		{
-			return array<value_type>(sub(n));
+			if (length < 0)
+				return array<value_type>(bound<const_iterator, int>(*this+length, -length).deref());
+			else
+				return array<value_type>(bound<const_iterator, int>(*this, length).deref());
 		}
 
-		slice<range<const_iterator, int> > sub() const
+		core::slice<bound<const_iterator, int> > sub()
 		{
-			return range<const_iterator, int>(*this, root->end());
+			return bound<const_iterator, int>(*this);
 		}
 
-		array<value_type> subcpy() const
+		array<value_type> subcpy()
 		{
-			return array<value_type>(sub());
+			return bound<const_iterator, int>(*this).deref();
 		}
 	};
 
@@ -580,11 +691,23 @@ struct array
 	array(const container &a)
 	{
 		count = a.size();
-		capacity = (1 << (log2i(count)+1));
-		data = (value_type*)malloc(sizeof(value_type)*capacity);
-		value_type *ptr = data;
-		for (typename container::const_iterator i = a.begin(); i != a.end(); i++, ptr++)
-			new (ptr) value_type(*i);
+		// container has a potentially infinite number of elements
+		if (count < 0)
+		{
+			count = 0;
+			capacity = 0;
+			data = NULL;
+			for (typename container::const_iterator i = a.begin(); i; i++)
+				push_back(*i);
+		}
+		else
+		{
+			capacity = (1 << (log2i(count)+1));
+			data = (value_type*)malloc(sizeof(value_type)*capacity);
+			value_type *ptr = data;
+			for (typename container::const_iterator i = a.begin(); i; i++, ptr++)
+				new (ptr) value_type(*i);
+		}
 	}
 
 	// Initialize this array as a copy of some other container
@@ -638,7 +761,7 @@ struct array
 		capacity = a.capacity;
 		data = (value_type*)malloc(sizeof(value_type)*capacity);
 		value_type *ptr = data;
-		for (const_iterator i = a.begin(); i != a.end(); i++, ptr++)
+		for (const_iterator i = a.begin(); i; i++, ptr++)
 			new (ptr) value_type(*i);
 	}
 
@@ -778,70 +901,101 @@ struct array
 		return const_iterator(this, data-1);
 	}
 
-	slice<range<iterator, int> > sub(int start, int end)
+	core::slice<array<value_type> > deref()
 	{
-		iterator l = start < 0 ? this->end()+start : this->begin()+start;
-		iterator r = end < 0 ? this->end()+end : this->begin()+end;
-		return range<iterator, int>(l, r);
+		return *this;
 	}
 
-	slice<range<iterator, int> > sub(int start)
+	template <class container>
+	core::slice<array<typename container::iterator> > slice(container &c)
 	{
-		iterator l = start < 0 ? this->end()+start : this->begin()+start;
-		return range<iterator, int>(l, end());
+		array<typename container::iterator> result;
+		result.reserve(count);
+		for (int i = 0; i < count; i++)
+			result.push_back(c.at(data[i]));
+		return result;
 	}
 
-	slice<range<const_iterator, int> > sub(int start, int end) const
+	template <class container>
+	core::slice<array<typename container::const_iterator> > slice(const container &c)
 	{
-		const_iterator l = start < 0 ? this->end()+start : this->begin()+start;
-		const_iterator r = end < 0 ? this->end()+end : this->begin()+end;
-		return range<const_iterator, int>(l, r);
+		array<typename container::const_iterator> result;
+		result.reserve(count);
+		for (int i = 0; i < count; i++)
+			result.push_back(c.at(data[i]));
+		return result;
 	}
 
-	slice<range<const_iterator, int> > sub(int start) const
+	core::slice<bound<iterator, int> > sub(int start, int end)
 	{
-		const_iterator l = start < 0 ? this->end()+start : this->begin()+start;
-		return range<const_iterator, int>(l, end());
+		start = start < 0 ? count + start : start;
+		end = end < 0 ? count + end : end;
+		return bound<iterator, int>(at(start), end-start);
+	}
+
+	array<value_type> subcpy(int start, int end)
+	{
+		start = start < 0 ? count + start : start;
+		end = end < 0 ? count + end : end;
+		return bound<iterator, int>(at(start), end-start).deref();
+	}
+
+	core::slice<bound<iterator, int> > sub(int start)
+	{
+		start = start < 0 ? count + start : start;
+		return bound<iterator, int>(at(start), count-start);
+	}
+
+	array<value_type> subcpy(int start)
+	{
+		start = start < 0 ? count + start : start;
+		return bound<iterator, int>(at(start), count-start).deref();
+	}
+
+	core::slice<bound<iterator, int> > sub()
+	{
+		return bound<iterator, int>(begin(), count);
+	}
+
+	array<value_type> subcpy()
+	{
+		return bound<iterator, int>(begin(), count).deref();
+	}
+
+	core::slice<bound<const_iterator, int> > sub(int start, int end) const
+	{
+		start = start < 0 ? count + start : start;
+		end = end < 0 ? count + end : end;
+		return bound<const_iterator, int>(at(start), end-start);
 	}
 
 	array<value_type> subcpy(int start, int end) const
 	{
-		return array<value_type>(sub(start, end));
+		start = start < 0 ? count + start : start;
+		end = end < 0 ? count + end : end;
+		return bound<const_iterator, int>(at(start), end-start).deref();
+	}
+
+	core::slice<bound<const_iterator, int> > sub(int start) const
+	{
+		start = start < 0 ? count + start : start;
+		return bound<const_iterator, int>(at(start), count-start);
 	}
 
 	array<value_type> subcpy(int start) const
 	{
-		return array<value_type>(sub(start));
+		start = start < 0 ? count + start : start;
+		return bound<const_iterator, int>(at(start), count-start).deref();
 	}
 
-	static slice<range<iterator, int> > sub(iterator start, iterator end)
+	core::slice<bound<const_iterator, int> > sub() const
 	{
-		return range<iterator, int>(start, end);
+		return bound<const_iterator, int>(begin(), count);
 	}
 
-	static slice<range<const_iterator, int> > sub(const_iterator start, const_iterator end)
+	array<value_type> subcpy() const
 	{
-		return range<const_iterator, int>(start, end);
-	}
-
-	static array<value_type> subcpy(iterator start, iterator end)
-	{
-		return array<value_type>(sub(start, end));
-	}
-
-	static array<value_type> subcpy(const_iterator start, const_iterator end)
-	{
-		return array<value_type>(sub(start, end));
-	}
-
-	slice<range<iterator, int> > sub()
-	{
-		return range<iterator, int>(begin(), end());
-	}
-
-	slice<range<const_iterator, int> > sub() const
-	{
-		return range<const_iterator, int>(begin(), end());
+		return bound<const_iterator, int>(begin(), count).deref();
 	}
 
 	void alloc_back(unsigned int n = 1)
@@ -949,7 +1103,7 @@ struct array
 	template <class container>
 	void append_back_unsafe(const container &c)
 	{
-		for (typename container::const_iterator i = c.begin(); i != c.end(); i++, count++)
+		for (typename container::const_iterator i = c.begin(); i; i++, count++)
 			new (data+count) value_type(*i);
 	}
 
@@ -1017,46 +1171,55 @@ struct array
 	template <class container>
 	void replace(int start, int end, const container &c)
 	{
-		if (start < 0)
-			start += count;
-
-		if (end < 0)
-			end += count;
-
-		int n = end-start;
-		int lower, upper;
-		if (n > c.size())
+		int s = c.size();
+		if (s < 0)
 		{
-			lower = start+c.size();
-			upper = end;
+			drop(start, end);
+			at(start).append(c);
 		}
 		else
 		{
-			lower = end;
-			upper = start+c.size();
-		}
+			if (start < 0)
+				start += count;
 
-		int diff = upper-lower;
-		value_type *mid = data+lower;
-		value_type *i;
-		typename container::const_iterator j = c.begin();
-		for (i = data+start; i < mid && j != c.end(); i++, j++)
-			*i = *j;
+			if (end < 0)
+				end += count;
 
-		if (c.size() < n)
-		{
-			value_type *fin = data+upper;
-			for (; i < fin; i++)
-				i->~value_type();
-			memmove(mid, fin, (count-upper)*sizeof(value_type));
-			count -= diff;
-		}
-		else if (n < c.size())
-		{
-			at(lower).alloc(diff);
-			value_type *fin = data+upper;
-			for (i = data+lower; i < fin && j != c.end(); i++, j++)
-				new (i) value_type(*j);
+			int n = end-start;
+			int lower, upper;
+			if (n > s)
+			{
+				lower = start+s;
+				upper = end;
+			}
+			else
+			{
+				lower = end;
+				upper = start+s;
+			}
+
+			int diff = upper-lower;
+			value_type *mid = data+lower;
+			value_type *i;
+			typename container::const_iterator j = c.begin();
+			for (i = data+start; i < mid && j; i++, j++)
+				*i = *j;
+
+			if (c.size() < n)
+			{
+				value_type *fin = data+upper;
+				for (; i < fin; i++)
+					i->~value_type();
+				memmove(mid, fin, (count-upper)*sizeof(value_type));
+				count -= diff;
+			}
+			else if (n < s)
+			{
+				at(lower).alloc(diff);
+				value_type *fin = data+upper;
+				for (i = data+lower; i < fin && j; i++, j++)
+					new (i) value_type(*j);
+			}
 		}
 	}
 
@@ -1167,22 +1330,30 @@ struct array
 			data[i].~value_type();
 
 		count = c.size();
-		if (count > capacity)
+		if (count < 0)
 		{
-			if (data != NULL)
-				free(data);
-
-			capacity = (1 << (log2i(count)+1));
-			data = (value_type*)malloc(sizeof(value_type)*capacity);
+			count = 0;
+			append_back(c);
 		}
-
-		typename container::const_iterator i = c.begin();
-		iterator j = begin();
-		while (i != c.end() && j != end())
+		else
 		{
-			new (j.ptr()) value_type(*i);
-			i++;
-			j++;
+			if (count > capacity)
+			{
+				if (data != NULL)
+					free(data);
+
+				capacity = (1 << (log2i(count)+1));
+				data = (value_type*)malloc(sizeof(value_type)*capacity);
+			}
+
+			typename container::const_iterator i = c.begin();
+			iterator j = begin();
+			while (i && j != end())
+			{
+				new (j.ptr()) value_type(*i);
+				i++;
+				j++;
+			}
 		}
 
 		return *this;
@@ -1205,7 +1376,7 @@ struct array
 
 		const_iterator i = c.begin();
 		iterator j = begin();
-		while (i != c.end() && j != end())
+		while (i && j)
 		{
 			new (j.ptr()) value_type(*i);
 			i++;

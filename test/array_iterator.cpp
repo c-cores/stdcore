@@ -12,7 +12,7 @@ TEST(array_iterator, iterate)
 	array<int> x = range<int>(0, 10);
 
 	int j = 0;
-	for (array<int>::iterator i = x.begin(); i != x.end(); i++)
+	for (array<int>::iterator i = x.begin(); i; i++)
 	{
 		EXPECT_EQ(j, *i);
 		j++;

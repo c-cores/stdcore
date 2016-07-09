@@ -8,6 +8,7 @@
 #pragma once
 
 #include <memory.h>
+#include <core/slice.h>
 
 namespace core
 {
@@ -48,12 +49,18 @@ struct range
 
 		}
 
+		operator bool() const
+		{
+			return root != NULL && ((value >= root->start && value < root->finish) ||
+									(value <= root->start && value > root->finish));
+		}
+
 		value_type operator*()
 		{
 			return value;
 		}
 
-		value_type get()
+		value_type get() const
 		{
 			return value;
 		}
@@ -130,28 +137,30 @@ struct range
 			return value - i.value;
 		}
 
-		range<value_type, step_type> sub(int n)
+		slice<bound<const_iterator, int> > sub(int length)
 		{
-			const_iterator l = n < 0 ? *this+n : *this;
-			const_iterator r = n < 0 ? *this : *this + n;
-			return range<value_type, step_type>(l, r);
+			if (length < 0)
+				return bound<const_iterator, int>(*this+length, -length);
+			else
+				return bound<const_iterator, int>(*this, length);
 		}
 
-		range<value_type, step_type> subcpy(int n)
+		range<value_type, step_type> subcpy(int length)
 		{
-			const_iterator l = n < 0 ? *this+n : *this;
-			const_iterator r = n < 0 ? *this : *this + n;
-			return range<value_type, step_type>(l, r);
+			if (length < 0)
+				return range<value_type, step_type>(value + root->step*length, value, root->step);
+			else
+				return range<value_type, step_type>(value, value + root->step*length, root->step);
 		}
 
-		range<value_type, step_type> sub()
+		slice<bound<const_iterator, int> > sub()
 		{
-			return range<value_type, step_type>(*this, root->end());
+			return bound<const_iterator, int>(*this);
 		}
 
 		range<value_type, step_type> subcpy()
 		{
-			return range<value_type, step_type>(*this, root->end());
+			return range<value_type, step_type>(value, root->finish, root->step);
 		}
 	};
 
@@ -287,50 +296,103 @@ struct range
 		return const_iterator(this, start-step);
 	}
 
-	range<value_type, step_type> sub(int start, int end) const
+	core::slice<range<value_type, step_type> > deref()
 	{
-		const_iterator l = start < 0 ? this->end()+start : this->begin()+start;
-		const_iterator r = end < 0 ? this->end()+end : this->begin()+end;
-		return range<value_type, step_type>(l, r);
+		return *this;
 	}
 
-	range<value_type, step_type> sub(int start) const
+	template <class container>
+	core::slice<range<typename container::iterator, step_type> > slice(container &c)
 	{
-		const_iterator l = start < 0 ? this->end()+start : this->begin()+start;
-		return range<value_type, step_type>(l, end());
+		return range<typename container::iterator, step_type>(c.at(start), c.at(finish), step);
+	}
+
+	template <class container>
+	core::slice<range<typename container::const_iterator, step_type> > slice(const container &c)
+	{
+		return range<typename container::iterator, step_type>(c.at(start), c.at(finish), step);
+	}
+
+	core::slice<bound<iterator, int> > sub(int start, int end)
+	{
+		int count = size();
+		start = start < 0 ? count + start : start;
+		end = end < 0 ? count + end : end;
+		return bound<iterator, int>(at(start), end-start);
+	}
+
+	range<value_type, step_type> subcpy(int start, int end)
+	{
+		int count = size();
+		start = start < 0 ? count + start : start;
+		end = end < 0 ? count + end : end;
+		return range<value_type, step_type>(this->start + this->step*start, this->start + this->step*end, this->step);
+	}
+
+	core::slice<bound<iterator, int> > sub(int start)
+	{
+		int count = size();
+		start = start < 0 ? count + start : start;
+		return bound<iterator, int>(at(start), count-start);
+	}
+
+	range<value_type, step_type> subcpy(int start)
+	{
+		int count = size();
+		start = start < 0 ? count + start : start;
+		return range<value_type, step_type>(this->start + this->step*start, this->finish, this->step);
+	}
+
+	core::slice<bound<iterator, int> > sub()
+	{
+		int count = size();
+		return bound<iterator, int>(begin(), count);
+	}
+
+	range<value_type, step_type> subcpy()
+	{
+		int count = size();
+		return range<value_type, step_type>(start, finish, step);
+	}
+
+	core::slice<bound<const_iterator, int> > sub(int start, int end) const
+	{
+		int count = size();
+		start = start < 0 ? count + start : start;
+		end = end < 0 ? count + end : end;
+		return bound<const_iterator, int>(at(start), end-start);
 	}
 
 	range<value_type, step_type> subcpy(int start, int end) const
 	{
-		value_type l = start < 0 ? this->finish + start*this->step : this->start + start*this->step;
-		value_type r = end < 0 ? this->finish + end*this->step : this->start + end*this->step;
-		return range<value_type, step_type>(l, r, this->step);
+		int count = size();
+		start = start < 0 ? count + start : start;
+		end = end < 0 ? count + end : end;
+		return range<value_type, step_type>(this->start + this->step*start, this->start + this->step*end, this->step);
+	}
+
+	core::slice<bound<const_iterator, int> > sub(int start) const
+	{
+		int count = size();
+		start = start < 0 ? count + start : start;
+		return bound<const_iterator, int>(at(start), count-start);
 	}
 
 	range<value_type, step_type> subcpy(int start) const
 	{
-		value_type l = start < 0 ? this->finish + start*this->step : this->start + start*this->step;
-		return range<value_type, step_type>(l, finish, this->step);
+		int count = size();
+		start = start < 0 ? count + start : start;
+		return range<value_type, step_type>(this->start + this->step*start, this->finish, this->step);
 	}
 
-	static range<value_type, step_type> sub(const_iterator start, const_iterator end)
+	core::slice<bound<const_iterator, int> > sub() const
 	{
-		return range<value_type, step_type>(start, end);
-	}
-
-	static range<value_type, step_type> subcpy(const_iterator start, const_iterator end)
-	{
-		return range<value_type, step_type>(start, end);
-	}
-
-	range<value_type, step_type> &sub()
-	{
-		return *this;
+		return bound<const_iterator, int>(begin(), size());
 	}
 
 	range<value_type, step_type> subcpy() const
 	{
-		return *this;
+		return range<value_type, step_type>(start, finish, step);
 	}
 
 	void swap(range<value_type, step_type> &root)
@@ -354,6 +416,9 @@ struct range
 		return *this;
 	}
 };
+
+typedef range<int, int> rangei;
+typedef range<float, float> rangef;
 
 template <class value_type1, class step_type1, class value_type2, class step_type2>
 bool operator==(range<value_type1, step_type1> s1, range<value_type2, step_type2> s2)
@@ -397,6 +462,78 @@ bool operator>=(range<value_type1, step_type1> s1, range<value_type2, step_type2
 	return (s1.start > s2.start || (s1.start == s2.start &&
 		   (s1.step > s2.step   || (s1.step == s2.step   &&
 			s1.finish >= s2.finish))));
+}
+
+template <class value_type1, class step_type1, class container2>
+bool operator==(range<value_type1, step_type1> s1, slice<container2> s2)
+{
+	return (compare(s1, s2) == 0);
+}
+
+template <class value_type1, class step_type1, class container2>
+bool operator!=(range<value_type1, step_type1> s1, slice<container2> s2)
+{
+	return (compare(s1, s2) != 0);
+}
+
+template <class value_type1, class step_type1, class container2>
+bool operator<(range<value_type1, step_type1> s1, slice<container2> s2)
+{
+	return (compare(s1, s2) < 0);
+}
+
+template <class value_type1, class step_type1, class container2>
+bool operator>(range<value_type1, step_type1> s1, slice<container2> s2)
+{
+	return (compare(s1, s2) > 0);
+}
+
+template <class value_type1, class step_type1, class container2>
+bool operator<=(range<value_type1, step_type1> s1, slice<container2> s2)
+{
+	return (compare(s1, s2) <= 0);
+}
+
+template <class value_type1, class step_type1, class container2>
+bool operator>=(range<value_type1, step_type1> s1, slice<container2> s2)
+{
+	return (compare(s1, s2) >= 0);
+}
+
+template <class container1, class value_type2, class step_type2>
+bool operator==(slice<container1> s1, range<value_type2, step_type2> s2)
+{
+	return (compare(s1, s2) == 0);
+}
+
+template <class container1, class value_type2, class step_type2>
+bool operator!=(slice<container1> s1, range<value_type2, step_type2> s2)
+{
+	return (compare(s1, s2) != 0);
+}
+
+template <class container1, class value_type2, class step_type2>
+bool operator<(slice<container1> s1, range<value_type2, step_type2> s2)
+{
+	return (compare(s1, s2) < 0);
+}
+
+template <class container1, class value_type2, class step_type2>
+bool operator>(slice<container1> s1, range<value_type2, step_type2> s2)
+{
+	return (compare(s1, s2) > 0);
+}
+
+template <class container1, class value_type2, class step_type2>
+bool operator<=(slice<container1> s1, range<value_type2, step_type2> s2)
+{
+	return (compare(s1, s2) <= 0);
+}
+
+template <class container1, class value_type2, class step_type2>
+bool operator>=(slice<container1> s1, range<value_type2, step_type2> s2)
+{
+	return (compare(s1, s2) >= 0);
 }
 
 }

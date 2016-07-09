@@ -10,7 +10,7 @@ TEST(fill_iterator, iterate)
 	fill<int> x(10, 5);
 
 	int j = 0;
-	for (fill<int>::iterator i = x.begin(); i != x.end(); i++)
+	for (fill<int>::iterator i = x.begin(); i; i++)
 	{
 		EXPECT_EQ(5, *i);
 		j++;

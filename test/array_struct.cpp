@@ -115,10 +115,6 @@ TEST(array_struct, sub)
 	EXPECT_EQ(y, x.sub(-6, 6));
 	EXPECT_EQ(y, x.subcpy(-6, 6));
 	
-	// using iterators
-	EXPECT_EQ(y, x.sub(x.at(2), x.at(6)));
-	EXPECT_EQ(y, x.subcpy(x.at(2), x.at(6)));
-
 	// single input
 	EXPECT_EQ(z, x.sub(4));
 	EXPECT_EQ(z, x.sub(-4));

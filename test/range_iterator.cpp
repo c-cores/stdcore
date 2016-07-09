@@ -10,7 +10,7 @@ TEST(range_iterator, iterate)
 	range<int> x(0, 10, 2);
 
 	int j = 0;
-	for (range<int>::iterator i = x.begin(); i != x.end(); i++)
+	for (range<int>::iterator i = x.begin(); i; i++)
 	{
 		EXPECT_EQ(j, *i);
 		j += 2;

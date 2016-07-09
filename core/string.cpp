@@ -200,7 +200,7 @@ string format_string(const string &str, const char *esc)
 	string result;
 	result.reserve(str.size()*2+2);
 	result.push_back('\"');
-	for (string::const_iterator i = str.begin(); i != str.end(); i++)
+	for (string::const_iterator i = str.begin(); i; i++)
 	{
 		bool do_esc = (*i == '\\');
 		for (const char *p = esc; !do_esc && *p != '\0'; p++)
@@ -421,9 +421,9 @@ string line_wrap(const string &line, int length)
 {
 	string result;
 	result.reserve(line.size() + line.size()/length);
-	for (string::const_iterator i = line.begin(); i != line.end(); i += length)
+	for (string::const_iterator i = line.begin(); i; i += length)
 	{
-		result.append_back_unsafe(i.sub(length));
+		result.append_back_unsafe(bound<string::const_iterator, int>(i, length).deref());
 		result.push_back_unsafe('\n');
 	}
 	return result;

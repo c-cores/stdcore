@@ -54,7 +54,7 @@ bits &operator<<(bits &str, char *v);
 template <class container>
 bits &operator<<(bits &str, const container &v)
 {
-	for (typename container::const_iterator i = v.begin(); i != v.end(); i++)
+	for (typename container::const_iterator i = v.begin(); i; i++)
 		str << *i;
 	return str;
 }

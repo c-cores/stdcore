@@ -48,7 +48,7 @@ int file::read(char *str, int n, const array<char> &delimiter)
 	for (result = str; !feof(ptr) && result < end; result++)
 	{
 		*result = fgetc(ptr);
-		for (array<char>::const_iterator i = delimiter.begin(); i != delimiter.end(); i++)
+		for (array<char>::const_iterator i = delimiter.begin(); i; i++)
 			if (*i == *result)
 			{
 				*++result = '\0';
@@ -90,7 +90,7 @@ array<char> file::read(const array<char> &delimiter)
 	while (!feof(ptr))
 	{
 		result.push_back(fgetc(ptr));
-		for (array<char>::const_iterator i = delimiter.begin(); i != delimiter.end(); i++)
+		for (array<char>::const_iterator i = delimiter.begin(); i; i++)
 			if (*i == result.back())
 				return result;
 	}

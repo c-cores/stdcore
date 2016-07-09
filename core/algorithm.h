@@ -26,11 +26,11 @@ template <class container>
 container &collapse_inplace(container &c)
 {
 	typename container::iterator i = c.begin(), j = c.begin()+1;
-	for (; j != c.end(); j++)
+	for (; j; j++)
 		if (!(*i == *j) && ++i != j)
 			*i = *j;
 
-	if (++i != c.end())
+	if (++i)
 		c.drop(i, c.end());
 
 	return c;
@@ -50,21 +50,31 @@ template <class container>
 container collapse(container c)
 {
 	typename container::iterator i = c.begin(), j = c.begin()+1;
-	for (; j != c.end(); j++)
+	for (; j; j++)
 		if (!(*i == *j) && ++i != j)
 			*i = *j;
 
-	if (++i != c.end())
+	if (++i)
 		c.drop(i, c.end());
 
 	return c;
 }
 
+/*!
+ * \brief Remove all duplicates leaving only the first occurrence of each value.
+ *
+ * This looks for elements with the same value and removes all but the first
+ * one.
+ *
+ * \param[inout] c The container to collapse.
+ * \return the collapsed version of the container
+ * \sa unique
+ */
 template <class container>
-container unique(container c)
+container &unique_inplace(container &c)
 {
-	for (typename container::iterator i = c.begin(); i != c.end(); i++)
-		for (typename container::iterator j = i+1; j != c.end();)
+	for (typename container::iterator i = c.begin(); i; i++)
+		for (typename container::iterator j = i+1; j;)
 		{
 			if (*i == *j)
 				j.drop();
@@ -75,17 +85,28 @@ container unique(container c)
 	return c;
 }
 
+/*!
+ * \brief Remove all duplicates leaving only the first occurrence of each value.
+ *
+ * This makes a copy of the input container, then looks for elements with the
+ * same value and removes all but the first one.
+ *
+ * \param[inout] c The container to collapse.
+ * \return the collapsed version of the container
+ * \sa unique
+ */
 template <class container>
-container remove(container c, const typename container::type &value)
+container unique(container c)
 {
-	typename container::iterator i = c.begin();
-	while (i != c.end())
-	{
-		if (*i == value)
-			i.drop();
-		else
-			i++;
-	}
+	for (typename container::iterator i = c.begin(); i; i++)
+		for (typename container::iterator j = i+1; j;)
+		{
+			if (*i == *j)
+				j.drop();
+			else
+				j++;
+		}
+
 	return c;
 }
 

@@ -70,7 +70,7 @@ template <class container>
 string &operator<<(string &s1, const container &v)
 {
 	s1 << '{';
-	for (typename container::const_iterator i = v.begin(); i != v.end(); i++)
+	for (typename container::const_iterator i = v.begin(); i; i++)
 	{
 		if (i != v.begin())
 			s1 << ", ";

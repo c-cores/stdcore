@@ -12,11 +12,11 @@ TEST(slice_iterator, array_iterate)
 {
 	array<int> x0 = range<int>(0, 10);
 	slice<array<array<int>::iterator> > x;
-	for (array<int>::iterator i = x0.begin(); i != x0.end(); i++)
+	for (array<int>::iterator i = x0.begin(); i; i++)
 		x.push_back(i);
 
 	int j = 0;
-	for (slice<array<array<int>::iterator> >::iterator i = x.begin(); i != x.end(); i++)
+	for (slice<array<array<int>::iterator> >::iterator i = x.begin(); i; i++)
 	{
 		EXPECT_EQ(j, *i);
 		j++;
@@ -28,7 +28,7 @@ TEST(slice_iterator, array_index)
 {
 	array<int> x0 = array<int>::values(8, 5, 2, 3, 5, 6, 2, 1, 7);
 	slice<array<array<int>::iterator> > x;
-	for (array<int>::iterator i = x0.begin(); i != x0.end(); i++)
+	for (array<int>::iterator i = x0.begin(); i; i++)
 		x.push_back(i);
 
 	EXPECT_EQ(5, *x.at(0));
@@ -56,7 +56,7 @@ TEST(slice_iterator, array_sub)
 {
 	array<int> x0 = range<int>(0, 10);
 	slice<array<array<int>::iterator> > x;
-	for (array<int>::iterator i = x0.begin(); i != x0.end(); i++)
+	for (array<int>::iterator i = x0.begin(); i; i++)
 		x.push_back(i);
 	EXPECT_EQ(x.at(4).sub(3), range<int>(4, 7));
 	EXPECT_EQ(x.at(7).sub(-3), range<int>(4, 7));
@@ -66,7 +66,7 @@ TEST(slice_iterator, array_sub)
 	EXPECT_EQ(x.at(4).subcpy(), range<int>(4, 10));
 
 	slice<array<array<int>::const_iterator> > y;
-	for (array<int>::const_iterator i = x0.begin(); i != x0.end(); i++)
+	for (array<int>::const_iterator i = x0.begin(); i; i++)
 		y.push_back(i);
 	EXPECT_EQ(y.at(4).sub(3), range<int>(4, 7));
 	EXPECT_EQ(y.at(7).sub(-3), range<int>(4, 7));
@@ -80,7 +80,7 @@ TEST(slice_iterator, array_alloc)
 {
 	array<int> x0 = range<int>(0, 10);
 	slice<array<array<int>::iterator> > x;
-	for (array<int>::iterator i = x0.begin(); i != x0.end(); i++)
+	for (array<int>::iterator i = x0.begin(); i; i++)
 		x.push_back(i);
 
 	slice<array<array<int>::iterator> >::iterator i = x.at(5);
@@ -115,7 +115,7 @@ TEST(slice_iterator, array_drop)
 {
 	array<int> x0 = range<int>(0, 10);
 	slice<array<array<int>::iterator> > x;
-	for (array<int>::iterator i = x0.begin(); i != x0.end(); i++)
+	for (array<int>::iterator i = x0.begin(); i; i++)
 		x.push_back(i);
 
 	slice<array<array<int>::iterator> >::iterator i = x.at(0);
@@ -163,7 +163,7 @@ TEST(slice_iterator, array_pop)
 {
 	array<int> x0 = range<int>(0, 10);
 	slice<array<array<int>::iterator> > x;
-	for (array<int>::iterator i = x0.begin(); i != x0.end(); i++)
+	for (array<int>::iterator i = x0.begin(); i; i++)
 		x.push_back(i);
 
 	slice<array<array<int>::iterator> > y;
@@ -237,7 +237,7 @@ TEST(slice_iterator, array_push)
 {
 	array<int> x0 = range<int>(0, 10);
 	slice<array<array<int>::iterator> > x;
-	for (array<int>::iterator i = x0.begin(); i != x0.end(); i++)
+	for (array<int>::iterator i = x0.begin(); i; i++)
 		x.push_back(i);
 
 	// We can't use operator<< here because that uses
@@ -280,11 +280,11 @@ TEST(slice_iterator, array_append)
 {
 	array<int> x0 = range<int>(0, 10);
 	slice<array<array<int>::iterator> > x;
-	for (array<int>::iterator i = x0.begin(); i != x0.end(); i++)
+	for (array<int>::iterator i = x0.begin(); i; i++)
 		x.push_back(i);
 	array<int> y0 = range<int>(0, 4);
 	slice<array<array<int>::iterator> > y;
-	for (array<int>::iterator i = y0.begin(); i != y0.end(); i++)
+	for (array<int>::iterator i = y0.begin(); i; i++)
 		y.push_back(i);
 
 	// We can't use operator<< here because that uses
@@ -298,6 +298,8 @@ TEST(slice_iterator, array_append)
 	EXPECT_EQ(x.sub(0, 4), range<int>(0, 4));
 	EXPECT_EQ(x.sub(4, 14), range<int>(0, 10));
 	EXPECT_EQ(i.idx(), 4);
+	EXPECT_EQ(x0, range<int>(0, 10));
+	EXPECT_EQ(y0, range<int>(0, 4));
 
 	i = x.at(7);
 	i.append(y.ref());
@@ -309,6 +311,8 @@ TEST(slice_iterator, array_append)
 	EXPECT_EQ(x.sub(7, 11), range<int>(0, 4));
 	EXPECT_EQ(x.sub(11, 18), range<int>(3, 10));
 	EXPECT_EQ(i.idx(), 11);
+	EXPECT_EQ(x0, range<int>(0, 10));
+	EXPECT_EQ(y0, range<int>(0, 4));
 
 	i = x.end();
 	i.append(y.ref());
@@ -321,9 +325,11 @@ TEST(slice_iterator, array_append)
 	EXPECT_EQ(x.sub(11, 18), range<int>(3, 10));
 	EXPECT_EQ(x.sub(18, 22), range<int>(0, 4));
 	EXPECT_EQ(i.idx(), x.size());
+	EXPECT_EQ(x0, range<int>(0, 10));
+	EXPECT_EQ(y0, range<int>(0, 4));
 
 	x.clear();
-	for (array<int>::iterator i = x0.begin(); i != x0.end(); i++)
+	for (array<int>::iterator i = x0.begin(); i; i++)
 		x.push_back(i);
 
 	i = x.begin();
@@ -334,6 +340,8 @@ TEST(slice_iterator, array_append)
 	EXPECT_EQ(x.sub(0, 4), range<int>(0, 4));
 	EXPECT_EQ(x.sub(4, 14), range<int>(0, 10));
 	EXPECT_EQ(i.idx(), 4);
+	EXPECT_EQ(x0, range<int>(0, 10));
+	EXPECT_EQ(y0, range<int>(0, 4));
 
 	i = x.at(7);
 	i.append(y.ref().sub());
@@ -345,6 +353,8 @@ TEST(slice_iterator, array_append)
 	EXPECT_EQ(x.sub(7, 11), range<int>(0, 4));
 	EXPECT_EQ(x.sub(11, 18), range<int>(3, 10));
 	EXPECT_EQ(i.idx(), 11);
+	EXPECT_EQ(x0, range<int>(0, 10));
+	EXPECT_EQ(y0, range<int>(0, 4));
 
 	i = x.end();
 	i.append(y.ref().sub());
@@ -357,21 +367,23 @@ TEST(slice_iterator, array_append)
 	EXPECT_EQ(x.sub(11, 18), range<int>(3, 10));
 	EXPECT_EQ(x.sub(18, 22), range<int>(0, 4));
 	EXPECT_EQ(i.idx(), x.size());
+	EXPECT_EQ(x0, range<int>(0, 10));
+	EXPECT_EQ(y0, range<int>(0, 4));
 }
 
 TEST(slice_iterator, array_replace)
 {
 	array<int> x0 = range<int>(0, 10);
 	slice<array<array<int>::iterator> > x;
-	for (array<int>::iterator i = x0.begin(); i != x0.end(); i++)
+	for (array<int>::iterator i = x0.begin(); i; i++)
 		x.push_back(i);
 	array<int> y0 = range<int>(0, 10);
 	slice<array<array<int>::iterator> > y;
-	for (array<int>::iterator i = y0.begin(); i != y0.end(); i++)
+	for (array<int>::iterator i = y0.begin(); i; i++)
 		y.push_back(i);
 
 	slice<array<array<int>::iterator> >::iterator i = x.at(4);
-	i.replace(3, y.at(5).ref());
+	i.replace(3, y.ref(5));
 	EXPECT_EQ(8, x.count);
 	EXPECT_GE(x.capacity, x.count);
 	EXPECT_NE((array<int>::iterator*)NULL, x.data);
@@ -380,9 +392,11 @@ TEST(slice_iterator, array_replace)
 			<< 5
 			<< range<int>(7, 10));
 	EXPECT_EQ(i.idx(), 5);
+	EXPECT_EQ(x0, range<int>(0, 10));
+	EXPECT_EQ(y0, range<int>(0, 10));
 
 	i = x.at(4);
-	i.replace(3, y.at(3).ref());
+	i.replace(3, y.ref(3));
 	EXPECT_EQ(6, x.count);
 	EXPECT_GE(x.capacity, x.count);
 	EXPECT_NE((array<int>::iterator*)NULL, x.data);
@@ -391,9 +405,11 @@ TEST(slice_iterator, array_replace)
 			<< 3
 			<< range<int>(9, 10));
 	EXPECT_EQ(i.idx(), 5);
+	EXPECT_EQ(x0, range<int>(0, 10));
+	EXPECT_EQ(y0, range<int>(0, 10));
 
 	i = x.at(4);
-	i.replace(1, y.at(8).ref());
+	i.replace(1, y.ref(8));
 	EXPECT_EQ(6, x.count);
 	EXPECT_GE(x.capacity, x.count);
 	EXPECT_NE((array<int>::iterator*)NULL, x.data);
@@ -402,9 +418,11 @@ TEST(slice_iterator, array_replace)
 			<< 8
 			<< range<int>(9, 10));
 	EXPECT_EQ(i.idx(), 5);
+	EXPECT_EQ(x0, range<int>(0, 10));
+	EXPECT_EQ(y0, range<int>(0, 10));
 
 	i = x.at(4);
-	i.replace(-1, y.at(9).ref());
+	i.replace(-1, y.ref(9));
 	EXPECT_EQ(6, x.count);
 	EXPECT_GE(x.capacity, x.count);
 	EXPECT_NE((array<int>::iterator*)NULL, x.data);
@@ -414,9 +432,11 @@ TEST(slice_iterator, array_replace)
 			<< 8
 			<< range<int>(9, 10));
 	EXPECT_EQ(i.idx(), 4);
+	EXPECT_EQ(x0, range<int>(0, 10));
+	EXPECT_EQ(y0, range<int>(0, 10));
 
 	i = x.at(4);
-	i.replace(-1, y.at(6).ref());
+	i.replace(-1, y.ref(6));
 	EXPECT_EQ(6, x.count);
 	EXPECT_GE(x.capacity, x.count);
 	EXPECT_NE((array<int>::iterator*)NULL, x.data);
@@ -426,9 +446,11 @@ TEST(slice_iterator, array_replace)
 			<< 8
 			<< range<int>(9, 10));
 	EXPECT_EQ(i.idx(), 4);
+	EXPECT_EQ(x0, range<int>(0, 10));
+	EXPECT_EQ(y0, range<int>(0, 10));
 
 	i = x.at(4);
-	i.replace(-4, y.at(2).ref());
+	i.replace(-4, y.ref(2));
 	EXPECT_EQ(3, x.count);
 	EXPECT_GE(x.capacity, x.count);
 	EXPECT_NE((array<int>::iterator*)NULL, x.data);
@@ -437,17 +459,19 @@ TEST(slice_iterator, array_replace)
 			<< 8
 			<< range<int>(9, 10));
 	EXPECT_EQ(i.idx(), 1);
+	EXPECT_EQ(x0, range<int>(0, 10));
+	EXPECT_EQ(y0, range<int>(0, 10));
 }
 
 TEST(slice_iterator, array_replace_container)
 {
 	array<int> x0 = range<int>(0, 10);
 	slice<array<array<int>::iterator> > x;
-	for (array<int>::iterator i = x0.begin(); i != x0.end(); i++)
+	for (array<int>::iterator i = x0.begin(); i; i++)
 		x.push_back(i);
 	array<int> y0 = range<int>(0, 10);
 	slice<array<array<int>::iterator> > y;
-	for (array<int>::iterator i = y0.begin(); i != y0.end(); i++)
+	for (array<int>::iterator i = y0.begin(); i; i++)
 		y.push_back(i);
 
 	slice<array<array<int>::iterator> >::iterator i = x.at(4);
@@ -460,6 +484,8 @@ TEST(slice_iterator, array_replace_container)
 			<< y.sub(0, 3)
 			<< range<int>(7, 10));
 	EXPECT_EQ(i.idx(), 7);
+	EXPECT_EQ(x0, range<int>(0, 10));
+	EXPECT_EQ(y0, range<int>(0, 10));
 
 	i = x.at(4);
 	i.replace(3, y.ref().sub(0, 1));
@@ -471,6 +497,8 @@ TEST(slice_iterator, array_replace_container)
 			<< y[0]
 			<< range<int>(7, 10));
 	EXPECT_EQ(i.idx(), 5);
+	EXPECT_EQ(x0, range<int>(0, 10));
+	EXPECT_EQ(y0, range<int>(0, 10));
 
 	i = x.at(4);
 	i.replace(1, y.ref().sub(0, 3));
@@ -482,6 +510,8 @@ TEST(slice_iterator, array_replace_container)
 			<< y.sub(0, 3)
 			<< range<int>(7, 10));
 	EXPECT_EQ(i.idx(), 7);
+	EXPECT_EQ(x0, range<int>(0, 10));
+	EXPECT_EQ(y0, range<int>(0, 10));
 
 	i = x.at(4);
 	i.replace(-1, y.ref().sub(0, 6));
@@ -494,6 +524,8 @@ TEST(slice_iterator, array_replace_container)
 			<< y.sub(0, 3)
 			<< range<int>(7, 10));
 	EXPECT_EQ(i.idx(), 9);
+	EXPECT_EQ(x0, range<int>(0, 10));
+	EXPECT_EQ(y0, range<int>(0, 10));
 
 	i = x.at(4);
 	i.replace(-1, y.ref().sub(0, 2));
@@ -507,6 +539,8 @@ TEST(slice_iterator, array_replace_container)
 			<< y.sub(0, 3)
 			<< range<int>(7, 10));
 	EXPECT_EQ(i.idx(), 5);
+	EXPECT_EQ(x0, range<int>(0, 10));
+	EXPECT_EQ(y0, range<int>(0, 10));
 
 	i = x.at(4);
 	i.replace(-1, y.ref().sub(0, 6));
@@ -521,6 +555,8 @@ TEST(slice_iterator, array_replace_container)
 			<< y.sub(0, 3)
 			<< range<int>(7, 10));
 	EXPECT_EQ(i.idx(), 9);
+	EXPECT_EQ(x0, range<int>(0, 10));
+	EXPECT_EQ(y0, range<int>(0, 10));
 
 	i = x.at(4);
 	i.replace(-4, y.ref().sub(0, 2));
@@ -535,9 +571,11 @@ TEST(slice_iterator, array_replace_container)
 			<< y.sub(0, 3)
 			<< range<int>(7, 10));
 	EXPECT_EQ(i.idx(), 2);
+	EXPECT_EQ(x0, range<int>(0, 10));
+	EXPECT_EQ(y0, range<int>(0, 10));
 
 	i = x.at(4);
-	i.replace(-4, fill<array<int>::iterator>(4, y.at(9).ref()));
+	i.replace(-4, fill<array<int>::iterator>(4, y.ref(9)));
 	EXPECT_EQ(19, x.count);
 	EXPECT_GE(x.capacity, x.count);
 	EXPECT_NE((array<int>::iterator*)NULL, x.data);
@@ -549,20 +587,24 @@ TEST(slice_iterator, array_replace_container)
 			<< y.sub(0, 3)
 			<< range<int>(7, 10));
 	EXPECT_EQ(i.idx(), 4);
+	EXPECT_EQ(x0, range<int>(0, 10));
+	EXPECT_EQ(y0, range<int>(0, 10));
 }
 
 TEST(slice_iterator, array_swap)
 {
 	array<int> x0 = range<int>(0, 10);
 	slice<array<array<int>::iterator> > x;
-	for (array<int>::iterator i = x0.begin(); i != x0.end(); i++)
+	for (array<int>::iterator i = x0.begin(); i; i++)
 		x.push_back(i);
 
 	x.at(5).ref().swap(x.at(2).ref());
 	EXPECT_EQ(5, x[2]);
 	EXPECT_EQ(2, x[5]);
+	EXPECT_EQ(x0, range<int>(0, 10));
 
 	x.begin().ref().swap(x.rbegin().ref());
 	EXPECT_EQ(9, x[0]);
 	EXPECT_EQ(0, x[9]);
+	EXPECT_EQ(x0, range<int>(0, 10));
 }

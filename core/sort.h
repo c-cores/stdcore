@@ -47,10 +47,10 @@ type median_iterator(type t1, type t2, type t3)
 template <class container>
 container sort_selection(container c)
 {
-	for (typename container::iterator i = c.begin(); i != c.end(); i++)
+	for (typename container::iterator i = c.begin(); i; i++)
 	{
 		typename container::iterator max_j = i;
-		for (typename container::iterator j = i+1; j != c.end(); j++)
+		for (typename container::iterator j = i+1; j; j++)
 			if (*j < *max_j)
 				max_j = j;
 
