@@ -19,6 +19,10 @@ TEST(array_struct, copy_constructor)
 {
 	array<int> x(array<int>::values(5, 1, 9, 7, 2, 5));
 	EXPECT_EQ(x, array<int>::values(5, 1, 9, 7, 2, 5));
+
+	// check negative lengths
+	array<int> y = boundi(2).slice(x);
+	EXPECT_EQ(y, array<int>::values(3, 7, 2, 5));
 }
 
 TEST(array_struct, fill_constructor)
@@ -449,6 +453,13 @@ TEST(array_struct, replace_container)
 	EXPECT_EQ(x, array<int>()
 				<< range<int>(0, 7)
 				<< y);
+
+	// check negative lengths
+	x = range<int>(0, 10);
+	x.replace_back(3, boundi(1).slice(y));
+	EXPECT_EQ(x, array<int>()
+				<< range<int>(0, 7)
+				<< y.sub(1));
 }
 
 TEST(array_struct, swap)

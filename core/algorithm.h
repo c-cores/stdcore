@@ -244,112 +244,137 @@ bool intersects(const container1 &c1, const container2 &c2, const container3 &c3
 }
 
 template <class container>
-container intersection(const array<container> &c)
+typename container::type intersection(const container &c)
 {
-	typedef typename container::const_iterator iterator_m0;
+	typedef typename container::const_iterator iterator;
+
+	typedef typename container::type type;
+	typedef typename type::const_iterator iterator_m0;
 	typedef typename array<iterator_m0>::iterator iterator_m1;
 	typedef typename array<iterator_m1>::iterator iterator_m2;
 
-	container result;
+	type result;
 	array<iterator_m0> i;
-	i.reserve(c.size());
-	for (iterator_m0 j = c.begin(); j; j++)
-		i.push_back_unsafe(j->begin());
+	for (iterator j = c.begin(); j; j++)
+		i.push_back(j->begin());
 
 	bool working = true;
+	array<iterator_m1> smallest;
 	while (working)
 	{
-		array<iterator_m1> smallest;
-		for (iterator_m1 j = i.begin()+1; j; j++)
+		bool found = true;
+		for (iterator_m1 j = i.begin(); j; j++)
 		{
-			if (smallest.size() == 0 || **j == **smallest.begin())
+			if (smallest.begin() == smallest.end() || **j == ***smallest.begin())
 				smallest.push_back(j);
-			else if (**j < **smallest.begin())
+			else if (**j < ***smallest.begin())
 			{
 				smallest.clear();
 				smallest.push_back(j);
+				found = false;
 			}
+			else
+				found = false;
 		}
 
-		if (smallest.size() == c.size())
+		if (found)
 			result.push_back(***smallest.begin());
 
 		for (iterator_m2 j = smallest.begin(); j && working; j++)
 			working = ++**j;
+
+		smallest.clear();
 	}
 
 	return result;
 }
 
 template <class container>
-int intersection_size(const array<container> &c)
+int intersection_size(const container &c)
 {
-	typedef typename container::const_iterator iterator_m0;
+	typedef typename container::const_iterator iterator;
+
+	typedef typename container::type type;
+	typedef typename type::const_iterator iterator_m0;
 	typedef typename array<iterator_m0>::iterator iterator_m1;
 	typedef typename array<iterator_m1>::iterator iterator_m2;
 
 	int result = 0;
 	array<iterator_m0> i;
-	i.reserve(c.size());
-	for (iterator_m0 j = c.begin(); j; j++)
-		i.push_back_unsafe(j->begin());
+	for (iterator j = c.begin(); j; j++)
+		i.push_back(j->begin());
 
 	bool working = true;
+	array<iterator_m1> smallest;
 	while (working)
 	{
-		array<iterator_m1> smallest;
-		for (iterator_m1 j = i.begin()+1; j; j++)
+		bool found = true;
+		for (iterator_m1 j = i.begin(); j; j++)
 		{
-			if (smallest.size() == 0 || **j == **smallest.begin())
+			if (smallest.begin() == smallest.end() || **j == ***smallest.begin())
 				smallest.push_back(j);
-			else if (**j < **smallest.begin())
+			else if (**j < ***smallest.begin())
 			{
 				smallest.clear();
 				smallest.push_back(j);
+				found = false;
 			}
+			else
+				found = false;
 		}
 
-		result += (smallest.size() == c.size());
+		if (found)
+			result++;
 
 		for (iterator_m2 j = smallest.begin(); j && working; j++)
 			working = ++**j;
+
+		smallest.clear();
 	}
 
 	return result;
 }
 
 template <class container>
-bool intersects(const array<container> &c)
+bool intersects(const container &c)
 {
-	typedef typename container::const_iterator iterator_m0;
+	typedef typename container::const_iterator iterator;
+
+	typedef typename container::type type;
+	typedef typename type::const_iterator iterator_m0;
 	typedef typename array<iterator_m0>::iterator iterator_m1;
 	typedef typename array<iterator_m1>::iterator iterator_m2;
 
 	array<iterator_m0> i;
-	i.reserve(c.size());
-	for (iterator_m0 j = c.begin(); j; j++)
-		i.push_back_unsafe(j->begin());
+	for (iterator j = c.begin(); j; j++)
+		i.push_back(j->begin());
 
 	bool working = true;
+	array<iterator_m1> smallest;
 	while (working)
 	{
-		array<iterator_m1> smallest;
-		for (iterator_m1 j = i.begin()+1; j; j++)
+		bool found = true;
+		for (iterator_m1 j = i.begin(); j; j++)
 		{
-			if (smallest.size() == 0 || **j == **smallest.begin())
+			if (smallest.begin() == smallest.end() || **j == ***smallest.begin())
 				smallest.push_back(j);
-			else if (**j < **smallest.begin())
+			else if (**j < ***smallest.begin())
 			{
 				smallest.clear();
 				smallest.push_back(j);
+				found = false;
 			}
+			else
+				found = false;
 		}
 
-		if (smallest.size() == c.size())
+		if (found)
 			return true;
 
 		for (iterator_m2 j = smallest.begin(); j && working; j++)
 			working = ++**j;
+
+		smallest.clear();
 	}
 
 	return false;

@@ -330,6 +330,20 @@ TEST(array_iterator, append)
 	EXPECT_EQ(x.sub(11, 18), range<int>(3, 10));
 	EXPECT_EQ(x.sub(18, 22), range<int>(0, 4));
 	EXPECT_EQ(i.idx(), x.size());
+
+	// check negative lengths
+	i = x.end();
+	i.append(boundi(0).slice(y));
+	EXPECT_EQ(26, x.count);
+	EXPECT_GE(x.capacity, x.count);
+	EXPECT_NE((int*)NULL, x.data);
+	EXPECT_EQ(x.sub(0, 4), range<int>(0, 4));
+	EXPECT_EQ(x.sub(4, 7), range<int>(0, 3));
+	EXPECT_EQ(x.sub(7, 11), range<int>(0, 4));
+	EXPECT_EQ(x.sub(11, 18), range<int>(3, 10));
+	EXPECT_EQ(x.sub(18, 22), range<int>(0, 4));
+	EXPECT_EQ(x.sub(22, 26), range<int>(0, 4));
+	EXPECT_EQ(i.idx(), x.size());
 }
 
 TEST(array_iterator, replace)
@@ -510,6 +524,21 @@ TEST(array_iterator, replace_container)
 			<< y.sub(0, 3)
 			<< range<int>(7, 10));
 	EXPECT_EQ(i.idx(), 4);
+
+	// check negative lengths
+	i = x.at(4);
+	i.replace(-4, boundi(4).slice(y));
+	EXPECT_EQ(21, x.count);
+	EXPECT_GE(x.capacity, x.count);
+	EXPECT_NE((int*)NULL, x.data);
+	EXPECT_EQ(x, array<int>()
+			<< y.sub(4, 10)
+			<< y.sub(3, 6)
+			<< y.sub(1, 2)
+			<< y.sub(1, 6)
+			<< y.sub(0, 3)
+			<< range<int>(7, 10));
+	EXPECT_EQ(i.idx(), 6);
 }
 
 TEST(array_iterator, swap)

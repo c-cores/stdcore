@@ -1172,6 +1172,12 @@ struct array
 	void replace(int start, int end, const container &c)
 	{
 		int s = c.size();
+		if (start < 0)
+			start += count;
+
+		if (end < 0)
+			end += count;
+
 		if (s < 0)
 		{
 			drop(start, end);
@@ -1179,12 +1185,6 @@ struct array
 		}
 		else
 		{
-			if (start < 0)
-				start += count;
-
-			if (end < 0)
-				end += count;
-
 			int n = end-start;
 			int lower, upper;
 			if (n > s)
