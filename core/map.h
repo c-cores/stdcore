@@ -35,27 +35,26 @@ struct map : list<implier<ktype, vtype> >
 	using list<implier<ktype, vtype> >::rbegin;
 	using list<implier<ktype, vtype> >::rend;
 	using list<implier<ktype, vtype> >::sub;
-	using list<implier<ktype, vtype> >::ref;
+
+	iterator insert(ktype key, vtype value)
+	{
+		iterator pos = search_tree(*this, key);
+		pos.push(implier<ktype, vtype>(key, value));
+		return (pos-1);
+	}
 
 	iterator find(ktype key)
 	{
-		iterator pos = search_tree(ref(), key);
+		iterator pos = search_tree(*this, key);
 		if (pos != end() && pos->key == key)
 			return pos;
 		else
 			return end();
 	}
 
-	iterator insert(ktype key, vtype value)
-	{
-		iterator pos = search_tree(ref(), key);
-		pos.push(implier<ktype, vtype>(key, value));
-		return (pos-1);
-	}
-
 	vtype &operator[](ktype key)
 	{
-		iterator pos = search_tree(ref(), key);
+		iterator pos = search_tree(*this, key);
 		if (pos != end() && pos->key == key)
 			return pos->value;
 		else
