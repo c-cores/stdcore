@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include <core/range.h>
 #include <core/slice.h>
 #include <core/math.h>
 
@@ -435,30 +434,30 @@ struct array
 			memcpy(i.ptr(), &temp, sizeof(value_type));
 		}
 
-		core::slice<bound<iterator, int> > sub(int length)
+		core::slice<range<iterator> > sub(int length)
 		{
 			if (length < 0)
-				return bound<iterator, int>(*this+length, -length);
+				return range<iterator>(*this+length, *this);
 			else
-				return bound<iterator, int>(*this, length);
+				return range<iterator>(*this, *this+length);
 		}
 
 		array<value_type> subcpy(int length)
 		{
 			if (length < 0)
-				return array<value_type>(bound<iterator, int>(*this+length, -length).deref());
+				return array<value_type>(range<iterator>(*this+length, *this).deref());
 			else
-				return array<value_type>(bound<iterator, int>(*this, length).deref());
+				return array<value_type>(range<iterator>(*this, *this+length).deref());
 		}
 
-		core::slice<bound<iterator, int> > sub()
+		core::slice<range<iterator> > sub()
 		{
-			return bound<iterator, int>(*this);
+			return range<iterator>(*this, root->end());
 		}
 
 		array<value_type> subcpy()
 		{
-			return bound<iterator, int>(*this).deref();
+			return range<iterator>(*this, root->end()).deref();
 		}
 	};
 
@@ -652,30 +651,30 @@ struct array
 			return loc - i.loc;
 		}
 
-		core::slice<bound<const_iterator, int> > sub(int length)
+		core::slice<range<const_iterator> > sub(int length)
 		{
 			if (length < 0)
-				return bound<const_iterator, int>(*this+length, -length);
+				return range<const_iterator>(*this+length, *this);
 			else
-				return bound<const_iterator, int>(*this, length);
+				return range<const_iterator>(*this, *this+length);
 		}
 
 		array<value_type> subcpy(int length)
 		{
 			if (length < 0)
-				return array<value_type>(bound<const_iterator, int>(*this+length, -length).deref());
+				return array<value_type>(range<const_iterator>(*this+length, *this).deref());
 			else
-				return array<value_type>(bound<const_iterator, int>(*this, length).deref());
+				return array<value_type>(range<const_iterator>(*this, *this+length).deref());
 		}
 
-		core::slice<bound<const_iterator, int> > sub()
+		core::slice<range<const_iterator> > sub()
 		{
-			return bound<const_iterator, int>(*this);
+			return range<const_iterator>(*this, root->end());
 		}
 
 		array<value_type> subcpy()
 		{
-			return bound<const_iterator, int>(*this).deref();
+			return range<const_iterator>(*this, root->end()).deref();
 		}
 	};
 
@@ -926,76 +925,74 @@ struct array
 		return result;
 	}
 
-	core::slice<bound<iterator, int> > sub(int start, int end)
+	core::slice<range<iterator> > sub(int start, int end)
 	{
-		start = start < 0 ? count + start : start;
-		end = end < 0 ? count + end : end;
-		return bound<iterator, int>(at(start), end-start);
+		return range<iterator>(at(start), at(end));
 	}
 
 	array<value_type> subcpy(int start, int end)
 	{
-		start = start < 0 ? count + start : start;
-		end = end < 0 ? count + end : end;
-		return bound<iterator, int>(at(start), end-start).deref();
+		return range<iterator>(at(start), at(end)).deref();
 	}
 
-	core::slice<bound<iterator, int> > sub(int start)
+	core::slice<range<iterator> > sub(int start)
 	{
-		start = start < 0 ? count + start : start;
-		return bound<iterator, int>(at(start), count-start);
+		return range<iterator>(at(start), this->end());
 	}
 
 	array<value_type> subcpy(int start)
 	{
-		start = start < 0 ? count + start : start;
-		return bound<iterator, int>(at(start), count-start).deref();
+		return range<iterator>(at(start), this->end()).deref();
 	}
 
-	core::slice<bound<iterator, int> > sub()
+	core::slice<range<iterator> > sub()
 	{
-		return bound<iterator, int>(begin(), count);
+		return range<iterator>(begin(), end());
 	}
 
 	array<value_type> subcpy()
 	{
-		return bound<iterator, int>(begin(), count).deref();
+		return range<iterator>(begin(), end()).deref();
 	}
 
-	core::slice<bound<const_iterator, int> > sub(int start, int end) const
+	core::slice<range<const_iterator> > sub(int start, int end) const
 	{
-		start = start < 0 ? count + start : start;
-		end = end < 0 ? count + end : end;
-		return bound<const_iterator, int>(at(start), end-start);
+		return range<const_iterator>(at(start), at(end));
 	}
 
 	array<value_type> subcpy(int start, int end) const
 	{
-		start = start < 0 ? count + start : start;
-		end = end < 0 ? count + end : end;
-		return bound<const_iterator, int>(at(start), end-start).deref();
+		return range<const_iterator>(at(start), at(end)).deref();
 	}
 
-	core::slice<bound<const_iterator, int> > sub(int start) const
+	core::slice<range<const_iterator> > sub(int start) const
 	{
-		start = start < 0 ? count + start : start;
-		return bound<const_iterator, int>(at(start), count-start);
+		return range<const_iterator>(at(start), this->end());
 	}
 
 	array<value_type> subcpy(int start) const
 	{
-		start = start < 0 ? count + start : start;
-		return bound<const_iterator, int>(at(start), count-start).deref();
+		return range<const_iterator>(at(start), this->end()).deref();
 	}
 
-	core::slice<bound<const_iterator, int> > sub() const
+	core::slice<range<const_iterator> > sub() const
 	{
-		return bound<const_iterator, int>(begin(), count);
+		return range<const_iterator>(begin(), end());
 	}
 
 	array<value_type> subcpy() const
 	{
-		return bound<const_iterator, int>(begin(), count).deref();
+		return range<const_iterator>(begin(), end()).deref();
+	}
+
+	static core::slice<range<iterator> > sub(iterator start, iterator end)
+	{
+		return range<iterator>(start, end).deref();
+	}
+
+	static core::slice<range<const_iterator> > sub(const_iterator start, const_iterator end)
+	{
+		return range<const_iterator>(start, end).deref();
 	}
 
 	void alloc_back(unsigned int n = 1)
@@ -1408,6 +1405,13 @@ array<value_type> operator<<(array<value_type> os, const value_type &v)
 	return os;
 }
 
+template <class value_type, class container>
+array<value_type> operator<<(array<value_type> os, const container &c)
+{
+	os.append_back(c);
+	return os;
+}
+
 template<class value_type>
 bool operator==(array<value_type> a0, array<value_type> a1)
 {
@@ -1418,13 +1422,6 @@ template<class value_type>
 bool operator!=(array<value_type> a0, array<value_type> a1)
 {
 	return (compare(a0, a1) != 0);
-}
-
-template <class value_type, class container>
-array<value_type> operator<<(array<value_type> os, const container &c)
-{
-	os.append_back(c);
-	return os;
 }
 
 template<class value_type>
@@ -1447,6 +1444,79 @@ bool operator<=(array<value_type> a0, array<value_type> a1)
 
 template<class value_type>
 bool operator>=(array<value_type> a0, array<value_type> a1)
+{
+	return (compare(a0, a1) >= 0);
+}
+
+template<class value_type, class container>
+bool operator==(array<value_type> a0, slice<container> a1)
+{
+	return (compare(a0, a1) == 0);
+}
+
+template<class value_type, class container>
+bool operator!=(array<value_type> a0, slice<container> a1)
+{
+	return (compare(a0, a1) != 0);
+}
+
+template<class value_type, class container>
+bool operator<(array<value_type> a0, slice<container> a1)
+{
+	return (compare(a0, a1) < 0);
+}
+
+template<class value_type, class container>
+bool operator>(array<value_type> a0, slice<container> a1)
+{
+	return (compare(a0, a1) > 0);
+}
+
+template<class value_type, class container>
+bool operator<=(array<value_type> a0, slice<container> a1)
+{
+	return (compare(a0, a1) <= 0);
+}
+
+template<class value_type, class container>
+bool operator>=(array<value_type> a0, slice<container> a1)
+{
+	return (compare(a0, a1) >= 0);
+}
+
+
+template<class container, class value_type>
+bool operator==(slice<container> a0, array<value_type> a1)
+{
+	return (compare(a0, a1) == 0);
+}
+
+template<class container, class value_type>
+bool operator!=(slice<container> a0, array<value_type> a1)
+{
+	return (compare(a0, a1) != 0);
+}
+
+template<class container, class value_type>
+bool operator<(slice<container> a0, array<value_type> a1)
+{
+	return (compare(a0, a1) < 0);
+}
+
+template<class container, class value_type>
+bool operator>(slice<container> a0, array<value_type> a1)
+{
+	return (compare(a0, a1) > 0);
+}
+
+template<class container, class value_type>
+bool operator<=(slice<container> a0, array<value_type> a1)
+{
+	return (compare(a0, a1) <= 0);
+}
+
+template<class container, class value_type>
+bool operator>=(slice<container> a0, array<value_type> a1)
 {
 	return (compare(a0, a1) >= 0);
 }

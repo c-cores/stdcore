@@ -1,6 +1,5 @@
 #include <core/string.h>
 #include <core/fill.h>
-#include <core/range.h>
 
 namespace core
 {
@@ -423,7 +422,7 @@ string line_wrap(const string &line, int length)
 	result.reserve(line.size() + line.size()/length);
 	for (string::const_iterator i = line.begin(); i; i += length)
 	{
-		result.append_back_unsafe(bound<string::const_iterator, int>(i, length).deref());
+		result.append_back_unsafe(i.sub(length));
 		result.push_back_unsafe('\n');
 	}
 	return result;
@@ -667,24 +666,24 @@ int ftoa(double value, char *str)
 	}
 }
 
-slice<range<const char*, int> > wrapstr(const char *cstr)
+slice<range<const char*> > wrapstr(const char *cstr)
 {
-	return slice<range<const char*, int> >(range<const char*, int>(cstr, cstr+strlen(cstr)));
+	return slice<range<const char*> >(range<const char*>(cstr, cstr+strlen(cstr)));
 }
 
-slice<range<char*, int> > wrapstr(char *cstr)
+slice<range<char*> > wrapstr(char *cstr)
 {
-	return slice<range<char*, int> >(range<char*, int>(cstr, cstr+strlen(cstr)));
+	return slice<range<char*> >(range<char*>(cstr, cstr+strlen(cstr)));
 }
 
-slice<range<const char*, int> > wrapstr(const char *cstr, int n)
+slice<range<const char*> > wrapstr(const char *cstr, int n)
 {
-	return slice<range<const char*, int> >(range<const char*, int>(cstr, cstr+n));
+	return slice<range<const char*> >(range<const char*>(cstr, cstr+n));
 }
 
-slice<range<char*, int> > wrapstr(char *cstr, int n)
+slice<range<char*> > wrapstr(char *cstr, int n)
 {
-	return slice<range<char*, int> >(range<char*, int>(cstr, cstr+n));
+	return slice<range<char*> >(range<char*>(cstr, cstr+n));
 }
 
 }

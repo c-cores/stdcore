@@ -8,7 +8,6 @@
 #pragma once
 
 #include <core/slice.h>
-#include <core/range.h>
 
 namespace core
 {
@@ -152,7 +151,7 @@ typename container::iterator search_tree(container c, const element &t, int radi
 	if (size >= radix)
 	{
 		int D = 2*radix - size;
-		slice<range<typename container::iterator, int> > pivot(c.begin(), c.begin());
+		slice<range<typename container::iterator> > pivot(c.begin(), c.begin());
 		while (pivot.finish)
 		{
 			if (D > 0)

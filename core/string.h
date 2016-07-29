@@ -3,6 +3,7 @@
 #include <core/array.h>
 #include <core/pair.h>
 #include <core/implier.h>
+#include <core/slice.h>
 
 namespace core
 {
@@ -141,9 +142,9 @@ int itox(unsigned int value, char *str);
 int ftoa(float value, char *str);
 int ftoa(double value, char *str);
 
-slice<range<const char*, int> > wrapstr(const char *cstr);
-slice<range<char*, int> > wrapstr(char *cstr);
-slice<range<const char*, int> > wrapstr(const char *cstr, int n);
-slice<range<char*, int> > wrapstr(char *cstr, int n);
+slice<range<const char*> > wrapstr(const char *cstr);
+slice<range<char*> > wrapstr(char *cstr);
+slice<range<const char*> > wrapstr(const char *cstr, int n);
+slice<range<char*> > wrapstr(char *cstr, int n);
 
 }

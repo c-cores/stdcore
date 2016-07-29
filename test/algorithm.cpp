@@ -2,10 +2,10 @@
 
 #include <core/array.h>
 #include <core/list.h>
-#include <core/range.h>
 #include <core/fill.h>
 #include <core/ascii_stream.h>
 #include <core/algorithm.h>
+#include <core/sparse_range.h>
 
 using namespace core;
 

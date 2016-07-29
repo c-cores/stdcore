@@ -1,5 +1,5 @@
 /*
- * range.h
+ * sparse_range.h
  *
  *  Created on: May 29, 2016
  *      Author: nbingham
@@ -14,7 +14,7 @@ namespace core
 {
 
 template <class value_type, class step_type = value_type>
-struct range
+struct sparse_range
 {
 	typedef value_type type;
 	struct const_iterator;
@@ -26,12 +26,12 @@ struct range
 	struct const_iterator
 	{
 	protected:
-		friend class range<value_type, step_type>;
+		friend class sparse_range<value_type, step_type>;
 
-		const range<value_type, step_type> *root;
+		const sparse_range<value_type, step_type> *root;
 		value_type value;
 
-		const_iterator(const range<value_type, step_type> *root, value_type value)
+		const_iterator(const sparse_range<value_type, step_type> *root, value_type value)
 		{
 			this->root = root;
 			this->value = value;
@@ -137,104 +137,81 @@ struct range
 			return value - i.value;
 		}
 
-		slice<bound<const_iterator, int> > sub(int length)
+		slice<range<const_iterator> > sub(int length)
 		{
 			if (length < 0)
-				return bound<const_iterator, int>(*this+length, -length);
+				return range<const_iterator>(*this+length, *this);
 			else
-				return bound<const_iterator, int>(*this, length);
+				return range<const_iterator>(*this, *this+length);
 		}
 
-		range<value_type, step_type> subcpy(int length)
+		sparse_range<value_type, step_type> subcpy(int length)
 		{
 			if (length < 0)
-				return range<value_type, step_type>(value + root->step*length, value, root->step);
+				return sparse_range<value_type, step_type>(value + root->step*length, value, root->step);
 			else
-				return range<value_type, step_type>(value, value + root->step*length, root->step);
+				return sparse_range<value_type, step_type>(value, value + root->step*length, root->step);
 		}
 
-		slice<bound<const_iterator, int> > sub()
+		slice<range<const_iterator> > sub()
 		{
-			return bound<const_iterator, int>(*this);
+			return range<const_iterator>(*this, root->end());
 		}
 
-		range<value_type, step_type> subcpy()
+		sparse_range<value_type, step_type> subcpy()
 		{
-			return range<value_type, step_type>(value, root->finish, root->step);
+			return sparse_range<value_type, step_type>(value, root->finish, root->step);
 		}
 	};
 
 	typedef const_iterator iterator;
 
-	range(value_type start, value_type finish)
+	sparse_range(value_type start, value_type finish)
 	{
 		this->start = start;
 		this->finish = finish;
 		this->step = (step_type)1;
 	}
 
-	range(value_type start, value_type finish, step_type step)
+	sparse_range(value_type start, value_type finish, step_type step)
 	{
 		this->start = start;
 		this->finish = finish;
 		this->step = step;
 	}
 
-	template <class container>
-	range(const container &a)
-	{
-		this->start = a.front();
-		if (a.size() > 1)
-			this->step = a.get(1) - a.get(0);
-		else
-			this->step = (step_type)1;
-
-		this->finish = a.back()+this->step;
-	}
-
-	range(const range<value_type, step_type> &a)
+	template <class value_type2, class step_type2>
+	sparse_range(const sparse_range<value_type2, step_type2> &a)
 	{
 		this->start = a.start;
 		this->finish = a.finish;
 		this->step = a.step;
 	}
 
-	// Initialize this array as a copy of some other container
-	template <class container>
-	range(typename container::const_iterator left, typename container::const_iterator right)
+	template <class value_type2>
+	sparse_range(const range<value_type2> &a)
 	{
-		int count = right - left;
-		this->start = *left;
-		if (count > 1)
-			this->step = *(left+1) - *left;
-		else
-			this->step = (step_type)1;
-
-		this->finish = *(right-1) + this->step;
+		this->start = a.start;
+		this->finish = a.finish;
+		this->step = (step_type)1;
 	}
 
-	// Initialize this array as a copy of some other container
-	template <class container>
-	range(typename container::iterator left, typename container::iterator right)
+	sparse_range(const_iterator start, const_iterator finish)
 	{
-		int count = right - left;
-		this->start = *left;
-		if (count > 1)
-			this->step = *(left+1) - *left;
-		else
-			this->step = (step_type)1;
-
-		this->finish = *(right-1) + this->step;
-	}
-
-	range(const_iterator start, const_iterator finish)
-	{
-		this->start = start.get();
-		this->finish = finish.get();
+		this->start = *start;
+		this->finish = *finish;
 		this->step = start.root->step;
 	}
 
-	virtual ~range()
+	template <class value_type2, class step_type2>
+	sparse_range(typename range<value_type2>::const_iterator start, typename range<value_type2>::const_iterator finish)
+	{
+		this->start = *start;
+		this->finish = *finish;
+		this->step = (step_type)1;
+	}
+
+	virtual ~sparse_range()
 	{
 
 	}
@@ -296,106 +273,100 @@ struct range
 		return const_iterator(this, start-step);
 	}
 
-	core::slice<range<value_type, step_type> > deref()
+	core::slice<sparse_range<value_type, step_type> > deref()
 	{
 		return *this;
 	}
 
 	template <class container>
-	core::slice<range<typename container::iterator, step_type> > slice(container &c)
+	core::slice<sparse_range<typename container::iterator, step_type> > slice(container &c)
 	{
-		return range<typename container::iterator, step_type>(c.at(start), c.at(finish), step);
+		return sparse_range<typename container::iterator, step_type>(c.at(start), c.at(finish), step);
 	}
 
 	template <class container>
-	core::slice<range<typename container::const_iterator, step_type> > slice(const container &c)
+	core::slice<sparse_range<typename container::const_iterator, step_type> > slice(const container &c)
 	{
-		return range<typename container::iterator, step_type>(c.at(start), c.at(finish), step);
+		return sparse_range<typename container::iterator, step_type>(c.at(start), c.at(finish), step);
 	}
 
-	core::slice<bound<iterator, int> > sub(int start, int end)
+	core::slice<range<iterator> > sub(int start, int end)
 	{
-		int count = size();
-		start = start < 0 ? count + start : start;
-		end = end < 0 ? count + end : end;
-		return bound<iterator, int>(at(start), end-start);
+		return range<iterator>(at(start), at(end));
 	}
 
-	range<value_type, step_type> subcpy(int start, int end)
+	sparse_range<value_type, step_type> subcpy(int start, int end)
 	{
 		int count = size();
 		start = start < 0 ? count + start : start;
 		end = end < 0 ? count + end : end;
-		return range<value_type, step_type>(this->start + this->step*start, this->start + this->step*end, this->step);
+		return sparse_range<value_type, step_type>(this->start + this->step*start, this->start + this->step*end, this->step);
 	}
 
-	core::slice<bound<iterator, int> > sub(int start)
+	core::slice<range<iterator> > sub(int start)
+	{
+		return range<iterator>(at(start), this->end());
+	}
+
+	sparse_range<value_type, step_type> subcpy(int start)
 	{
 		int count = size();
 		start = start < 0 ? count + start : start;
-		return bound<iterator, int>(at(start), count-start);
+		return sparse_range<value_type, step_type>(this->start + this->step*start, this->finish, this->step);
 	}
 
-	range<value_type, step_type> subcpy(int start)
+	core::slice<range<iterator> > sub()
+	{
+		return range<iterator>(begin(), end());
+	}
+
+	sparse_range<value_type, step_type> subcpy()
 	{
 		int count = size();
-		start = start < 0 ? count + start : start;
-		return range<value_type, step_type>(this->start + this->step*start, this->finish, this->step);
+		return sparse_range<value_type, step_type>(start, finish, step);
 	}
 
-	core::slice<bound<iterator, int> > sub()
+	core::slice<range<const_iterator> > sub(int start, int end) const
 	{
-		int count = size();
-		return bound<iterator, int>(begin(), count);
+		return range<const_iterator>(at(start), at(end));
 	}
 
-	range<value_type, step_type> subcpy()
-	{
-		int count = size();
-		return range<value_type, step_type>(start, finish, step);
-	}
-
-	core::slice<bound<const_iterator, int> > sub(int start, int end) const
-	{
-		int count = size();
-		start = start < 0 ? count + start : start;
-		end = end < 0 ? count + end : end;
-		return bound<const_iterator, int>(at(start), end-start);
-	}
-
-	range<value_type, step_type> subcpy(int start, int end) const
+	sparse_range<value_type, step_type> subcpy(int start, int end) const
 	{
 		int count = size();
 		start = start < 0 ? count + start : start;
 		end = end < 0 ? count + end : end;
-		return range<value_type, step_type>(this->start + this->step*start, this->start + this->step*end, this->step);
+		return sparse_range<value_type, step_type>(this->start + this->step*start, this->start + this->step*end, this->step);
 	}
 
-	core::slice<bound<const_iterator, int> > sub(int start) const
+	core::slice<range<const_iterator> > sub(int start) const
+	{
+		return range<const_iterator>(at(start), this->end());
+	}
+
+	sparse_range<value_type, step_type> subcpy(int start) const
 	{
 		int count = size();
 		start = start < 0 ? count + start : start;
-		return bound<const_iterator, int>(at(start), count-start);
+		return sparse_range<value_type, step_type>(this->start + this->step*start, this->finish, this->step);
 	}
 
-	range<value_type, step_type> subcpy(int start) const
+	core::slice<range<const_iterator> > sub() const
 	{
-		int count = size();
-		start = start < 0 ? count + start : start;
-		return range<value_type, step_type>(this->start + this->step*start, this->finish, this->step);
+		return range<const_iterator>(begin(), end());
 	}
 
-	core::slice<bound<const_iterator, int> > sub() const
+	sparse_range<value_type, step_type> subcpy() const
 	{
-		return bound<const_iterator, int>(begin(), size());
+		return sparse_range<value_type, step_type>(start, finish, step);
 	}
 
-	range<value_type, step_type> subcpy() const
+	static core::slice<range<const_iterator> > sub(const_iterator start, const_iterator end)
 	{
-		return range<value_type, step_type>(start, finish, step);
+		return range<const_iterator>(start, end).deref();
 	}
 
-	void swap(range<value_type, step_type> &root)
+	void swap(sparse_range<value_type, step_type> &root)
 	{
 		value_type tmp_start = start;
 		value_type tmp_finish = finish;
@@ -408,7 +379,7 @@ struct range
 		root.step = tmp_step;
 	}
 
-	range<value_type, step_type> &operator=(const range<value_type, step_type> &root)
+	sparse_range<value_type, step_type> &operator=(const sparse_range<value_type, step_type> &root)
 	{
 		start = root.start;
 		finish = root.finish;
@@ -417,23 +388,23 @@ struct range
 	}
 };
 
-typedef range<int, int> rangei;
-typedef range<float, float> rangef;
+typedef sparse_range<int, int> sparse_rangei;
+typedef sparse_range<float, float> sparse_rangef;
 
 template <class value_type1, class step_type1, class value_type2, class step_type2>
-bool operator==(range<value_type1, step_type1> s1, range<value_type2, step_type2> s2)
+bool operator==(sparse_range<value_type1, step_type1> s1, sparse_range<value_type2, step_type2> s2)
 {
 	return (s1.start == s2.start && s1.finish == s2.finish && s1.step == s2.step);
 }
 
 template <class value_type1, class step_type1, class value_type2, class step_type2>
-bool operator!=(range<value_type1, step_type1> s1, range<value_type2, step_type2> s2)
+bool operator!=(sparse_range<value_type1, step_type1> s1, sparse_range<value_type2, step_type2> s2)
 {
 	return (s1.start != s2.start || s1.finish != s2.finish || s1.step != s2.step);
 }
 
 template <class value_type1, class step_type1, class value_type2, class step_type2>
-bool operator<(range<value_type1, step_type1> s1, range<value_type2, step_type2> s2)
+bool operator<(sparse_range<value_type1, step_type1> s1, sparse_range<value_type2, step_type2> s2)
 {
 	return (s1.start < s2.start || (s1.start == s2.start &&
 		   (s1.step < s2.step   || (s1.step == s2.step   &&
@@ -441,7 +412,7 @@ bool operator<(range<value_type1, step_type1> s1, range<value_type2, step_type2>
 }
 
 template <class value_type1, class step_type1, class value_type2, class step_type2>
-bool operator>(range<value_type1, step_type1> s1, range<value_type2, step_type2> s2)
+bool operator>(sparse_range<value_type1, step_type1> s1, sparse_range<value_type2, step_type2> s2)
 {
 	return (s1.start > s2.start || (s1.start == s2.start &&
 		   (s1.step > s2.step   || (s1.step == s2.step   &&
@@ -449,7 +420,7 @@ bool operator>(range<value_type1, step_type1> s1, range<value_type2, step_type2>
 }
 
 template <class value_type1, class step_type1, class value_type2, class step_type2>
-bool operator<=(range<value_type1, step_type1> s1, range<value_type2, step_type2> s2)
+bool operator<=(sparse_range<value_type1, step_type1> s1, sparse_range<value_type2, step_type2> s2)
 {
 	return (s1.start < s2.start || (s1.start == s2.start &&
 		   (s1.step < s2.step   || (s1.step == s2.step   &&
@@ -457,7 +428,7 @@ bool operator<=(range<value_type1, step_type1> s1, range<value_type2, step_type2
 }
 
 template <class value_type1, class step_type1, class value_type2, class step_type2>
-bool operator>=(range<value_type1, step_type1> s1, range<value_type2, step_type2> s2)
+bool operator>=(sparse_range<value_type1, step_type1> s1, sparse_range<value_type2, step_type2> s2)
 {
 	return (s1.start > s2.start || (s1.start == s2.start &&
 		   (s1.step > s2.step   || (s1.step == s2.step   &&
@@ -465,73 +436,73 @@ bool operator>=(range<value_type1, step_type1> s1, range<value_type2, step_type2
 }
 
 template <class value_type1, class step_type1, class container2>
-bool operator==(range<value_type1, step_type1> s1, slice<container2> s2)
+bool operator==(sparse_range<value_type1, step_type1> s1, slice<container2> s2)
 {
 	return (compare(s1, s2) == 0);
 }
 
 template <class value_type1, class step_type1, class container2>
-bool operator!=(range<value_type1, step_type1> s1, slice<container2> s2)
+bool operator!=(sparse_range<value_type1, step_type1> s1, slice<container2> s2)
 {
 	return (compare(s1, s2) != 0);
 }
 
 template <class value_type1, class step_type1, class container2>
-bool operator<(range<value_type1, step_type1> s1, slice<container2> s2)
+bool operator<(sparse_range<value_type1, step_type1> s1, slice<container2> s2)
 {
 	return (compare(s1, s2) < 0);
 }
 
 template <class value_type1, class step_type1, class container2>
-bool operator>(range<value_type1, step_type1> s1, slice<container2> s2)
+bool operator>(sparse_range<value_type1, step_type1> s1, slice<container2> s2)
 {
 	return (compare(s1, s2) > 0);
 }
 
 template <class value_type1, class step_type1, class container2>
-bool operator<=(range<value_type1, step_type1> s1, slice<container2> s2)
+bool operator<=(sparse_range<value_type1, step_type1> s1, slice<container2> s2)
 {
 	return (compare(s1, s2) <= 0);
 }
 
 template <class value_type1, class step_type1, class container2>
-bool operator>=(range<value_type1, step_type1> s1, slice<container2> s2)
+bool operator>=(sparse_range<value_type1, step_type1> s1, slice<container2> s2)
 {
 	return (compare(s1, s2) >= 0);
 }
 
 template <class container1, class value_type2, class step_type2>
-bool operator==(slice<container1> s1, range<value_type2, step_type2> s2)
+bool operator==(slice<container1> s1, sparse_range<value_type2, step_type2> s2)
 {
 	return (compare(s1, s2) == 0);
 }
 
 template <class container1, class value_type2, class step_type2>
-bool operator!=(slice<container1> s1, range<value_type2, step_type2> s2)
+bool operator!=(slice<container1> s1, sparse_range<value_type2, step_type2> s2)
 {
 	return (compare(s1, s2) != 0);
 }
 
 template <class container1, class value_type2, class step_type2>
-bool operator<(slice<container1> s1, range<value_type2, step_type2> s2)
+bool operator<(slice<container1> s1, sparse_range<value_type2, step_type2> s2)
 {
 	return (compare(s1, s2) < 0);
 }
 
 template <class container1, class value_type2, class step_type2>
-bool operator>(slice<container1> s1, range<value_type2, step_type2> s2)
+bool operator>(slice<container1> s1, sparse_range<value_type2, step_type2> s2)
 {
 	return (compare(s1, s2) > 0);
 }
 
 template <class container1, class value_type2, class step_type2>
-bool operator<=(slice<container1> s1, range<value_type2, step_type2> s2)
+bool operator<=(slice<container1> s1, sparse_range<value_type2, step_type2> s2)
 {
 	return (compare(s1, s2) <= 0);
 }
 
 template <class container1, class value_type2, class step_type2>
-bool operator>=(slice<container1> s1, range<value_type2, step_type2> s2)
+bool operator>=(slice<container1> s1, sparse_range<value_type2, step_type2> s2)
 {
 	return (compare(s1, s2) >= 0);
 }

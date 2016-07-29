@@ -154,12 +154,12 @@ struct fill
 			return index - i.index;
 		}
 
-		core::slice<bound<const_iterator, int> > sub(int length)
+		core::slice<range<const_iterator> > sub(int length)
 		{
 			if (length < 0)
-				return bound<const_iterator, int>(*this, -length, -1);
+				return range<const_iterator>(*this+length, *this);
 			else
-				return bound<const_iterator, int>(*this, length);
+				return range<const_iterator>(*this, *this+length);
 		}
 
 		fill<value_type> subcpy(int length)
@@ -170,9 +170,9 @@ struct fill
 				return fill<value_type>(length, root->value);
 		}
 
-		core::slice<bound<const_iterator, int> > sub()
+		core::slice<range<const_iterator> > sub()
 		{
-			return bound<const_iterator, int>(*this);
+			return range<const_iterator>(*this, root->end());
 		}
 
 		fill<value_type> subcpy()
@@ -253,11 +253,9 @@ struct fill
 		return fill<typename container::iterator>(count, c.at(value));
 	}
 
-	core::slice<bound<iterator, int> > sub(int start, int end)
+	core::slice<range<iterator> > sub(int start, int end)
 	{
-		start = start < 0 ? count + start : start;
-		end = end < 0 ? count + end : end;
-		return bound<iterator, int>(at(start), end-start);
+		return range<iterator>(at(start), at(end));
 	}
 
 	fill<value_type> subcpy(int start, int end)
@@ -267,10 +265,9 @@ struct fill
 		return fill<value_type>(end-start, value);
 	}
 
-	core::slice<bound<iterator, int> > sub(int start)
+	core::slice<range<iterator> > sub(int start)
 	{
-		start = start < 0 ? count + start : start;
-		return bound<iterator, int>(at(start), count-start);
+		return range<iterator>(at(start), this->end());
 	}
 
 	fill<value_type> subcpy(int start)
@@ -279,9 +276,9 @@ struct fill
 		return fill<value_type>(count-start, value);
 	}
 
-	core::slice<bound<iterator, int> > sub()
+	core::slice<range<iterator> > sub()
 	{
-		return bound<iterator, int>(begin(), count);
+		return range<iterator>(begin(), end());
 	}
 
 	fill<value_type> subcpy()
@@ -289,11 +286,9 @@ struct fill
 		return *this;
 	}
 
-	core::slice<bound<const_iterator, int> > sub(int start, int end) const
+	core::slice<range<const_iterator> > sub(int start, int end) const
 	{
-		start = start < 0 ? count + start : start;
-		end = end < 0 ? count + end : end;
-		return bound<const_iterator, int>(at(start), end-start);
+		return range<const_iterator>(at(start), at(end));
 	}
 
 	fill<value_type> subcpy(int start, int end) const
@@ -303,10 +298,9 @@ struct fill
 		return fill<value_type>(value, end-start);
 	}
 
-	core::slice<bound<const_iterator, int> > sub(int start) const
+	core::slice<range<const_iterator> > sub(int start) const
 	{
-		start = start < 0 ? count + start : start;
-		return bound<const_iterator, int>(at(start), count-start);
+		return range<const_iterator>(at(start), this->end());
 	}
 
 	fill<value_type> subcpy(int start) const
@@ -315,14 +309,19 @@ struct fill
 		return fill<value_type>(value, count-start);
 	}
 
-	core::slice<bound<const_iterator, int> > sub() const
+	core::slice<range<const_iterator> > sub() const
 	{
-		return bound<const_iterator, int>(begin(), size());
+		return range<const_iterator>(begin(), end());
 	}
 
 	fill<value_type> subcpy() const
 	{
 		return fill<value_type>(value, count);
+	}
+
+	static core::slice<range<const_iterator> > sub(const_iterator start, const_iterator end)
+	{
+		return range<const_iterator>(start, end).deref();
 	}
 
 	void swap(fill<value_type> &root)

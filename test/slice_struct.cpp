@@ -2,9 +2,9 @@
 
 #include <core/array.h>
 #include <core/list.h>
-#include <core/range.h>
 #include <core/fill.h>
 #include <core/ascii_stream.h>
+#include <core/sparse_range.h>
 
 using namespace core;
 
@@ -35,7 +35,7 @@ TEST(slice_struct, base_constructor_list)
 TEST(slice_struct, base_constructor_range)
 {
 	array<int> y = range<int>(0, 10);
-	slice<range<array<int>::iterator, int> > x = range<array<int>::iterator, int>(y.at(2), y.at(7));
+	slice<range<array<int>::iterator> > x = range<array<int>::iterator>(y.at(2), y.at(7));
 	EXPECT_EQ(x.size(), 5);
 	EXPECT_EQ(2, x.get(0));
 	EXPECT_EQ(3, x.get(1));
@@ -83,7 +83,7 @@ TEST(slice_struct, range_constructor)
 TEST(slice_struct, index_array)
 {
 	array<int> y = array<int>::values(8, 5, 2, 3, 5, 6, 2, 1, 7);
-	slice<array<array<int>::iterator> > x = array<array<int>::iterator>(range<array<int>::iterator, int>(y.begin(), y.end()));
+	slice<array<array<int>::iterator> > x = array<array<int>::iterator>(range<array<int>::iterator>(y.begin(), y.end()));
 
 	EXPECT_EQ(8, x.size());
 
@@ -117,7 +117,7 @@ TEST(slice_struct, index_array)
 TEST(slice_struct, index_list)
 {
 	array<int> y = array<int>::values(8, 5, 2, 3, 5, 6, 2, 1, 7);
-	slice<list<array<int>::iterator> > x = list<array<int>::iterator>(range<array<int>::iterator, int>(y.begin(), y.end()));
+	slice<list<array<int>::iterator> > x = list<array<int>::iterator>(range<array<int>::iterator>(y.begin(), y.end()));
 
 	EXPECT_EQ(8, x.size());
 
@@ -151,7 +151,7 @@ TEST(slice_struct, index_list)
 TEST(slice_struct, index_range)
 {
 	array<int> y = array<int>::values(8, 5, 2, 3, 5, 6, 2, 1, 7);
-	slice<range<array<int>::iterator, int> > x = range<array<int>::iterator, int>(y.begin(), y.end());
+	slice<range<array<int>::iterator> > x = range<array<int>::iterator>(y.begin(), y.end());
 
 	EXPECT_EQ(8, x.size());
 
@@ -188,7 +188,7 @@ TEST(slice_struct, sub_array)
 	array<int> y = array<int>::values(4, 3, 5, 6, 2);
 	array<int> z = array<int>::values(4, 6, 2, 1, 7);
 
-	slice<array<array<int>::iterator> > x = array<array<int>::iterator>(range<array<int>::iterator, int>(x0.begin(), x0.end()));
+	slice<array<array<int>::iterator> > x = array<array<int>::iterator>(range<array<int>::iterator>(x0.begin(), x0.end()));
 
 	// positive start and end
 	EXPECT_EQ(y, x.sub(2, 6));
@@ -224,7 +224,7 @@ TEST(slice_struct, sub_list)
 	array<int> y = array<int>::values(4, 3, 5, 6, 2);
 	array<int> z = array<int>::values(4, 6, 2, 1, 7);
 
-	slice<list<array<int>::iterator> > x = list<array<int>::iterator>(range<array<int>::iterator, int>(x0.begin(), x0.end()));
+	slice<list<array<int>::iterator> > x = list<array<int>::iterator>(range<array<int>::iterator>(x0.begin(), x0.end()));
 
 	// positive start and end
 	EXPECT_EQ(y, x.sub(2, 6));
@@ -260,7 +260,7 @@ TEST(slice_struct, sub_range)
 	array<int> y = array<int>::values(4, 3, 5, 6, 2);
 	array<int> z = array<int>::values(4, 6, 2, 1, 7);
 
-	slice<range<array<int>::iterator, int> > x = range<array<int>::iterator, int>(x0.begin(), x0.end());
+	slice<range<array<int>::iterator> > x = range<array<int>::iterator>(x0.begin(), x0.end());
 
 	// positive start and end
 	EXPECT_EQ(y, x.sub(2, 6));
@@ -310,7 +310,7 @@ TEST(slice_struct, array_alloc_back)
 		x.ref(i) = y.at(30 - i);
 
 	EXPECT_EQ(range<int>(0, 10), x.sub(0, 10));
-	EXPECT_EQ(range<int>(20, 0, -1), x.sub(10, 30));
+	EXPECT_EQ(sparse_range<int>(20, 0, -1), x.sub(10, 30));
 }
 
 TEST(slice_struct, array_alloc_front)
@@ -333,7 +333,7 @@ TEST(slice_struct, array_alloc_front)
 		x.ref(i) = y.at(20 - i);
 
 	EXPECT_EQ(range<int>(0, 10), x.sub(20, 30));
-	EXPECT_EQ(range<int>(20, 0, -1), x.sub(0, 20));
+	EXPECT_EQ(sparse_range<int>(20, 0, -1), x.sub(0, 20));
 }
 
 TEST(slice_struct, array_drop)
@@ -773,7 +773,7 @@ TEST(slice_struct, array_compare)
 	slice<array<array<int>::iterator> > x;
 	for (array<int>::iterator i = x0.begin(); i; i++)
 		x.push_back(i);
-	array<int> y0 = range<int>(10, 0, -1);
+	array<int> y0 = sparse_range<int>(10, 0, -1);
 	slice<array<array<int>::iterator> > y;
 	for (array<int>::iterator i = y0.begin(); i; i++)
 		y.push_back(i);

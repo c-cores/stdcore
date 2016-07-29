@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
-#include <core/range.h>
 #include <core/ascii_stream.h>
+#include <core/slice.h>
 
 using namespace core;
 
@@ -10,12 +10,6 @@ TEST(range_struct, base_constructor)
 	range<int> x(0, 10);
 	EXPECT_EQ(0, x.start);
 	EXPECT_EQ(10, x.finish);
-	EXPECT_EQ(1, x.step);
-
-	range<int> y(0, 10, 2);
-	EXPECT_EQ(0, y.start);
-	EXPECT_EQ(10, y.finish);
-	EXPECT_EQ(2, y.step);
 }
 
 TEST(range_struct, copy_constructor)
@@ -27,35 +21,35 @@ TEST(range_struct, copy_constructor)
 
 TEST(range_struct, index)
 {
-	range<int> x(0, 16, 2);
+	range<int> x(0, 8);
 	EXPECT_EQ(8, x.size());
 
 	EXPECT_EQ(0, *x.at(0));
-	EXPECT_EQ(4, *x.at(2));
-	EXPECT_EQ(14, *x.at(-1));
-	EXPECT_EQ(10, *x.at(-3));
+	EXPECT_EQ(2, *x.at(2));
+	EXPECT_EQ(7, *x.at(-1));
+	EXPECT_EQ(5, *x.at(-3));
 
 	EXPECT_EQ(0, x.get(0));
-	EXPECT_EQ(4, x.get(2));
-	EXPECT_EQ(14, x.get(-1));
-	EXPECT_EQ(10, x.get(-3));
+	EXPECT_EQ(2, x.get(2));
+	EXPECT_EQ(7, x.get(-1));
+	EXPECT_EQ(5, x.get(-3));
 
 	EXPECT_EQ(0, x[0]);
-	EXPECT_EQ(4, x[2]);
-	EXPECT_EQ(14, x[-1]);
-	EXPECT_EQ(10, x[-3]);
+	EXPECT_EQ(2, x[2]);
+	EXPECT_EQ(7, x[-1]);
+	EXPECT_EQ(5, x[-3]);
 
 	EXPECT_EQ(0, x.front());
-	EXPECT_EQ(14, x.back());
+	EXPECT_EQ(7, x.back());
 
 	EXPECT_EQ(0, *x.begin());
-	EXPECT_EQ(14, *x.rbegin());
+	EXPECT_EQ(7, *x.rbegin());
 }
 
 TEST(range_struct, sub)
 {
-	range<int> x(0, 16, 2);
-	range<int> y(4, 12, 2);
+	range<int> x(0, 8);
+	range<int> y(2, 6);
 
 	// positive start and end
 	EXPECT_EQ(y, x.sub(2, 6));
@@ -73,7 +67,7 @@ TEST(range_struct, sub)
 	EXPECT_EQ(y, x.sub(-6, 6));
 	EXPECT_EQ(y, x.subcpy(-6, 6));
 
-	y = range<int>(8, 16, 2);
+	y = range<int>(4, 8);
 	// single input
 	EXPECT_EQ(y, x.sub(4));
 	EXPECT_EQ(y, x.sub(-4));
@@ -110,35 +104,6 @@ TEST(range_struct, compare)
 
 	x = range<int>(0, 5);
 	y = range<int>(0, 10);
-
-	EXPECT_TRUE(x < y);
-	EXPECT_FALSE(x > y);
-	EXPECT_TRUE(x <= y);
-	EXPECT_FALSE(x >= y);
-	EXPECT_FALSE(x == y);
-	EXPECT_TRUE(x != y);
-
-	x = y;
-
-	EXPECT_FALSE(x < y);
-	EXPECT_FALSE(x > y);
-	EXPECT_TRUE(x <= y);
-	EXPECT_TRUE(x >= y);
-	EXPECT_TRUE(x == y);
-	EXPECT_FALSE(x != y);
-
-	x = range<int>(0, 10, 2);
-	y = range<int>(10, 0, -2);
-
-	EXPECT_TRUE(x < y);
-	EXPECT_FALSE(x > y);
-	EXPECT_TRUE(x <= y);
-	EXPECT_FALSE(x >= y);
-	EXPECT_FALSE(x == y);
-	EXPECT_TRUE(x != y);
-
-	x = range<int>(0, 5, 2);
-	y = range<int>(0, 10, 2);
 
 	EXPECT_TRUE(x < y);
 	EXPECT_FALSE(x > y);

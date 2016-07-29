@@ -262,30 +262,30 @@ struct list
 				return c1 - c0;
 		}
 
-		core::slice<bound<iterator, int> > sub(int length)
+		core::slice<range<iterator> > sub(int length)
 		{
 			if (length < 0)
-				return bound<iterator, int>(*this+length, -length);
+				return range<iterator>(*this+length, *this);
 			else
-				return bound<iterator, int>(*this, length);
+				return range<iterator>(*this, *this+length);
 		}
 
 		list<value_type> subcpy(int length)
 		{
 			if (length < 0)
-				return bound<iterator, int>(*this+length, -length).deref();
+				return range<iterator>(*this+length, *this).deref();
 			else
-				return bound<iterator, int>(*this, length).deref();
+				return range<iterator>(*this, *this+length).deref();
 		}
 
-		core::slice<bound<iterator, int> > sub()
+		core::slice<range<iterator> > sub()
 		{
-			return bound<iterator, int>(*this);
+			return range<iterator>(*this, root->end());
 		}
 
 		list<value_type> subcpy()
 		{
-			return bound<iterator, int>(*this).deref();
+			return range<iterator>(*this, root->end()).deref();
 		}
 
 		list<value_type> pop(int n = 1)
@@ -643,30 +643,30 @@ struct list
 				return c1 - c0;
 		}
 
-		core::slice<bound<const_iterator, int> > sub(int length)
+		core::slice<range<const_iterator> > sub(int length)
 		{
 			if (length < 0)
-				return bound<const_iterator, int>(*this+length, -length);
+				return range<const_iterator>(*this+length, *this);
 			else
-				return bound<const_iterator, int>(*this, length);
+				return range<const_iterator>(*this, *this+length);
 		}
 
 		list<value_type> subcpy(int length)
 		{
 			if (length < 0)
-				return bound<const_iterator, int>(*this+length, -length).deref();
+				return range<const_iterator>(*this+length, *this).deref();
 			else
-				return bound<const_iterator, int>(*this, length).deref();
+				return range<const_iterator>(*this, *this+length).deref();
 		}
 
-		core::slice<bound<const_iterator, int> > sub()
+		core::slice<range<const_iterator> > sub()
 		{
-			return bound<const_iterator, int>(*this);
+			return range<const_iterator>(*this, root->end());
 		}
 
 		list<value_type> subcpy()
 		{
-			return bound<const_iterator, int>(*this).deref();
+			return range<const_iterator>(*this, root->end()).deref();
 		}
 	};
 
@@ -874,84 +874,74 @@ struct list
 		return result;
 	}
 
-	core::slice<bound<iterator, int> > sub(int start, int end)
+	core::slice<range<iterator> > sub(int start, int end)
 	{
-		int count = size();
-		start = start < 0 ? count + start : start;
-		end = end < 0 ? count + end : end;
-		return bound<iterator, int>(at(start), end-start);
+		return range<iterator>(at(start), at(end));
 	}
 
 	list<value_type> subcpy(int start, int end)
 	{
-		int count = size();
-		start = start < 0 ? count + start : start;
-		end = end < 0 ? count + end : end;
-		return bound<iterator, int>(at(start), end-start).deref();
+		return range<iterator>(at(start), at(end)).deref();
 	}
 
-	core::slice<bound<iterator, int> > sub(int start)
+	core::slice<range<iterator> > sub(int start)
 	{
-		int count = size();
-		start = start < 0 ? count + start : start;
-		return bound<iterator, int>(at(start), count-start);
+		return range<iterator>(at(start), this->end());
 	}
 
 	list<value_type> subcpy(int start)
 	{
-		int count = size();
-		start = start < 0 ? count + start : start;
-		return bound<iterator, int>(at(start), count-start).deref();
+		return range<iterator>(at(start), this->end()).deref();
 	}
 
-	core::slice<bound<iterator, int> > sub()
+	core::slice<range<iterator> > sub()
 	{
-		return bound<iterator, int>(begin(), size());
+		return range<iterator>(begin(), end());
 	}
 
 	list<value_type> subcpy()
 	{
-		return bound<iterator, int>(begin(), size()).deref();
+		return range<iterator>(begin(), end()).deref();
 	}
 
-	core::slice<bound<const_iterator, int> > sub(int start, int end) const
+	core::slice<range<const_iterator> > sub(int start, int end) const
 	{
-		int count = size();
-		start = start < 0 ? count + start : start;
-		end = end < 0 ? count + end : end;
-		return bound<const_iterator, int>(at(start), end-start);
+		return range<const_iterator>(at(start), at(end));
 	}
 
 	list<value_type> subcpy(int start, int end) const
 	{
-		int count = size();
-		start = start < 0 ? count + start : start;
-		end = end < 0 ? count + end : end;
-		return bound<const_iterator, int>(at(start), end-start).deref();
+		return range<const_iterator>(at(start), at(end)).deref();
 	}
 
-	core::slice<bound<const_iterator, int> > sub(int start) const
+	core::slice<range<const_iterator> > sub(int start) const
 	{
-		int count = size();
-		start = start < 0 ? count + start : start;
-		return bound<const_iterator, int>(at(start), count-start);
+		return range<const_iterator>(at(start), this->end());
 	}
 
 	list<value_type> subcpy(int start) const
 	{
-		int count = size();
-		start = start < 0 ? count + start : start;
-		return bound<const_iterator, int>(at(start), count-start).deref();
+		return range<const_iterator>(at(start), this->end()).deref();
 	}
 
-	core::slice<bound<const_iterator, int> > sub() const
+	core::slice<range<const_iterator> > sub() const
 	{
-		return bound<const_iterator, int>(begin(), size());
+		return range<const_iterator>(begin(), end());
 	}
 
 	list<value_type> subcpy() const
 	{
-		return bound<const_iterator, int>(begin(), size()).deref();
+		return range<const_iterator>(begin(), end()).deref();
+	}
+
+	static core::slice<range<iterator> > sub(iterator start, iterator end)
+	{
+		return range<iterator>(start, end).deref();
+	}
+
+	static core::slice<range<const_iterator> > sub(const_iterator start, const_iterator end)
+	{
+		return range<const_iterator>(start, end).deref();
 	}
 
 	static void drop(iterator start, iterator end)
@@ -1246,6 +1236,79 @@ bool operator<=(list<value_type> a0, list<value_type> a1)
 
 template<class value_type>
 bool operator>=(list<value_type> a0, list<value_type> a1)
+{
+	return (compare(a0, a1) >= 0);
+}
+
+template<class value_type, class container>
+bool operator==(list<value_type> a0, slice<container> a1)
+{
+	return (compare(a0, a1) == 0);
+}
+
+template<class value_type, class container>
+bool operator!=(list<value_type> a0, slice<container> a1)
+{
+	return (compare(a0, a1) != 0);
+}
+
+template<class value_type, class container>
+bool operator<(list<value_type> a0, slice<container> a1)
+{
+	return (compare(a0, a1) < 0);
+}
+
+template<class value_type, class container>
+bool operator>(list<value_type> a0, slice<container> a1)
+{
+	return (compare(a0, a1) > 0);
+}
+
+template<class value_type, class container>
+bool operator<=(list<value_type> a0, slice<container> a1)
+{
+	return (compare(a0, a1) <= 0);
+}
+
+template<class value_type, class container>
+bool operator>=(list<value_type> a0, slice<container> a1)
+{
+	return (compare(a0, a1) >= 0);
+}
+
+
+template<class container, class value_type>
+bool operator==(slice<container> a0, list<value_type> a1)
+{
+	return (compare(a0, a1) == 0);
+}
+
+template<class container, class value_type>
+bool operator!=(slice<container> a0, list<value_type> a1)
+{
+	return (compare(a0, a1) != 0);
+}
+
+template<class container, class value_type>
+bool operator<(slice<container> a0, list<value_type> a1)
+{
+	return (compare(a0, a1) < 0);
+}
+
+template<class container, class value_type>
+bool operator>(slice<container> a0, list<value_type> a1)
+{
+	return (compare(a0, a1) > 0);
+}
+
+template<class container, class value_type>
+bool operator<=(slice<container> a0, list<value_type> a1)
+{
+	return (compare(a0, a1) <= 0);
+}
+
+template<class container, class value_type>
+bool operator>=(slice<container> a0, list<value_type> a1)
 {
 	return (compare(a0, a1) >= 0);
 }

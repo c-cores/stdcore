@@ -8,6 +8,7 @@
 #pragma once
 
 #include <core/slice.h>
+#include <core/ascii_stream.h>
 
 namespace core
 {
@@ -61,7 +62,53 @@ container sort_selection(container c)
 }
 
 template <class container>
+container sort_selection_inplace(container &c)
+{
+	for (typename container::iterator i = c.begin(); i; i++)
+	{
+		typename container::iterator max_j = i;
+		for (typename container::iterator j = i+1; j; j++)
+			if (*j < *max_j)
+				max_j = j;
+
+		i.swap(max_j);
+	}
+
+	return c;
+}
+
+template <class container>
 container sort_quick(container c)
+{
+	if (c.size() > 2)
+	{
+		typename container::iterator pivot = median_iterator(c.begin(), c.begin() + c.size()/2, c.rbegin());
+
+		pivot.swap(c.rbegin());
+		pivot = c.rbegin();
+
+		typename container::iterator store = c.begin();
+		for (typename container::iterator i = c.begin(); i != c.rbegin(); i++)
+			if (*i < *pivot)
+			{
+				i.swap(store);
+				store++;
+			}
+
+		store.swap(c.rbegin());
+
+		sort_quick(c.sub(c.begin(), store));
+		sort_quick(c.sub(store+1, c.end()));
+	}
+	else if (c.size() > 1)
+		if (*c.rbegin() < *c.begin())
+			c.begin().swap(c.rbegin());
+
+	return c;
+}
+
+template <class container>
+container sort_quick_inplace(container &c)
 {
 	if (c.size() > 2)
 	{
@@ -112,6 +159,14 @@ bool is_rsorted(const container &c)
 
 template <class container>
 container reverse(container c)
+{
+	for (typename container::iterator i = c.begin(), j = c.rbegin(); i != j && i != j+1; i++, j--)
+		i.swap(j);
+	return c;
+}
+
+template <class container>
+container reverse_inplace(container &c)
 {
 	for (typename container::iterator i = c.begin(), j = c.rbegin(); i != j && i != j+1; i++, j--)
 		i.swap(j);
