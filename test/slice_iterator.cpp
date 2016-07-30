@@ -390,7 +390,7 @@ TEST(slice_iterator, array_replace)
 			<< range<int>(0, 4)
 			<< 5
 			<< range<int>(7, 10));
-	EXPECT_EQ(i.idx(), 5);
+	EXPECT_EQ(i.idx(), 4);
 	EXPECT_EQ(x0, range<int>(0, 10));
 	EXPECT_EQ(y0, range<int>(0, 10));
 
@@ -403,7 +403,7 @@ TEST(slice_iterator, array_replace)
 			<< range<int>(0, 4)
 			<< 3
 			<< range<int>(9, 10));
-	EXPECT_EQ(i.idx(), 5);
+	EXPECT_EQ(i.idx(), 4);
 	EXPECT_EQ(x0, range<int>(0, 10));
 	EXPECT_EQ(y0, range<int>(0, 10));
 
@@ -416,7 +416,7 @@ TEST(slice_iterator, array_replace)
 			<< range<int>(0, 4)
 			<< 8
 			<< range<int>(9, 10));
-	EXPECT_EQ(i.idx(), 5);
+	EXPECT_EQ(i.idx(), 4);
 	EXPECT_EQ(x0, range<int>(0, 10));
 	EXPECT_EQ(y0, range<int>(0, 10));
 

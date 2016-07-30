@@ -8,15 +8,220 @@ using namespace core;
 
 TEST(array_iterator, iterate)
 {
-	array<int> x = range<int>(0, 10);
+	array<int> x = range<int>(0, 100);
 
+	// Iterators
 	int j = 0;
 	for (array<int>::iterator i = x.begin(); i; i++)
 	{
 		EXPECT_EQ(j, *i);
+		EXPECT_EQ(j, i.get());
+		EXPECT_EQ(j, *i.ptr());
 		j++;
 	}
-	EXPECT_EQ(10, j);
+	EXPECT_EQ(100, j);
+
+	j = 0;
+	for (array<int>::iterator i = x.begin(); i; ++i)
+	{
+		EXPECT_EQ(j, *i);
+		EXPECT_EQ(j, i.get());
+		EXPECT_EQ(j, *i.ptr());
+		j++;
+	}
+	EXPECT_EQ(100, j);
+
+	j = 0;
+	for (array<int>::iterator i = x.begin(); i; i+=5)
+	{
+		EXPECT_EQ(j, *i);
+		EXPECT_EQ(j, i.get());
+		EXPECT_EQ(j, *i.ptr());
+		j += 5;
+	}
+	EXPECT_EQ(100, j);
+
+	j = 99;
+	for (array<int>::iterator i = x.rbegin(); i; i--)
+	{
+		EXPECT_EQ(j, *i);
+		EXPECT_EQ(j, i.get());
+		EXPECT_EQ(j, *i.ptr());
+		j--;
+	}
+	EXPECT_EQ(-1, j);
+
+	j = 99;
+	for (array<int>::iterator i = x.rbegin(); i; --i)
+	{
+		EXPECT_EQ(j, *i);
+		EXPECT_EQ(j, i.get());
+		EXPECT_EQ(j, *i.ptr());
+		j--;
+	}
+	EXPECT_EQ(-1, j);
+
+	j = 95;
+	for (array<int>::iterator i = x.at(-5); i; i-=5)
+	{
+		EXPECT_EQ(j, *i);
+		EXPECT_EQ(j, i.get());
+		EXPECT_EQ(j, *i.ptr());
+		j-=5;
+	}
+	EXPECT_EQ(-5, j);
+
+	// Const Iterators
+
+	j = 0;
+	for (array<int>::const_iterator i = x.begin(); i; i++)
+	{
+		EXPECT_EQ(j, *i);
+		EXPECT_EQ(j, i.get());
+		EXPECT_EQ(j, *i.ptr());
+		j++;
+	}
+	EXPECT_EQ(100, j);
+
+	j = 0;
+	for (array<int>::const_iterator i = x.begin(); i; ++i)
+	{
+		EXPECT_EQ(j, *i);
+		EXPECT_EQ(j, i.get());
+		EXPECT_EQ(j, *i.ptr());
+		j++;
+	}
+	EXPECT_EQ(100, j);
+
+	j = 0;
+	for (array<int>::const_iterator i = x.begin(); i; i+=5)
+	{
+		EXPECT_EQ(j, *i);
+		EXPECT_EQ(j, i.get());
+		EXPECT_EQ(j, *i.ptr());
+		j += 5;
+	}
+	EXPECT_EQ(100, j);
+
+	j = 99;
+	for (array<int>::const_iterator i = x.rbegin(); i; i--)
+	{
+		EXPECT_EQ(j, *i);
+		EXPECT_EQ(j, i.get());
+		EXPECT_EQ(j, *i.ptr());
+		j--;
+	}
+	EXPECT_EQ(-1, j);
+
+	j = 99;
+	for (array<int>::const_iterator i = x.rbegin(); i; --i)
+	{
+		EXPECT_EQ(j, *i);
+		EXPECT_EQ(j, i.get());
+		EXPECT_EQ(j, *i.ptr());
+		j--;
+	}
+	EXPECT_EQ(-1, j);
+
+	j = 95;
+	for (array<int>::const_iterator i = x.at(-5); i; i-=5)
+	{
+		EXPECT_EQ(j, *i);
+		EXPECT_EQ(j, i.get());
+		EXPECT_EQ(j, *i.ptr());
+		j-=5;
+	}
+	EXPECT_EQ(-5, j);
+}
+
+TEST(array_iterator, compare)
+{
+	array<int> x = range<int>(0, 100);
+	const array<int> &y = x;
+
+	EXPECT_TRUE ((x.at(4) <  x.at(23)));
+	EXPECT_FALSE((x.at(4) >  x.at(23)));
+	EXPECT_TRUE ((x.at(4) <= x.at(23)));
+	EXPECT_FALSE((x.at(4) >= x.at(23)));
+	EXPECT_FALSE((x.at(4) == x.at(23)));
+	EXPECT_TRUE ((x.at(4) != x.at(23)));
+
+	EXPECT_FALSE((x.at(18) <  x.at(6)));
+	EXPECT_TRUE ((x.at(18) >  x.at(6)));
+	EXPECT_FALSE((x.at(18) <= x.at(6)));
+	EXPECT_TRUE ((x.at(18) >= x.at(6)));
+	EXPECT_FALSE((x.at(18) == x.at(6)));
+	EXPECT_TRUE ((x.at(18) != x.at(6)));
+
+	EXPECT_FALSE((x.at(6) <  x.at(6)));
+	EXPECT_FALSE((x.at(6) >  x.at(6)));
+	EXPECT_TRUE ((x.at(6) <= x.at(6)));
+	EXPECT_TRUE ((x.at(6) >= x.at(6)));
+	EXPECT_TRUE ((x.at(6) == x.at(6)));
+	EXPECT_FALSE((x.at(6) != x.at(6)));
+
+	EXPECT_TRUE ((y.at(4) <  y.at(23)));
+	EXPECT_FALSE((y.at(4) >  y.at(23)));
+	EXPECT_TRUE ((y.at(4) <= y.at(23)));
+	EXPECT_FALSE((y.at(4) >= y.at(23)));
+	EXPECT_FALSE((y.at(4) == y.at(23)));
+	EXPECT_TRUE ((y.at(4) != y.at(23)));
+
+	EXPECT_FALSE((y.at(18) <  y.at(6)));
+	EXPECT_TRUE ((y.at(18) >  y.at(6)));
+	EXPECT_FALSE((y.at(18) <= y.at(6)));
+	EXPECT_TRUE ((y.at(18) >= y.at(6)));
+	EXPECT_FALSE((y.at(18) == y.at(6)));
+	EXPECT_TRUE ((y.at(18) != y.at(6)));
+
+	EXPECT_FALSE((y.at(6) <  y.at(6)));
+	EXPECT_FALSE((y.at(6) >  y.at(6)));
+	EXPECT_TRUE ((y.at(6) <= y.at(6)));
+	EXPECT_TRUE ((y.at(6) >= y.at(6)));
+	EXPECT_TRUE ((y.at(6) == y.at(6)));
+	EXPECT_FALSE((y.at(6) != y.at(6)));
+
+	EXPECT_TRUE ((x.at(4) <  y.at(23)));
+	EXPECT_FALSE((x.at(4) >  y.at(23)));
+	EXPECT_TRUE ((x.at(4) <= y.at(23)));
+	EXPECT_FALSE((x.at(4) >= y.at(23)));
+	EXPECT_FALSE((x.at(4) == y.at(23)));
+	EXPECT_TRUE ((x.at(4) != y.at(23)));
+
+	EXPECT_FALSE((x.at(18) <  y.at(6)));
+	EXPECT_TRUE ((x.at(18) >  y.at(6)));
+	EXPECT_FALSE((x.at(18) <= y.at(6)));
+	EXPECT_TRUE ((x.at(18) >= y.at(6)));
+	EXPECT_FALSE((x.at(18) == y.at(6)));
+	EXPECT_TRUE ((x.at(18) != y.at(6)));
+
+	EXPECT_FALSE((x.at(6) <  y.at(6)));
+	EXPECT_FALSE((x.at(6) >  y.at(6)));
+	EXPECT_TRUE ((x.at(6) <= y.at(6)));
+	EXPECT_TRUE ((x.at(6) >= y.at(6)));
+	EXPECT_TRUE ((x.at(6) == y.at(6)));
+	EXPECT_FALSE((x.at(6) != y.at(6)));
+
+	EXPECT_TRUE ((y.at(4) <  x.at(23)));
+	EXPECT_FALSE((y.at(4) >  x.at(23)));
+	EXPECT_TRUE ((y.at(4) <= x.at(23)));
+	EXPECT_FALSE((y.at(4) >= x.at(23)));
+	EXPECT_FALSE((y.at(4) == x.at(23)));
+	EXPECT_TRUE ((y.at(4) != x.at(23)));
+
+	EXPECT_FALSE((y.at(18) <  x.at(6)));
+	EXPECT_TRUE ((y.at(18) >  x.at(6)));
+	EXPECT_FALSE((y.at(18) <= x.at(6)));
+	EXPECT_TRUE ((y.at(18) >= x.at(6)));
+	EXPECT_FALSE((y.at(18) == x.at(6)));
+	EXPECT_TRUE ((y.at(18) != x.at(6)));
+
+	EXPECT_FALSE((y.at(6) <  x.at(6)));
+	EXPECT_FALSE((y.at(6) >  x.at(6)));
+	EXPECT_TRUE ((y.at(6) <= x.at(6)));
+	EXPECT_TRUE ((y.at(6) >= x.at(6)));
+	EXPECT_TRUE ((y.at(6) == x.at(6)));
+	EXPECT_FALSE((y.at(6) != x.at(6)));
 }
 
 TEST(array_iterator, index)
@@ -99,6 +304,16 @@ TEST(array_iterator, alloc)
 	EXPECT_EQ(x.sub(5, 10), range<int>(0, 5));
 	EXPECT_EQ(x.sub(15, 20), range<int>(5, 10));
 	EXPECT_EQ(i.idx(), 20);
+
+	i = x.at(17);
+	i.alloc(-5);
+	EXPECT_EQ(30, x.count);
+	EXPECT_GE(x.capacity, x.count);
+	EXPECT_NE((int*)NULL, x.data);
+	EXPECT_EQ(x.sub(5, 10), range<int>(0, 5));
+	EXPECT_EQ(x.sub(15, 17), range<int>(5, 7));
+	EXPECT_EQ(x.sub(22, 25), range<int>(7, 10));
+	EXPECT_EQ(i.idx(), 22);
 }
 
 TEST(array_iterator, drop)
@@ -345,7 +560,7 @@ TEST(array_iterator, replace)
 			<< range<int>(0, 4)
 			<< 5
 			<< range<int>(7, 10));
-	EXPECT_EQ(i.idx(), 5);
+	EXPECT_EQ(i.idx(), 4);
 
 	i = x.at(4);
 	i.replace(3, 3);
@@ -356,7 +571,7 @@ TEST(array_iterator, replace)
 			<< range<int>(0, 4)
 			<< 3
 			<< range<int>(9, 10));
-	EXPECT_EQ(i.idx(), 5);
+	EXPECT_EQ(i.idx(), 4);
 
 	i = x.at(4);
 	i.replace(1, 8);
@@ -367,7 +582,7 @@ TEST(array_iterator, replace)
 			<< range<int>(0, 4)
 			<< 8
 			<< range<int>(9, 10));
-	EXPECT_EQ(i.idx(), 5);
+	EXPECT_EQ(i.idx(), 4);
 
 	i = x.at(4);
 	i.replace(-1, 9);

@@ -222,10 +222,7 @@ struct array
 
 			bool neg = n < 0;
 			if (neg)
-			{
-				loc += n;
 				n = -n;
-			}
 
 			int offset = loc - root->data;
 			if (root->count > 0 && root->count+n <= root->capacity)
@@ -312,18 +309,12 @@ struct array
 		{
 			int n = c.size();
 			typename container::const_iterator i = c.begin();
-			if (n < 0)
-				for (i = c.begin(); i; i++)
-					push(*i);
-			else
-			{
-				alloc(n);
+			alloc(n);
 
-				for (i = c.begin(); i; i++)
-				{
-					new (loc) value_type(*i);
-					loc++;
-				}
+			for (i = c.begin(); i; i++)
+			{
+				new (loc) value_type(*i);
+				loc++;
 			}
 		}
 
@@ -335,93 +326,69 @@ struct array
 				loc += n;
 				n = -n;
 			}
+			else if (n == 0)
+				return;
 
-			int lower, upper;
-			if (n < 1)
-			{
-				lower = n;
-				upper = 1;
-			}
-			else
-			{
-				lower = 1;
-				upper = n;
-			}
+			*loc = v;
 
-			int diff = upper-lower;
-			value_type *mid = loc+lower;
-			value_type *fin = loc+upper;
-			for (; loc < mid; loc++)
-				*loc = v;
-
-			if (1 < n)
+			if (n > 1)
 			{
-				for (value_type *i = loc; i < fin; i++)
+				value_type *mid = loc+1;
+				value_type *fin = loc+n;
+				for (value_type *i = mid; i < fin; i++)
 					i->~value_type();
-				memmove(loc, fin, (root->count - upper)*sizeof(value_type));
-				root->count -= diff;
+				memmove(mid, fin, (root->count - n)*sizeof(value_type));
+				root->count -= n-1;
 			}
-			else if (n < 1)
-			{
-				alloc(diff);
-				fin = loc+upper;
-				for (; loc < fin; loc++)
-					new (loc) value_type(v);
-			}
+
+			if (neg)
+				loc++;
 		}
 
 		template <class container>
 		void replace(int n, const container &c)
 		{
 			int s = c.size();
-			if (s < 0)
+			bool neg = n < 0;
+			if (neg)
 			{
-				drop(n);
-				append(c);
+				loc += n;
+				n = -n;
+			}
+
+			int lower, upper;
+			if (n < s)
+			{
+				lower = n;
+				upper = s;
 			}
 			else
 			{
-				bool neg = n < 0;
-				if (neg)
-				{
-					loc += n;
-					n = -n;
-				}
+				lower = s;
+				upper = n;
+			}
 
-				int lower, upper;
-				if (n < s)
-				{
-					lower = n;
-					upper = s;
-				}
-				else
-				{
-					lower = s;
-					upper = n;
-				}
+			int diff = upper-lower;
+			value_type *mid = loc+lower;
+			value_type *fin = loc+upper;
+			typename container::const_iterator j = c.begin();
+			for (; loc < mid && j; loc++, j++)
+				*loc = *j;
 
-				int diff = upper-lower;
-				value_type *mid = loc+lower;
-				value_type *fin = loc+upper;
-				typename container::const_iterator j = c.begin();
-				for (; loc < mid && j; loc++, j++)
-					*loc = *j;
+			if (s < n)
+			{
+				for (value_type *i = loc; i < fin; i++)
+					i->~value_type();
+				memmove(loc, fin, (root->count - upper)*sizeof(value_type));
+				root->count -= diff;
 
-				if (s < n)
-				{
-					for (value_type *i = loc; i < fin; i++)
-						i->~value_type();
-					memmove(loc, fin, (root->count - upper)*sizeof(value_type));
-					root->count -= diff;
-
-				}
-				else if (n < s)
-				{
-					alloc(diff);
-					fin = loc+upper;
-					for (; loc < fin && j; loc++, j++)
-						new (loc) value_type(*j);
-				}
+			}
+			else if (n < s)
+			{
+				alloc(diff);
+				fin = loc+upper;
+				for (; loc < fin && j; loc++, j++)
+					new (loc) value_type(*j);
 			}
 		}
 
@@ -1175,48 +1142,40 @@ struct array
 		if (end < 0)
 			end += count;
 
-		if (s < 0)
+		int n = end-start;
+		int lower, upper;
+		if (n > s)
 		{
-			drop(start, end);
-			at(start).append(c);
+			lower = start+s;
+			upper = end;
 		}
 		else
 		{
-			int n = end-start;
-			int lower, upper;
-			if (n > s)
-			{
-				lower = start+s;
-				upper = end;
-			}
-			else
-			{
-				lower = end;
-				upper = start+s;
-			}
+			lower = end;
+			upper = start+s;
+		}
 
-			int diff = upper-lower;
-			value_type *mid = data+lower;
-			value_type *i;
-			typename container::const_iterator j = c.begin();
-			for (i = data+start; i < mid && j; i++, j++)
-				*i = *j;
+		int diff = upper-lower;
+		value_type *mid = data+lower;
+		value_type *i;
+		typename container::const_iterator j = c.begin();
+		for (i = data+start; i < mid && j; i++, j++)
+			*i = *j;
 
-			if (c.size() < n)
-			{
-				value_type *fin = data+upper;
-				for (; i < fin; i++)
-					i->~value_type();
-				memmove(mid, fin, (count-upper)*sizeof(value_type));
-				count -= diff;
-			}
-			else if (n < s)
-			{
-				at(lower).alloc(diff);
-				value_type *fin = data+upper;
-				for (i = data+lower; i < fin && j; i++, j++)
-					new (i) value_type(*j);
-			}
+		if (c.size() < n)
+		{
+			value_type *fin = data+upper;
+			for (; i < fin; i++)
+				i->~value_type();
+			memmove(mid, fin, (count-upper)*sizeof(value_type));
+			count -= diff;
+		}
+		else if (n < s)
+		{
+			at(lower).alloc(diff);
+			value_type *fin = data+upper;
+			for (i = data+lower; i < fin && j; i++, j++)
+				new (i) value_type(*j);
 		}
 	}
 
@@ -1327,30 +1286,22 @@ struct array
 			data[i].~value_type();
 
 		count = c.size();
-		if (count < 0)
+		if (count > capacity)
 		{
-			count = 0;
-			append_back(c);
+			if (data != NULL)
+				free(data);
+
+			capacity = (1 << (log2i(count)+1));
+			data = (value_type*)malloc(sizeof(value_type)*capacity);
 		}
-		else
+
+		typename container::const_iterator i = c.begin();
+		iterator j = begin();
+		while (i && j != end())
 		{
-			if (count > capacity)
-			{
-				if (data != NULL)
-					free(data);
-
-				capacity = (1 << (log2i(count)+1));
-				data = (value_type*)malloc(sizeof(value_type)*capacity);
-			}
-
-			typename container::const_iterator i = c.begin();
-			iterator j = begin();
-			while (i && j != end())
-			{
-				new (j.ptr()) value_type(*i);
-				i++;
-				j++;
-			}
+			new (j.ptr()) value_type(*i);
+			i++;
+			j++;
 		}
 
 		return *this;
