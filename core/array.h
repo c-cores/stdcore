@@ -662,23 +662,11 @@ struct array
 	array(const container &a)
 	{
 		count = a.size();
-		// container has a potentially infinite number of elements
-		if (count < 0)
-		{
-			count = 0;
-			capacity = 0;
-			data = NULL;
-			for (typename container::const_iterator i = a.begin(); i; i++)
-				push_back(*i);
-		}
-		else
-		{
-			capacity = (1 << (log2i(count)+1));
-			data = (value_type*)malloc(sizeof(value_type)*capacity);
-			value_type *ptr = data;
-			for (typename container::const_iterator i = a.begin(); i; i++, ptr++)
-				new (ptr) value_type(*i);
-		}
+		capacity = (1 << (log2i(count)+1));
+		data = (value_type*)malloc(sizeof(value_type)*capacity);
+		value_type *ptr = data;
+		for (typename container::const_iterator i = a.begin(); i; i++, ptr++)
+			new (ptr) value_type(*i);
 	}
 
 	// Initialize this array as a copy of some other container
