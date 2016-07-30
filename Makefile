@@ -1,15 +1,16 @@
-CXXFLAGS	=  -g -fprofile-arcs -ftest-coverage -O2 -Wall -fmessage-length=0 -I. 
-SOURCES		:=  $(wildcard core/*.cpp)
-TESTS       := $(wildcard test/*.cpp)
-OBJECTS		:=  $(SOURCES:%.cpp=%.o)
-TEST_OBJECTS   := $(TESTS:.cpp=.o)
-DEPS        := $(OBJECTS:.o=.d)
-TEST_DEPS   := $(TEST_OBJECTS:.o=.d)
-GTEST       := ../googletest
-GTEST_I     := -I$(GTEST)/include -I.
-GTEST_L     := -L$(GTEST) -L.
-TARGET		= libstdcore.a
-TEST_TARGET = test_stdcore
+CXXFLAGS	 =  -O2 -Wall -fmessage-length=0 -I.
+# -g -fprofile-arcs -ftest-coverage
+SOURCES		 := $(wildcard core/*.cpp)
+TESTS        := $(wildcard test/*.cpp)
+OBJECTS		 := $(SOURCES:%.cpp=%.o)
+TEST_OBJECTS := $(TESTS:.cpp=.o)
+DEPS         := $(OBJECTS:.o=.d)
+TEST_DEPS    := $(TEST_OBJECTS:.o=.d)
+GTEST        := ../googletest
+GTEST_I      := -I$(GTEST)/include -I.
+GTEST_L      := -L$(GTEST) -L.
+TARGET		 = libstdcore.a
+TEST_TARGET  = test_stdcore
 
 -include $(DEPS)
 -include $(TEST_DEPS)

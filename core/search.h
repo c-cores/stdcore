@@ -8,6 +8,7 @@
 #pragma once
 
 #include <core/slice.h>
+#include <core/array.h>
 
 namespace core
 {
@@ -33,6 +34,12 @@ typename container::const_iterator find_first(const container &c, const element 
 }
 
 template <typename container, typename element>
+bool contains(const container &c, const element &t)
+{
+	return (find_first(c, t) != c.end());
+}
+
+template <typename container, typename element>
 typename container::iterator find_last(container &c, const element &t)
 {
 	for (typename container::iterator i = c.rbegin(); i != c.rend(); i--)
@@ -52,10 +59,10 @@ typename container::const_iterator find_last(const container &c, const element &
 	return c.end();
 }
 
-template <typename container, typename container2, typename element>
-container2 find_all(container &c, const element &t)
+template <typename container, typename element>
+array<typename container::iterator> find_all(container &c, const element &t)
 {
-	container2 results;
+	array<typename container::iterator> results;
 	for (typename container::iterator i = c.begin(); i; i++)
 		if (*i == t)
 			results.push_back(i);
@@ -63,10 +70,10 @@ container2 find_all(container &c, const element &t)
 	return results;
 }
 
-template <typename container, typename container2, typename element>
-container2 find_all(const container &c, const element &t)
+template <typename container, typename element>
+array<typename container::const_iterator> find_all(const container &c, const element &t)
 {
-	container2 results;
+	array<typename container::const_iterator> results;
 	for (typename container::const_iterator i = c.begin(); i; i++)
 		if (*i == t)
 			results.push_back(i);
@@ -78,9 +85,8 @@ template <typename container1, typename container2>
 typename container1::iterator find_first_of(container1 &c1, const container2 &c2)
 {
 	for (typename container1::iterator i = c1.begin(); i; i++)
-		for (typename container2::const_iterator j = c2.begin(); j; j++)
-			if (*i == *j)
-				return i;
+		if (contains(c2, *i))
+			return i;
 
 	return c1.end();
 }
@@ -89,20 +95,24 @@ template <typename container1, typename container2>
 typename container1::const_iterator find_first_of(const container1 &c1, const container2 &c2)
 {
 	for (typename container1::const_iterator i = c1.begin(); i; i++)
-		for (typename container2::const_iterator j = c2.begin(); j; j++)
-			if (*i == *j)
-				return i;
+		if (contains(c2, *i))
+			return i;
 
 	return c1.end();
+}
+
+template <typename container, typename element>
+bool contains_one_of(const container &c, const element &t)
+{
+	return (find_first_of(c, t) != c.end());
 }
 
 template <typename container1, typename container2>
 typename container1::iterator find_last_of(container1 &c1, const container2 &c2)
 {
 	for (typename container1::iterator i = c1.rbegin(); i; i--)
-		for (typename container2::const_iterator j = c2.begin(); j; j++)
-			if (*i == *j)
-				return i;
+		if (contains(c2, *i))
+			return i;
 
 	return c1.end();
 }
@@ -111,32 +121,29 @@ template <typename container1, typename container2>
 typename container1::const_iterator find_last_of(const container1 &c1, const container2 &c2)
 {
 	for (typename container1::const_iterator i = c1.rbegin(); i; i--)
-		for (typename container2::const_iterator j = c2.begin(); j; j++)
-			if (*i == *j)
-				return i;
+		if (contains(c2, *i))
+			return i;
 
 	return c1.end();
 }
 
-template <typename container, typename container2, typename container3>
-container2 find_all_of(container &c, const container3 &c2)
+template <typename container, typename container2>
+array<typename container::iterator> find_all_of(container &c, const container2 &c2)
 {
-	container2 results;
+	array<typename container::iterator> results;
 	for (typename container::iterator i = c.begin(); i; i++)
-		for (typename container3::const_iterator j = c2.begin(); j; j++)
-		if (*i == *j)
+		if (contains(c2, *i))
 			results.push_back(i);
 
 	return results;
 }
 
-template <typename container, typename container2, typename container3>
-container2 find_all_of(const container &c, const container3 &c2)
+template <typename container, typename container2>
+array<typename container::const_iterator> find_all_of(const container &c, const container2 &c2)
 {
-	container2 results;
+	array<typename container::const_iterator> results;
 	for (typename container::const_iterator i = c.begin(); i; i++)
-		for (typename container3::const_iterator j = c2.begin(); j; j++)
-		if (*i == *j)
+		if (contains(c2, *i))
 			results.push_back(i);
 
 	return results;

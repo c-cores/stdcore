@@ -1084,38 +1084,19 @@ struct array
 			end += count;
 
 		int n = end-start;
-		int lower, upper;
+		if (n < 1)
+			return;
+
+		*(data+start) = v;
+
 		if (n > 1)
 		{
-			lower = start+1;
-			upper = end;
-		}
-		else
-		{
-			lower = end;
-			upper = start+1;
-		}
-
-		int diff = upper-lower;
-		value_type *mid = data+lower;
-		value_type *i;
-		for (i = data+start; i < mid; i++)
-			*i = v;
-
-		if (1 < n)
-		{
-			value_type *fin = data+upper;
-			for (; i < fin; i++)
+			value_type *mid = data+start+1;
+			value_type *fin = data+end;
+			for (value_type *i = mid; i < fin; i++)
 				i->~value_type();
-			memmove(mid, fin, (count-upper)*sizeof(value_type));
-			count -= diff;
-		}
-		else if (n < 1)
-		{
-			at(lower).alloc(diff);
-			value_type *fin = data+upper;
-			for (i = data+lower; i < fin; i++)
-				new (i) value_type(v);
+			memmove(mid, fin, (count-end)*sizeof(value_type));
+			count -= end-start-1;
 		}
 	}
 
@@ -1155,7 +1136,7 @@ struct array
 		for (i = data+start; i < mid && j; i++, j++)
 			*i = *j;
 
-		if (c.size() < n)
+		if (s < n)
 		{
 			value_type *fin = data+upper;
 			for (; i < fin; i++)
@@ -1359,110 +1340,110 @@ array<value_type> operator<<(array<value_type> os, const container &c)
 template<class value_type>
 bool operator==(array<value_type> a0, array<value_type> a1)
 {
-	return (compare(a0, a1) == 0);
+	return equal_to(a0, a1);
 }
 
 template<class value_type>
 bool operator!=(array<value_type> a0, array<value_type> a1)
 {
-	return (compare(a0, a1) != 0);
+	return !equal_to(a0, a1);
 }
 
 template<class value_type>
 bool operator<(array<value_type> a0, array<value_type> a1)
 {
-	return (compare(a0, a1) < 0);
+	return less_than(a0, a1);
 }
 
 template<class value_type>
 bool operator>(array<value_type> a0, array<value_type> a1)
 {
-	return (compare(a0, a1) > 0);
+	return greater_than(a0, a1);
 }
 
 template<class value_type>
 bool operator<=(array<value_type> a0, array<value_type> a1)
 {
-	return (compare(a0, a1) <= 0);
+	return !greater_than(a0, a1);
 }
 
 template<class value_type>
 bool operator>=(array<value_type> a0, array<value_type> a1)
 {
-	return (compare(a0, a1) >= 0);
+	return !less_than(a0, a1);
 }
 
 template<class value_type, class container>
 bool operator==(array<value_type> a0, slice<container> a1)
 {
-	return (compare(a0, a1) == 0);
+	return equal_to(a0, a1);
 }
 
 template<class value_type, class container>
 bool operator!=(array<value_type> a0, slice<container> a1)
 {
-	return (compare(a0, a1) != 0);
+	return !equal_to(a0, a1);
 }
 
 template<class value_type, class container>
 bool operator<(array<value_type> a0, slice<container> a1)
 {
-	return (compare(a0, a1) < 0);
+	return less_than(a0, a1);
 }
 
 template<class value_type, class container>
 bool operator>(array<value_type> a0, slice<container> a1)
 {
-	return (compare(a0, a1) > 0);
+	return greater_than(a0, a1);
 }
 
 template<class value_type, class container>
 bool operator<=(array<value_type> a0, slice<container> a1)
 {
-	return (compare(a0, a1) <= 0);
+	return !greater_than(a0, a1);
 }
 
 template<class value_type, class container>
 bool operator>=(array<value_type> a0, slice<container> a1)
 {
-	return (compare(a0, a1) >= 0);
+	return !less_than(a0, a1);
 }
 
 
 template<class container, class value_type>
 bool operator==(slice<container> a0, array<value_type> a1)
 {
-	return (compare(a0, a1) == 0);
+	return equal_to(a0, a1);
 }
 
 template<class container, class value_type>
 bool operator!=(slice<container> a0, array<value_type> a1)
 {
-	return (compare(a0, a1) != 0);
+	return !equal_to(a0, a1);
 }
 
 template<class container, class value_type>
 bool operator<(slice<container> a0, array<value_type> a1)
 {
-	return (compare(a0, a1) < 0);
+	return less_than(a0, a1);
 }
 
 template<class container, class value_type>
 bool operator>(slice<container> a0, array<value_type> a1)
 {
-	return (compare(a0, a1) > 0);
+	return greater_than(a0, a1);
 }
 
 template<class container, class value_type>
 bool operator<=(slice<container> a0, array<value_type> a1)
 {
-	return (compare(a0, a1) <= 0);
+	return !greater_than(a0, a1);
 }
 
 template<class container, class value_type>
 bool operator>=(slice<container> a0, array<value_type> a1)
 {
-	return (compare(a0, a1) >= 0);
+	return !less_than(a0, a1);
 }
 
 }

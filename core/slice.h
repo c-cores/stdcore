@@ -404,73 +404,73 @@ bool operator>=(range<value_type1> s1, range<value_type2> s2)
 template <class value_type1, class container2>
 bool operator==(range<value_type1> s1, slice<container2> s2)
 {
-	return (compare(s1, s2) == 0);
+	return equal_to(s1, s2);
 }
 
 template <class value_type1, class container2>
 bool operator!=(range<value_type1> s1, slice<container2> s2)
 {
-	return (compare(s1, s2) != 0);
+	return !equal_to(s1, s2);
 }
 
 template <class value_type1, class container2>
 bool operator<(range<value_type1> s1, slice<container2> s2)
 {
-	return (compare(s1, s2) < 0);
+	return less_than(s1, s2);
 }
 
 template <class value_type1, class container2>
 bool operator>(range<value_type1> s1, slice<container2> s2)
 {
-	return (compare(s1, s2) > 0);
+	return greater_than(s1, s2);
 }
 
 template <class value_type1, class container2>
 bool operator<=(range<value_type1> s1, slice<container2> s2)
 {
-	return (compare(s1, s2) <= 0);
+	return !greater_than(s1, s2);
 }
 
 template <class value_type1, class container2>
 bool operator>=(range<value_type1> s1, slice<container2> s2)
 {
-	return (compare(s1, s2) >= 0);
+	return !less_than(s1, s2);
 }
 
 template <class container1, class value_type2>
 bool operator==(slice<container1> s1, range<value_type2> s2)
 {
-	return (compare(s1, s2) == 0);
+	return equal_to(s1, s2);
 }
 
 template <class container1, class value_type2>
 bool operator!=(slice<container1> s1, range<value_type2> s2)
 {
-	return (compare(s1, s2) != 0);
+	return !equal_to(s1, s2);
 }
 
 template <class container1, class value_type2>
 bool operator<(slice<container1> s1, range<value_type2> s2)
 {
-	return (compare(s1, s2) < 0);
+	return less_than(s1, s2);
 }
 
 template <class container1, class value_type2>
 bool operator>(slice<container1> s1, range<value_type2> s2)
 {
-	return (compare(s1, s2) > 0);
+	return greater_than(s1, s2);
 }
 
 template <class container1, class value_type2>
 bool operator<=(slice<container1> s1, range<value_type2> s2)
 {
-	return (compare(s1, s2) <= 0);
+	return !greater_than(s1, s2);
 }
 
 template <class container1, class value_type2>
 bool operator>=(slice<container1> s1, range<value_type2> s2)
 {
-	return (compare(s1, s2) >= 0);
+	return !less_than(s1, s2);
 }
 
 template <class container>
@@ -1024,39 +1024,83 @@ int compare(const container1 &a, const container2 &b)
 }
 
 template <class container1, class container2>
+bool equal_to(const container1 &a, const container2 &b)
+{
+	typename container1::const_iterator i = a.begin();
+	typename container2::const_iterator j = b.begin();
+	for (; i && j; i++, j++)
+		if (!(*i == *j))
+			return false;
+
+	return !(i || j);
+}
+
+template <class container1, class container2>
+bool less_than(const container1 &a, const container2 &b)
+{
+	typename container1::const_iterator i = a.begin();
+	typename container2::const_iterator j = b.begin();
+	for (; i && j; i++, j++)
+	{
+		if (*i < *j)
+			return true;
+		else if (!(*i == *j))
+	    	return false;
+	}
+
+	return j;
+}
+
+template <class container1, class container2>
+bool greater_than(const container1 &a, const container2 &b)
+{
+	typename container1::const_iterator i = a.begin();
+	typename container2::const_iterator j = b.begin();
+	for (; i && j; i++, j++)
+	{
+		if (*i > *j)
+			return true;
+		else if (!(*i == *j))
+	    	return false;
+	}
+
+	return i;
+}
+
+template <class container1, class container2>
 bool operator==(slice<container1> s1, slice<container2> s2)
 {
-	return (compare(s1, s2) == 0);
+	return equal_to(s1, s2);
 }
 
 template <class container1, class container2>
 bool operator!=(slice<container1> s1, slice<container2> s2)
 {
-	return (compare(s1, s2) != 0);
+	return !equal_to(s1, s2);
 }
 
 template <class container1, class container2>
 bool operator<(slice<container1> s1, slice<container2> s2)
 {
-	return (compare(s1, s2) < 0);
+	return less_than(s1, s2);
 }
 
 template <class container1, class container2>
 bool operator>(slice<container1> s1, slice<container2> s2)
 {
-	return (compare(s1, s2) > 0);
+	return greater_than(s1, s2);
 }
 
 template <class container1, class container2>
 bool operator<=(slice<container1> s1, slice<container2> s2)
 {
-	return (compare(s1, s2) <= 0);
+	return !greater_than(s1, s2);
 }
 
 template <class container1, class container2>
 bool operator>=(slice<container1> s1, slice<container2> s2)
 {
-	return (compare(s1, s2) >= 0);
+	return !less_than(s1, s2);
 }
 
 }

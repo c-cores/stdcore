@@ -438,73 +438,73 @@ bool operator>=(sparse_range<value_type1, step_type1> s1, sparse_range<value_typ
 template <class value_type1, class step_type1, class container2>
 bool operator==(sparse_range<value_type1, step_type1> s1, slice<container2> s2)
 {
-	return (compare(s1, s2) == 0);
+	return equal_to(s1, s2);
 }
 
 template <class value_type1, class step_type1, class container2>
 bool operator!=(sparse_range<value_type1, step_type1> s1, slice<container2> s2)
 {
-	return (compare(s1, s2) != 0);
+	return !equal_to(s1, s2);
 }
 
 template <class value_type1, class step_type1, class container2>
 bool operator<(sparse_range<value_type1, step_type1> s1, slice<container2> s2)
 {
-	return (compare(s1, s2) < 0);
+	return less_than(s1, s2);
 }
 
 template <class value_type1, class step_type1, class container2>
 bool operator>(sparse_range<value_type1, step_type1> s1, slice<container2> s2)
 {
-	return (compare(s1, s2) > 0);
+	return greater_than(s1, s2);
 }
 
 template <class value_type1, class step_type1, class container2>
 bool operator<=(sparse_range<value_type1, step_type1> s1, slice<container2> s2)
 {
-	return (compare(s1, s2) <= 0);
+	return !greater_than(s1, s2);
 }
 
 template <class value_type1, class step_type1, class container2>
 bool operator>=(sparse_range<value_type1, step_type1> s1, slice<container2> s2)
 {
-	return (compare(s1, s2) >= 0);
+	return !less_than(s1, s2);
 }
 
 template <class container1, class value_type2, class step_type2>
 bool operator==(slice<container1> s1, sparse_range<value_type2, step_type2> s2)
 {
-	return (compare(s1, s2) == 0);
+	return equal_to(s1, s2);
 }
 
 template <class container1, class value_type2, class step_type2>
 bool operator!=(slice<container1> s1, sparse_range<value_type2, step_type2> s2)
 {
-	return (compare(s1, s2) != 0);
+	return !equal_to(s1, s2);
 }
 
 template <class container1, class value_type2, class step_type2>
 bool operator<(slice<container1> s1, sparse_range<value_type2, step_type2> s2)
 {
-	return (compare(s1, s2) < 0);
+	return less_than(s1, s2);
 }
 
 template <class container1, class value_type2, class step_type2>
 bool operator>(slice<container1> s1, sparse_range<value_type2, step_type2> s2)
 {
-	return (compare(s1, s2) > 0);
+	return greater_than(s1, s2);
 }
 
 template <class container1, class value_type2, class step_type2>
 bool operator<=(slice<container1> s1, sparse_range<value_type2, step_type2> s2)
 {
-	return (compare(s1, s2) <= 0);
+	return !greater_than(s1, s2);
 }
 
 template <class container1, class value_type2, class step_type2>
 bool operator>=(slice<container1> s1, sparse_range<value_type2, step_type2> s2)
 {
-	return (compare(s1, s2) >= 0);
+	return !less_than(s1, s2);
 }
 
 }

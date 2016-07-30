@@ -1197,18 +1197,6 @@ list<value_type> operator<<(list<value_type> os, const value_type &v)
 	return os;
 }
 
-template<class value_type>
-bool operator==(list<value_type> a0, list<value_type> a1)
-{
-	return (compare(a0, a1) == 0);
-}
-
-template<class value_type>
-bool operator!=(list<value_type> a0, list<value_type> a1)
-{
-	return (compare(a0, a1) != 0);
-}
-
 template <class value_type, class container>
 list<value_type> operator<<(list<value_type> os, const container &c)
 {
@@ -1217,100 +1205,112 @@ list<value_type> operator<<(list<value_type> os, const container &c)
 }
 
 template<class value_type>
+bool operator==(list<value_type> a0, list<value_type> a1)
+{
+	return equal_to(a0, a1);
+}
+
+template<class value_type>
+bool operator!=(list<value_type> a0, list<value_type> a1)
+{
+	return !equal_to(a0, a1);
+}
+
+template<class value_type>
 bool operator<(list<value_type> a0, list<value_type> a1)
 {
-	return (compare(a0, a1) < 0);
+	return less_than(a0, a1);
 }
 
 template<class value_type>
 bool operator>(list<value_type> a0, list<value_type> a1)
 {
-	return (compare(a0, a1) > 0);
+	return greater_than(a0, a1);
 }
 
 template<class value_type>
 bool operator<=(list<value_type> a0, list<value_type> a1)
 {
-	return (compare(a0, a1) <= 0);
+	return !greater_than(a0, a1);
 }
 
 template<class value_type>
 bool operator>=(list<value_type> a0, list<value_type> a1)
 {
-	return (compare(a0, a1) >= 0);
+	return !less_than(a0, a1);
 }
 
 template<class value_type, class container>
 bool operator==(list<value_type> a0, slice<container> a1)
 {
-	return (compare(a0, a1) == 0);
+	return equal_to(a0, a1);
 }
 
 template<class value_type, class container>
 bool operator!=(list<value_type> a0, slice<container> a1)
 {
-	return (compare(a0, a1) != 0);
+	return !equal_to(a0, a1);
 }
 
 template<class value_type, class container>
 bool operator<(list<value_type> a0, slice<container> a1)
 {
-	return (compare(a0, a1) < 0);
+	return less_than(a0, a1);
 }
 
 template<class value_type, class container>
 bool operator>(list<value_type> a0, slice<container> a1)
 {
-	return (compare(a0, a1) > 0);
+	return greater_than(a0, a1);
 }
 
 template<class value_type, class container>
 bool operator<=(list<value_type> a0, slice<container> a1)
 {
-	return (compare(a0, a1) <= 0);
+	return !greater_than(a0, a1);
 }
 
 template<class value_type, class container>
 bool operator>=(list<value_type> a0, slice<container> a1)
 {
-	return (compare(a0, a1) >= 0);
+	return !less_than(a0, a1);
 }
 
 
 template<class container, class value_type>
 bool operator==(slice<container> a0, list<value_type> a1)
 {
-	return (compare(a0, a1) == 0);
+	return equal_to(a0, a1);
 }
 
 template<class container, class value_type>
 bool operator!=(slice<container> a0, list<value_type> a1)
 {
-	return (compare(a0, a1) != 0);
+	return !equal_to(a0, a1);
 }
 
 template<class container, class value_type>
 bool operator<(slice<container> a0, list<value_type> a1)
 {
-	return (compare(a0, a1) < 0);
+	return less_than(a0, a1);
 }
 
 template<class container, class value_type>
 bool operator>(slice<container> a0, list<value_type> a1)
 {
-	return (compare(a0, a1) > 0);
+	return greater_than(a0, a1);
 }
 
 template<class container, class value_type>
 bool operator<=(slice<container> a0, list<value_type> a1)
 {
-	return (compare(a0, a1) <= 0);
+	return !greater_than(a0, a1);
 }
 
 template<class container, class value_type>
 bool operator>=(slice<container> a0, list<value_type> a1)
 {
-	return (compare(a0, a1) >= 0);
+	return !less_than(a0, a1);
 }
 
 }
