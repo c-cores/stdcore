@@ -634,7 +634,7 @@ TEST(array_iterator, replace_container)
 			<< range<int>(0, 4)
 			<< y.sub(0, 3)
 			<< range<int>(7, 10));
-	EXPECT_EQ(i.idx(), 7);
+	EXPECT_EQ(i.idx(), 4);
 
 	i = x.at(4);
 	i.replace(3, y.sub(0, 1));
@@ -645,7 +645,7 @@ TEST(array_iterator, replace_container)
 			<< range<int>(0, 4)
 			<< y[0]
 			<< range<int>(7, 10));
-	EXPECT_EQ(i.idx(), 5);
+	EXPECT_EQ(i.idx(), 4);
 
 	i = x.at(4);
 	i.replace(1, y.sub(0, 3));
@@ -656,7 +656,7 @@ TEST(array_iterator, replace_container)
 			<< range<int>(0, 4)
 			<< y.sub(0, 3)
 			<< range<int>(7, 10));
-	EXPECT_EQ(i.idx(), 7);
+	EXPECT_EQ(i.idx(), 4);
 
 	i = x.at(4);
 	i.replace(-1, y.sub(0, 6));

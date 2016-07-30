@@ -372,24 +372,29 @@ struct array
 			value_type *mid = loc+lower;
 			value_type *fin = loc+upper;
 			typename container::const_iterator j = c.begin();
-			for (; loc < mid && j; loc++, j++)
-				*loc = *j;
+			for (value_type *i = loc; i < mid && j; i++, j++)
+				*i = *j;
 
 			if (s < n)
 			{
-				for (value_type *i = loc; i < fin; i++)
+				for (value_type *i = mid; i < fin; i++)
 					i->~value_type();
-				memmove(loc, fin, (root->count - upper)*sizeof(value_type));
+				memmove(mid, fin, (root->count - upper)*sizeof(value_type));
 				root->count -= diff;
 
 			}
 			else if (n < s)
 			{
 				alloc(diff);
+				// mid and fin are no longer valid after alloc
+				mid = loc+lower;
 				fin = loc+upper;
-				for (; loc < fin && j; loc++, j++)
-					new (loc) value_type(*j);
+				for (value_type *i = mid; i < fin && j; i++, j++)
+					new (i) value_type(*j);
 			}
+
+			if (neg)
+				loc += s;
 		}
 
 		template <class iterator_type>
