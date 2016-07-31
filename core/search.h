@@ -46,7 +46,7 @@ typename container::iterator find_last(container &c, const element &t)
 		if (*i == t)
 			return i;
 
-	return c.end();
+	return c.rend();
 }
 
 template <typename container, typename element>
@@ -56,7 +56,7 @@ typename container::const_iterator find_last(const container &c, const element &
 		if (*i == t)
 			return i;
 
-	return c.end();
+	return c.rend();
 }
 
 template <typename container, typename element>
@@ -114,7 +114,7 @@ typename container1::iterator find_last_of(container1 &c1, const container2 &c2)
 		if (contains(c2, *i))
 			return i;
 
-	return c1.end();
+	return c1.rend();
 }
 
 template <typename container1, typename container2>
@@ -124,7 +124,7 @@ typename container1::const_iterator find_last_of(const container1 &c1, const con
 		if (contains(c2, *i))
 			return i;
 
-	return c1.end();
+	return c1.rend();
 }
 
 template <typename container, typename container2>
@@ -200,13 +200,8 @@ typename container::iterator find_last_pattern(container &c, const container2 &t
 	{
 		bool found = true;
 		typename container::iterator k = i;
-		for (typename container2::const_iterator j = t.rbegin(); j != t.rend() && found; j--,k--)
-		{
-			if (k == c.rend())
-				return c.rend();
-			else
-				found = (*k == *j);
-		}
+		for (typename container2::const_iterator j = t.begin(); j != t.end() && found; j++,k++)
+			found = (k != c.end()) && (*k == *j);
 
 		if (found)
 			return i;
@@ -222,13 +217,8 @@ typename container::const_iterator find_last_pattern(const container &c, const c
 	{
 		bool found = true;
 		typename container::const_iterator k = i;
-		for (typename container2::const_iterator j = t.rbegin(); j != t.rend() && found; j--,k--)
-		{
-			if (k == c.rend())
-				return c.rend();
-			else
-				found = (*k == *j);
-		}
+		for (typename container2::const_iterator j = t.begin(); j != t.end() && found; j++,k++)
+			found = (k != c.end()) && (*k == *j);
 
 		if (found)
 			return i;
@@ -237,17 +227,17 @@ typename container::const_iterator find_last_pattern(const container &c, const c
 	return c.rend();
 }
 
-template <typename container, typename container2, typename container3>
-container2 find_all_pattern(container &c, const container3 &t)
+template <typename container, typename container2>
+array<typename container::iterator> find_all_pattern(container &c, const container2 &t)
 {
-	container2 result;
-	for (typename container::iterator i = c.rbegin(); i != c.rend(); i--)
+	array<typename container::iterator> result;
+	for (typename container::iterator i = c.begin(); i; i++)
 	{
 		bool found = true;
 		typename container::iterator k = i;
-		for (typename container3::const_iterator j = t.rbegin(); j != t.rend() && found; j--,k--)
+		for (typename container2::const_iterator j = t.begin(); j && found; j++,k++)
 		{
-			if (k == c.rend())
+			if (k == c.end())
 				return result;
 			else
 				found = (*k == *j);
@@ -260,17 +250,17 @@ container2 find_all_pattern(container &c, const container3 &t)
 	return result;
 }
 
-template <typename container, typename container2, typename container3>
-container2 find_all_pattern(const container &c, const container3 &t)
+template <typename container, typename container2>
+array<typename container::iterator> find_all_pattern(const container &c, const container2 &t)
 {
-	container2 result;
-	for (typename container::const_iterator i = c.rbegin(); i != c.rend(); i--)
+	array<typename container::iterator> result;
+	for (typename container::const_iterator i = c.begin(); i; i++)
 	{
 		bool found = true;
 		typename container::const_iterator k = i;
-		for (typename container3::const_iterator j = t.rbegin(); j != t.rend() && found; j--,k--)
+		for (typename container2::const_iterator j = t.begin(); j && found; j++,k++)
 		{
-			if (k == c.rend())
+			if (k == c.end())
 				return result;
 			else
 				found = (*k == *j);

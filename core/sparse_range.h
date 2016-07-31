@@ -243,6 +243,28 @@ struct sparse_range
 		return start + step*i;
 	}
 
+	core::slice<sparse_range<value_type, step_type> > deref()
+	{
+		return *this;
+	}
+
+	template <class container>
+	sparse_range<typename container::iterator, step_type> sample(container &c)
+	{
+		return sparse_range<typename container::iterator, step_type>(c.at(start), c.at(finish), step);
+	}
+
+	template <class container>
+	sparse_range<typename container::const_iterator, step_type> sample(const container &c)
+	{
+		return sparse_range<typename container::iterator, step_type>(c.at(start), c.at(finish), step);
+	}
+
+	sparse_range<int, step_type> idx()
+	{
+		return sparse_range<int, step_type>(start.idx(), finish.idx(), step);
+	}
+
 	value_type front() const
 	{
 		return start;
@@ -271,23 +293,6 @@ struct sparse_range
 	const_iterator rend() const
 	{
 		return const_iterator(this, start-step);
-	}
-
-	core::slice<sparse_range<value_type, step_type> > deref()
-	{
-		return *this;
-	}
-
-	template <class container>
-	core::slice<sparse_range<typename container::iterator, step_type> > slice(container &c)
-	{
-		return sparse_range<typename container::iterator, step_type>(c.at(start), c.at(finish), step);
-	}
-
-	template <class container>
-	core::slice<sparse_range<typename container::const_iterator, step_type> > slice(const container &c)
-	{
-		return sparse_range<typename container::iterator, step_type>(c.at(start), c.at(finish), step);
 	}
 
 	core::slice<range<iterator> > sub(int start, int end)

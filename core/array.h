@@ -487,6 +487,11 @@ struct array
 			return *loc;
 		}
 
+		int idx() const
+		{
+			return loc - root->data;
+		}
+
 		const_iterator &operator++(int)
 		{
 			loc++;
@@ -800,6 +805,40 @@ struct array
 		return *(data + (i < 0 ? i+count : i));
 	}
 
+	core::slice<array<value_type> > deref()
+	{
+		return *this;
+	}
+
+	template <class container>
+	array<typename container::iterator> sample(container &c)
+	{
+		array<typename container::iterator> result;
+		result.reserve(count);
+		for (int i = 0; i < count; i++)
+			result.push_back(c.at(data[i]));
+		return result;
+	}
+
+	template <class container>
+	array<typename container::const_iterator> sample(const container &c)
+	{
+		array<typename container::const_iterator> result;
+		result.reserve(count);
+		for (int i = 0; i < count; i++)
+			result.push_back(c.at(data[i]));
+		return result;
+	}
+
+	array<int> idx()
+	{
+		array<int> result;
+		result.reserve(count);
+		for (iterator i = begin(); i != end(); i++)
+			result.push_back(i->idx());
+		return result;
+	}
+
 	value_type &front()
 	{
 		return *data;
@@ -858,31 +897,6 @@ struct array
 	const_iterator rend() const
 	{
 		return const_iterator(this, data-1);
-	}
-
-	core::slice<array<value_type> > deref()
-	{
-		return *this;
-	}
-
-	template <class container>
-	core::slice<array<typename container::iterator> > slice(container &c)
-	{
-		array<typename container::iterator> result;
-		result.reserve(count);
-		for (int i = 0; i < count; i++)
-			result.push_back(c.at(data[i]));
-		return result;
-	}
-
-	template <class container>
-	core::slice<array<typename container::const_iterator> > slice(const container &c)
-	{
-		array<typename container::const_iterator> result;
-		result.reserve(count);
-		for (int i = 0; i < count; i++)
-			result.push_back(c.at(data[i]));
-		return result;
 	}
 
 	core::slice<range<iterator> > sub(int start, int end)
@@ -1309,13 +1323,6 @@ struct array
 	}
 };
 
-template <class value_type>
-array<value_type> &operator<<(array<value_type> &os, const value_type &v)
-{
-	os.push_back(v);
-	return os;
-}
-
 template <class value_type, class container>
 array<value_type> &operator<<(array<value_type> &os, const container &c)
 {
@@ -1324,7 +1331,7 @@ array<value_type> &operator<<(array<value_type> &os, const container &c)
 }
 
 template <class value_type>
-array<value_type> operator<<(array<value_type> os, const value_type &v)
+array<value_type> &operator<<(array<value_type> &os, const value_type &v)
 {
 	os.push_back(v);
 	return os;
@@ -1334,6 +1341,13 @@ template <class value_type, class container>
 array<value_type> operator<<(array<value_type> os, const container &c)
 {
 	os.append_back(c);
+	return os;
+}
+
+template <class value_type>
+array<value_type> operator<<(array<value_type> os, const value_type &v)
+{
+	os.push_back(v);
 	return os;
 }
 

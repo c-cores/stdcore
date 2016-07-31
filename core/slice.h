@@ -217,6 +217,28 @@ struct range
 		return start + i;
 	}
 
+	core::slice<range<value_type> > deref()
+	{
+		return *this;
+	}
+
+	template <class container>
+	range<typename container::iterator> sample(container &c)
+	{
+		return range<typename container::iterator>(c.at(start), c.at(finish)).deref();
+	}
+
+	template <class container>
+	range<typename container::const_iterator> sample(const container &c)
+	{
+		return range<typename container::const_iterator>(c.at(start), c.at(finish)).deref();
+	}
+
+	range<int> idx()
+	{
+		return range<int>(start.idx(), finish.idx());
+	}
+
 	value_type front() const
 	{
 		return start;
@@ -245,23 +267,6 @@ struct range
 	const_iterator rend() const
 	{
 		return const_iterator(this, start-1);
-	}
-
-	core::slice<range<value_type> > deref()
-	{
-		return *this;
-	}
-
-	template <class container>
-	core::slice<range<typename container::iterator> > slice(container &c)
-	{
-		return range<typename container::iterator>(c.at(start), c.at(finish));
-	}
-
-	template <class container>
-	core::slice<range<typename container::const_iterator> > slice(const container &c)
-	{
-		return range<typename container::iterator>(c.at(start), c.at(finish));
 	}
 
 	core::slice<range<iterator> > sub(int start, int end)

@@ -791,6 +791,37 @@ struct list
 		return i < 0 ? (end()+i).get() : (begin()+i).get();
 	}
 
+	core::slice<list<value_type> > deref()
+	{
+		return *this;
+	}
+
+	template <class container>
+	list<typename container::iterator> sample(container &c)
+	{
+		list<typename container::iterator> result;
+		for (iterator i = begin(); i != end(); i++)
+			result.push_back(c.at(*i));
+		return result;
+	}
+
+	template <class container>
+	list<typename container::const_iterator> sample(const container &c)
+	{
+		list<typename container::const_iterator> result;
+		for (iterator i = begin(); i != end(); i++)
+			result.push_back(c.at(*i));
+		return result;
+	}
+
+	list<int> idx()
+	{
+		list<int> result;
+		for (iterator i = begin(); i != end(); i++)
+			result.push_back(i->idx());
+		return result;
+	}
+
 	value_type &front()
 	{
 		return *begin();
@@ -849,29 +880,6 @@ struct list
 	const_iterator rend() const
 	{
 		return const_iterator(this, &left);
-	}
-
-	core::slice<list<value_type> > deref()
-	{
-		return *this;
-	}
-
-	template <class container>
-	core::slice<list<typename container::iterator> > slice(container &c)
-	{
-		list<typename container::iterator> result;
-		for (iterator i = begin(); i != end(); i++)
-			result.push_back(c.at(*i));
-		return result;
-	}
-
-	template <class container>
-	core::slice<list<typename container::const_iterator> > slice(const container &c)
-	{
-		list<typename container::const_iterator> result;
-		for (iterator i = begin(); i != end(); i++)
-			result.push_back(c.at(*i));
-		return result;
 	}
 
 	core::slice<range<iterator> > sub(int start, int end)

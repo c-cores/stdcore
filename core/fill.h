@@ -206,6 +206,28 @@ struct fill
 		return value;
 	}
 
+	core::slice<fill<value_type> > deref()
+	{
+		return *this;
+	}
+
+	template <class container>
+	fill<typename container::iterator> sample(container &c)
+	{
+		return fill<typename container::iterator>(count, c.at(value));
+	}
+
+	template <class container>
+	fill<typename container::const_iterator> sample(const container &c)
+	{
+		return fill<typename container::iterator>(count, c.at(value));
+	}
+
+	fill<int> idx()
+	{
+		return fill<int>(count, value.idx());
+	}
+
 	value_type front() const
 	{
 		return value;
@@ -234,23 +256,6 @@ struct fill
 	const_iterator rend() const
 	{
 		return const_iterator(this, -1);
-	}
-
-	core::slice<fill<value_type> > deref()
-	{
-		return *this;
-	}
-
-	template <class container>
-	core::slice<fill<typename container::iterator> > slice(container &c)
-	{
-		return fill<typename container::iterator>(count, c.at(value));
-	}
-
-	template <class container>
-	core::slice<fill<typename container::const_iterator> > slice(const container &c)
-	{
-		return fill<typename container::iterator>(count, c.at(value));
 	}
 
 	core::slice<range<iterator> > sub(int start, int end)

@@ -81,6 +81,26 @@ string &operator<<(string &s1, const container &v)
 	return s1;
 }
 
+template <class container>
+string &operator<<(string &s1, const typename container::iterator &i)
+{
+	if (i)
+		s1 << i.idx() << ':' << parsable<typename container::type>(i.ptr());
+	else
+		s1 << "null";
+	return s1;
+}
+
+template <class container>
+string &operator<<(string &s1, const typename container::const_iterator &i)
+{
+	if (i)
+		s1 << i.idx() << ':' << parsable<typename container::type>(i.ptr());
+	else
+		s1 << "null";
+	return s1;
+}
+
 template <class type>
 string &operator<<(string &s1, const parsable<type> &p)
 {
