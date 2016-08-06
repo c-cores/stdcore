@@ -45,7 +45,7 @@ TEST(map, insert)
 
 	list<implier<int, int> > y;
 	srand(0);
-	for (int i = 0; i < 100; i++)
+	for (int i = 0; i < 10; i++)
 	{
 		int key = rand();
 		int value = rand();
@@ -79,7 +79,7 @@ TEST(map, find)
 
 	x.clear();
 	srand(0);
-	for (int i = 0; i < 100; i++)
+	for (int i = 0; i < 10; i++)
 	{
 		int key = rand();
 		int value = rand();
@@ -98,7 +98,7 @@ TEST(map, operator_index)
 	map<int, int> x;
 	list<implier<int, int> > y;
 	srand(0);
-	for (int i = 0; i < 100; i++)
+	for (int i = 0; i < 10; i++)
 	{
 		int key = rand();
 		int value = rand();

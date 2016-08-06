@@ -81,6 +81,16 @@ struct array
 			return *loc;
 		}
 
+		iterator &ref()
+		{
+			return *this;
+		}
+
+		const iterator &ref() const
+		{
+			return *this;
+		}
+
 		int idx() const
 		{
 			return loc - root->data;
@@ -485,6 +495,16 @@ struct array
 		const value_type &get() const
 		{
 			return *loc;
+		}
+
+		const_iterator &ref()
+		{
+			return *this;
+		}
+
+		const const_iterator &ref() const
+		{
+			return *this;
 		}
 
 		int idx() const

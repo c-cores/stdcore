@@ -82,6 +82,16 @@ struct fill
 			return root->value;
 		}
 
+		const_iterator &ref()
+		{
+			return *this;
+		}
+
+		const const_iterator &ref() const
+		{
+			return *this;
+		}
+
 		int idx()
 		{
 			return index;

@@ -251,9 +251,9 @@ array<typename container::iterator> find_all_pattern(container &c, const contain
 }
 
 template <typename container, typename container2>
-array<typename container::iterator> find_all_pattern(const container &c, const container2 &t)
+array<typename container::const_iterator> find_all_pattern(const container &c, const container2 &t)
 {
-	array<typename container::iterator> result;
+	array<typename container::const_iterator> result;
 	for (typename container::const_iterator i = c.begin(); i; i++)
 	{
 		bool found = true;
@@ -274,70 +274,86 @@ array<typename container::iterator> find_all_pattern(const container &c, const c
 }
 
 template <typename container, typename element>
-typename container::iterator search_tree(container &c, const element &t, int radix = 2)
+typename container::iterator lower_bound(container &c, const element &t, int radix = 2)
 {
-	int size = c.end() - c.begin();
+	return lower_bound(c.begin(), c.end(), t, radix);
+}
+
+template <typename container, typename element>
+typename container::const_iterator lower_bound(const container &c, const element &t, int radix = 2)
+{
+	return lower_bound(c.begin(), c.end(), t, radix);
+}
+
+template <typename iterator, typename element>
+iterator lower_bound(iterator start, iterator end, const element &t, int radix = 2)
+{
+	int size = end - start;
 	if (size >= radix)
 	{
-		int D = 2*radix - size;
-		typename container::iterator start = c.begin();
-		typename container::iterator finish = c.begin();
-		while (finish)
+		int D = radix - size;
+		for (iterator i = start; i != end; i++)
 		{
 			if (D > 0)
 			{
-				if (t <= *finish)
-					return search_tree(c.sub(start, finish), t, radix);
-				start = finish+1;
-				D += 2*radix - 2*size;
+				if (t <= *(i-1))
+					return lower_bound(start, i, t, radix);
+				start = i;
+				D += radix - size;
 			}
 			else
-				D += 2*radix;
-
-			finish++;
+				D += radix;
 		}
 
-		return search_tree(c.sub(start, finish), t, radix);
+		return lower_bound(start, end, t, radix);
 	}
 	else
 	{
-		typename container::iterator i = c.begin();
-		while (i && *i < t)
+		iterator i = start;
+		while (i != end && *i < t)
 			i++;
 		return i;
 	}
 }
 
 template <typename container, typename element>
-typename container::const_iterator search_tree(const container &c, const element &t, int radix = 2)
+typename container::iterator upper_bound(container &c, const element &t, int radix = 2)
 {
-	int size = c.end() - c.begin();
+	return upper_bound(c.begin(), c.end(), t, radix);
+}
+
+template <typename container, typename element>
+typename container::const_iterator upper_bound(const container &c, const element &t, int radix = 2)
+{
+	return upper_bound(c.begin(), c.end(), t, radix);
+}
+
+template <typename iterator, typename element>
+iterator upper_bound(iterator start, iterator end, const element &t, int radix = 2)
+{
+	int size = end - start;
 	if (size >= radix)
 	{
-		int D = 2*radix - size;
-		typename container::const_iterator start = c.begin();
-		typename container::const_iterator finish = c.begin();
-		while (finish)
+		int D = radix - size;
+		for (iterator i = start; i != end; i++)
 		{
 			if (D > 0)
 			{
-				if (t <= *finish)
-					return search_tree(c.sub(start, finish), t, radix);
-				start = finish+1;
-				D += 2*radix - 2*size;
+				if (t < *(i-1))
+					return upper_bound(start, i, t, radix);
+				start = i;
+				D += radix - size;
 			}
 			else
-				D += 2*radix;
-
-			finish++;
+				D += radix;
 		}
 
-		return search_tree(c.sub(start, finish), t, radix);
+		return upper_bound(start, end, t, radix);
 	}
 	else
 	{
-		typename container::const_iterator i = c.begin();
-		while (i && *i < t)
+		iterator i = start;
+		while (i != end && *i <= t)
 			i++;
 		return i;
 	}

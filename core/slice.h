@@ -65,6 +65,16 @@ struct range
 			return value;
 		}
 
+		const_iterator &ref()
+		{
+			return *this;
+		}
+
+		const const_iterator &ref() const
+		{
+			return *this;
+		}
+
 		int idx()
 		{
 			return value - root->start;

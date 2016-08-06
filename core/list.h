@@ -115,6 +115,16 @@ struct list
 			return ((item*)loc)->value;
 		}
 
+		iterator &ref()
+		{
+			return *this;
+		}
+
+		const iterator &ref() const
+		{
+			return *this;
+		}
+
 		int idx()
 		{
 			int count = 0;
@@ -487,6 +497,16 @@ struct list
 		const value_type *ptr()
 		{
 			return &((const item*)loc)->value;
+		}
+
+		const_iterator &ref()
+		{
+			return *this;
+		}
+
+		const const_iterator &ref() const
+		{
+			return *this;
 		}
 
 		int idx()

@@ -38,14 +38,14 @@ struct map : list<implier<ktype, vtype> >
 
 	iterator insert(ktype key, vtype value)
 	{
-		iterator pos = search_tree(*this, key);
+		iterator pos = lower_bound(*this, key);
 		pos.push(implier<ktype, vtype>(key, value));
 		return (pos-1);
 	}
 
 	iterator find(ktype key)
 	{
-		iterator pos = search_tree(*this, key);
+		iterator pos = lower_bound(*this, key);
 		if (pos != end() && pos->key == key)
 			return pos;
 		else
@@ -54,7 +54,7 @@ struct map : list<implier<ktype, vtype> >
 
 	vtype &operator[](ktype key)
 	{
-		iterator pos = search_tree(*this, key);
+		iterator pos = lower_bound(*this, key);
 		if (pos != end() && pos->key == key)
 			return pos->value;
 		else
