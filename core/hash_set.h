@@ -9,13 +9,15 @@
 
 #include <core/array.h>
 #include <core/list.h>
+#include <core/bits.h>
+#include <core/fill.h>
 #include <core/pair.h>
 #include <core/search.h>
 
 namespace core
 {
 
-template <class key_type, class hasher>
+template <class key_type, uint32_t (*hash_func)(const char *,int,uint32_t)>
 struct hash_set : list<pair<int, key_type> >
 {
 	typedef list<pair<int, key_type> > super;
@@ -23,7 +25,6 @@ struct hash_set : list<pair<int, key_type> >
 	using super::size;
 	using super::left;
 	using super::right;
-	using super::count;
 	using typename super::end_item;
 	using typename super::item;
 
@@ -33,9 +34,9 @@ struct hash_set : list<pair<int, key_type> >
 	struct iterator
 	{
 	protected:
-		friend class hash_set<key_type, hasher>;
+		friend class hash_set<key_type, hash_func>;
 		friend class const_iterator;
-		hash_set<key_type, hasher> *root;
+		hash_set<key_type, hash_func> *root;
 		end_item *loc;
 	public:
 		iterator()
@@ -44,13 +45,13 @@ struct hash_set : list<pair<int, key_type> >
 			loc = NULL;
 		}
 
-		iterator(hash_set<key_type, hasher> *root, end_item *loc)
+		iterator(hash_set<key_type, hash_func> *root, end_item *loc)
 		{
 			this->root = root;
 			this->loc = loc;
 		}
 
-		iterator(hash_set<key_type, hasher> *root, int n)
+		iterator(hash_set<key_type, hash_func> *root, int n)
 		{
 			this->root = root;
 			if (n > 0)
@@ -255,9 +256,9 @@ struct hash_set : list<pair<int, key_type> >
 	struct const_iterator
 	{
 	protected:
-		friend class hash_set<key_type, hasher>;
+		friend class hash_set<key_type, hash_func>;
 		friend class iterator;
-		const hash_set<key_type, hasher> *root;
+		const hash_set<key_type, hash_func> *root;
 		const end_item *loc;
 	public:
 		const_iterator()
@@ -266,19 +267,19 @@ struct hash_set : list<pair<int, key_type> >
 			loc = NULL;
 		}
 
-		const_iterator(const hash_set<key_type, hasher> *l)
+		const_iterator(const hash_set<key_type, hash_func> *l)
 		{
 			root = l;
 			loc = &l->left;
 		}
 
-		const_iterator(const hash_set<key_type, hasher> *l, const end_item *n)
+		const_iterator(const hash_set<key_type, hash_func> *l, const end_item *n)
 		{
 			root = l;
 			loc = n;
 		}
 
-		const_iterator(hash_set<key_type, hasher> *l, int n)
+		const_iterator(hash_set<key_type, hash_func> *l, int n)
 		{
 			root = l;
 			if (n > 0)
@@ -446,9 +447,9 @@ struct hash_set : list<pair<int, key_type> >
 
 	hash_set()
 	{
-		buckets.push_back(17, super::begin());
+		buckets.append_back(fill<typename super::iterator>(17, super::begin()));
 		shift = 28;
-		salt = rand()*(0xFFFFFFFF/RAND_MAX);
+		salt = rand();
 	}
 
 	~hash_set()
@@ -536,9 +537,10 @@ struct hash_set : list<pair<int, key_type> >
 
 	iterator insert(const key_type &key)
 	{
-		hasher h;
+		bits h;
 		h << key;
-		uint32_t hash = h.hash() + salt;
+
+		uint32_t hash = hash_func(h.data, h.size(), salt);
 		int bucket = (int)(hash >> shift);
 
 		typename super::iterator pos = super::end();
@@ -575,9 +577,10 @@ struct hash_set : list<pair<int, key_type> >
 
 	iterator find(const key_type &key)
 	{
-		hasher h;
+		bits h;
 		h << key;
-		uint32_t hash = h.hash() + salt;
+
+		uint32_t hash = hash_func(h.data, h.size(), salt);
 		int bucket = (int)(hash >> shift);
 
 		if (buckets[bucket] != super::end())

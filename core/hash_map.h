@@ -13,10 +13,10 @@
 namespace core
 {
 
-template <class key_type, class value_type, class hasher>
-struct hash_map : hash_set<implier<key_type, value_type>, hasher>
+template <class key_type, class value_type, typename hash_func>
+struct hash_map : hash_set<implier<key_type, value_type>, hash_func>
 {
-	typedef hash_set<implier<key_type, value_type>, hasher> super;
+	typedef hash_set<implier<key_type, value_type>, hash_func> super;
 	using typename super::type;
 	using typename super::iterator;
 	using typename super::const_iterator;

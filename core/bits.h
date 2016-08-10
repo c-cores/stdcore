@@ -31,8 +31,6 @@ struct bits : array<unsigned char>
 	using array<unsigned char>::size;
 
 	using array<unsigned char>::operator=;
-
-	uint32_t hash();
 };
 
 bits &operator<<(bits &str, char v);
@@ -54,7 +52,7 @@ bits &operator<<(bits &str, char *v);
 template <class container>
 bits &operator<<(bits &str, const container &v)
 {
-	for (typename container::const_iterator i = v.begin(); i; i++)
+	for (typename container::const_iterator i = v.begin(); i != v.end(); i++)
 		str << *i;
 	return str;
 }

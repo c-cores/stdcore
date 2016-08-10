@@ -174,9 +174,9 @@ TEST(search, find_first_of)
 	EXPECT_EQ(find_first_of(x, array<int>::values(3, 7, 4, 7)).idx(), 5);
 	EXPECT_EQ(find_first_of(x, array<int>::values(3, 2, 8, 5)).idx(), 0);
 
-	EXPECT_EQ(find_first_of(x, array<int>::values(0, 1, 9)).idx(), x.end().idx());
-	EXPECT_EQ(find_first_of(x, array<int>::values(10, 11, 12)).idx(), x.end().idx());
-	EXPECT_EQ(find_first_of(x, array<int>::values(-1, 6, 9)).idx(), x.end().idx());
+	EXPECT_EQ(find_first_of(x, array<int>::values(3, 0, 1, 9)).idx(), x.end().idx());
+	EXPECT_EQ(find_first_of(x, array<int>::values(3, 10, 11, 12)).idx(), x.end().idx());
+	EXPECT_EQ(find_first_of(x, array<int>::values(3, -1, 6, 9)).idx(), x.end().idx());
 
 	slice<range<array<int>::iterator> > y = x.sub();
 	EXPECT_EQ(find_first_of(y, range<int>(2, 5)).idx(), 0);
@@ -186,9 +186,9 @@ TEST(search, find_first_of)
 	EXPECT_EQ(find_first_of(y, array<int>::values(3, 7, 4, 7)).idx(), 5);
 	EXPECT_EQ(find_first_of(y, array<int>::values(3, 2, 8, 5)).idx(), 0);
 
-	EXPECT_EQ(find_first_of(y, array<int>::values(0, 1, 9)).idx(), y.end().idx());
-	EXPECT_EQ(find_first_of(y, array<int>::values(10, 11, 12)).idx(), y.end().idx());
-	EXPECT_EQ(find_first_of(y, array<int>::values(-1, 6, 9)).idx(), y.end().idx());
+	EXPECT_EQ(find_first_of(y, array<int>::values(3, 0, 1, 9)).idx(), y.end().idx());
+	EXPECT_EQ(find_first_of(y, array<int>::values(3, 10, 11, 12)).idx(), y.end().idx());
+	EXPECT_EQ(find_first_of(y, array<int>::values(3, -1, 6, 9)).idx(), y.end().idx());
 
 	const array<int> &z = x;
 	EXPECT_EQ(find_first_of(z, range<int>(2, 5)).idx(), 0);
@@ -198,9 +198,9 @@ TEST(search, find_first_of)
 	EXPECT_EQ(find_first_of(z, array<int>::values(3, 7, 4, 7)).idx(), 5);
 	EXPECT_EQ(find_first_of(z, array<int>::values(3, 2, 8, 5)).idx(), 0);
 
-	EXPECT_EQ(find_first_of(z, array<int>::values(0, 1, 9)).idx(), z.end().idx());
-	EXPECT_EQ(find_first_of(z, array<int>::values(10, 11, 12)).idx(), z.end().idx());
-	EXPECT_EQ(find_first_of(z, array<int>::values(-1, 6, 9)).idx(), z.end().idx());
+	EXPECT_EQ(find_first_of(z, array<int>::values(3, 0, 1, 9)).idx(), z.end().idx());
+	EXPECT_EQ(find_first_of(z, array<int>::values(3, 10, 11, 12)).idx(), z.end().idx());
+	EXPECT_EQ(find_first_of(z, array<int>::values(3, -1, 6, 9)).idx(), z.end().idx());
 }
 
 TEST(search, contains_one_of)
@@ -213,9 +213,10 @@ TEST(search, contains_one_of)
 	EXPECT_TRUE(contains_one_of(x, array<int>::values(3, 7, 4, 7)));
 	EXPECT_TRUE(contains_one_of(x, array<int>::values(3, 2, 8, 5)));
 
-	EXPECT_FALSE(contains_one_of(x, array<int>::values(0, 1, 9)));
-	EXPECT_FALSE(contains_one_of(x, array<int>::values(10, 11, 12)));
-	EXPECT_FALSE(contains_one_of(x, array<int>::values(-1, 6, 9)));
+	cout << x << endl;
+	EXPECT_FALSE(contains_one_of(x, array<int>::values(3, 0, 1, 9)));
+	EXPECT_FALSE(contains_one_of(x, array<int>::values(3, 10, 11, 12)));
+	EXPECT_FALSE(contains_one_of(x, array<int>::values(3, -1, 6, 9)));
 
 	slice<range<array<int>::iterator> > y = x.sub();
 	EXPECT_TRUE(contains_one_of(y, range<int>(2, 5)));
@@ -225,9 +226,9 @@ TEST(search, contains_one_of)
 	EXPECT_TRUE(contains_one_of(y, array<int>::values(3, 7, 4, 7)));
 	EXPECT_TRUE(contains_one_of(y, array<int>::values(3, 2, 8, 5)));
 
-	EXPECT_FALSE(contains_one_of(y, array<int>::values(0, 1, 9)));
-	EXPECT_FALSE(contains_one_of(y, array<int>::values(10, 11, 12)));
-	EXPECT_FALSE(contains_one_of(y, array<int>::values(-1, 6, 9)));
+	EXPECT_FALSE(contains_one_of(y, array<int>::values(3, 0, 1, 9)));
+	EXPECT_FALSE(contains_one_of(y, array<int>::values(3, 10, 11, 12)));
+	EXPECT_FALSE(contains_one_of(y, array<int>::values(3, -1, 6, 9)));
 
 	const array<int> &z = x;
 	EXPECT_TRUE(contains_one_of(z, range<int>(2, 5)));
@@ -237,9 +238,9 @@ TEST(search, contains_one_of)
 	EXPECT_TRUE(contains_one_of(z, array<int>::values(3, 7, 4, 7)));
 	EXPECT_TRUE(contains_one_of(z, array<int>::values(3, 2, 8, 5)));
 
-	EXPECT_FALSE(contains_one_of(z, array<int>::values(0, 1, 9)));
-	EXPECT_FALSE(contains_one_of(z, array<int>::values(10, 11, 12)));
-	EXPECT_FALSE(contains_one_of(z, array<int>::values(-1, 6, 9)));
+	EXPECT_FALSE(contains_one_of(z, array<int>::values(3, 0, 1, 9)));
+	EXPECT_FALSE(contains_one_of(z, array<int>::values(3, 10, 11, 12)));
+	EXPECT_FALSE(contains_one_of(z, array<int>::values(3, -1, 6, 9)));
 }
 
 TEST(search, find_last_of)
@@ -252,9 +253,9 @@ TEST(search, find_last_of)
 	EXPECT_EQ(find_last_of(x, array<int>::values(3, 7, 4, 7)).idx(), 6);
 	EXPECT_EQ(find_last_of(x, array<int>::values(3, 2, 8, 5)).idx(), 9);
 
-	EXPECT_EQ(find_last_of(x, array<int>::values(0, 1, 9)).idx(), x.rend().idx());
-	EXPECT_EQ(find_last_of(x, array<int>::values(10, 11, 12)).idx(), x.rend().idx());
-	EXPECT_EQ(find_last_of(x, array<int>::values(-1, 6, 9)).idx(), x.rend().idx());
+	EXPECT_EQ(find_last_of(x, array<int>::values(3, 0, 1, 9)).idx(), x.rend().idx());
+	EXPECT_EQ(find_last_of(x, array<int>::values(3, 10, 11, 12)).idx(), x.rend().idx());
+	EXPECT_EQ(find_last_of(x, array<int>::values(3, -1, 6, 9)).idx(), x.rend().idx());
 
 	slice<range<array<int>::iterator> > y = x.sub();
 	EXPECT_EQ(find_last_of(y, range<int>(2, 5)).idx(), 7);
@@ -264,9 +265,9 @@ TEST(search, find_last_of)
 	EXPECT_EQ(find_last_of(y, array<int>::values(3, 7, 4, 7)).idx(), 6);
 	EXPECT_EQ(find_last_of(y, array<int>::values(3, 2, 8, 5)).idx(), 9);
 
-	EXPECT_EQ(find_last_of(y, array<int>::values(0, 1, 9)).idx(), y.rend().idx());
-	EXPECT_EQ(find_last_of(y, array<int>::values(10, 11, 12)).idx(), y.rend().idx());
-	EXPECT_EQ(find_last_of(y, array<int>::values(-1, 6, 9)).idx(), y.rend().idx());
+	EXPECT_EQ(find_last_of(y, array<int>::values(3, 0, 1, 9)).idx(), y.rend().idx());
+	EXPECT_EQ(find_last_of(y, array<int>::values(3, 10, 11, 12)).idx(), y.rend().idx());
+	EXPECT_EQ(find_last_of(y, array<int>::values(3, -1, 6, 9)).idx(), y.rend().idx());
 
 	const array<int> &z = x;
 	EXPECT_EQ(find_last_of(z, range<int>(2, 5)).idx(), 7);
@@ -276,9 +277,9 @@ TEST(search, find_last_of)
 	EXPECT_EQ(find_last_of(z, array<int>::values(3, 7, 4, 7)).idx(), 6);
 	EXPECT_EQ(find_last_of(z, array<int>::values(3, 2, 8, 5)).idx(), 9);
 
-	EXPECT_EQ(find_last_of(z, array<int>::values(0, 1, 9)).idx(), z.rend().idx());
-	EXPECT_EQ(find_last_of(z, array<int>::values(10, 11, 12)).idx(), z.rend().idx());
-	EXPECT_EQ(find_last_of(z, array<int>::values(-1, 6, 9)).idx(), z.rend().idx());
+	EXPECT_EQ(find_last_of(z, array<int>::values(3, 0, 1, 9)).idx(), z.rend().idx());
+	EXPECT_EQ(find_last_of(z, array<int>::values(3, 10, 11, 12)).idx(), z.rend().idx());
+	EXPECT_EQ(find_last_of(z, array<int>::values(3, -1, 6, 9)).idx(), z.rend().idx());
 }
 
 TEST(search, find_all_of)
@@ -292,9 +293,9 @@ TEST(search, find_all_of)
 	EXPECT_EQ(find_all_of(x, array<int>::values(3, 2, 8, 5)).idx(), array<int>::values(7, 0, 1, 2, 4, 7, 8, 9));
 
 	EXPECT_EQ(find_all_of(x, array<int>()).idx(), array<int>());
-	EXPECT_EQ(find_all_of(x, array<int>::values(0, 1, 9)).idx(), array<int>());
-	EXPECT_EQ(find_all_of(x, array<int>::values(10, 11, 12)).idx(), array<int>());
-	EXPECT_EQ(find_all_of(x, array<int>::values(-1, 6, 9)).idx(), array<int>());
+	EXPECT_EQ(find_all_of(x, array<int>::values(3, 0, 1, 9)).idx(), array<int>());
+	EXPECT_EQ(find_all_of(x, array<int>::values(3, 10, 11, 12)).idx(), array<int>());
+	EXPECT_EQ(find_all_of(x, array<int>::values(3, -1, 6, 9)).idx(), array<int>());
 
 	slice<range<array<int>::iterator> > y = x.sub();
 	EXPECT_EQ(find_all_of(y, range<int>(2, 5)).idx(), array<int>::values(4, 0, 3, 6, 7));
@@ -305,9 +306,9 @@ TEST(search, find_all_of)
 	EXPECT_EQ(find_all_of(y, array<int>::values(3, 2, 8, 5)).idx(), array<int>::values(7, 0, 1, 2, 4, 7, 8, 9));
 
 	EXPECT_EQ(find_all_of(y, array<int>()).idx(), array<int>());
-	EXPECT_EQ(find_all_of(y, array<int>::values(0, 1, 9)).idx(), array<int>());
-	EXPECT_EQ(find_all_of(y, array<int>::values(10, 11, 12)).idx(), array<int>());
-	EXPECT_EQ(find_all_of(y, array<int>::values(-1, 6, 9)).idx(), array<int>());
+	EXPECT_EQ(find_all_of(y, array<int>::values(3, 0, 1, 9)).idx(), array<int>());
+	EXPECT_EQ(find_all_of(y, array<int>::values(3, 10, 11, 12)).idx(), array<int>());
+	EXPECT_EQ(find_all_of(y, array<int>::values(3, -1, 6, 9)).idx(), array<int>());
 
 	const array<int> &z = x;
 	EXPECT_EQ(find_all_of(z, range<int>(2, 5)).idx(), array<int>::values(4, 0, 3, 6, 7));
@@ -318,9 +319,9 @@ TEST(search, find_all_of)
 	EXPECT_EQ(find_all_of(z, array<int>::values(3, 2, 8, 5)).idx(), array<int>::values(7, 0, 1, 2, 4, 7, 8, 9));
 
 	EXPECT_EQ(find_all_of(z, array<int>()).idx(), array<int>());
-	EXPECT_EQ(find_all_of(z, array<int>::values(0, 1, 9)).idx(), array<int>());
-	EXPECT_EQ(find_all_of(z, array<int>::values(10, 11, 12)).idx(), array<int>());
-	EXPECT_EQ(find_all_of(z, array<int>::values(-1, 6, 9)).idx(), array<int>());
+	EXPECT_EQ(find_all_of(z, array<int>::values(3, 0, 1, 9)).idx(), array<int>());
+	EXPECT_EQ(find_all_of(z, array<int>::values(3, 10, 11, 12)).idx(), array<int>());
+	EXPECT_EQ(find_all_of(z, array<int>::values(3, -1, 6, 9)).idx(), array<int>());
 }
 
 TEST(search, find_first_pattern)

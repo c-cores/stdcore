@@ -32,43 +32,43 @@ TEST(math, radtodeg)
 
 TEST(math, count_ones)
 {
-	EXPECT_EQ(0, count_ones(0));
-	EXPECT_EQ(1, count_ones(1));
-	EXPECT_EQ(1, count_ones(2));
-	EXPECT_EQ(2, count_ones(3));
-	EXPECT_EQ(1, count_ones(4));
-	EXPECT_EQ(2, count_ones(5));
-	EXPECT_EQ(2, count_ones(6));
-	EXPECT_EQ(3, count_ones(7));
-	EXPECT_EQ(1, count_ones(8));
-	EXPECT_EQ(2, count_ones(9));
-	EXPECT_EQ(2, count_ones(10));
-	EXPECT_EQ(3, count_ones(11));
-	EXPECT_EQ(2, count_ones(12));
-	EXPECT_EQ(3, count_ones(13));
-	EXPECT_EQ(3, count_ones(14));
-	EXPECT_EQ(4, count_ones(15));
-	EXPECT_EQ(32, count_ones((uint32_t)-1));
+	EXPECT_EQ((uint32_t)0, count_ones(0));
+	EXPECT_EQ((uint32_t)1, count_ones(1));
+	EXPECT_EQ((uint32_t)1, count_ones(2));
+	EXPECT_EQ((uint32_t)2, count_ones(3));
+	EXPECT_EQ((uint32_t)1, count_ones(4));
+	EXPECT_EQ((uint32_t)2, count_ones(5));
+	EXPECT_EQ((uint32_t)2, count_ones(6));
+	EXPECT_EQ((uint32_t)3, count_ones(7));
+	EXPECT_EQ((uint32_t)1, count_ones(8));
+	EXPECT_EQ((uint32_t)2, count_ones(9));
+	EXPECT_EQ((uint32_t)2, count_ones(10));
+	EXPECT_EQ((uint32_t)3, count_ones(11));
+	EXPECT_EQ((uint32_t)2, count_ones(12));
+	EXPECT_EQ((uint32_t)3, count_ones(13));
+	EXPECT_EQ((uint32_t)3, count_ones(14));
+	EXPECT_EQ((uint32_t)4, count_ones(15));
+	EXPECT_EQ((uint32_t)32, count_ones((uint32_t)-1));
 }
 
 TEST(math, count_zeros)
 {
-	EXPECT_EQ(31, count_zeros(1));
-	EXPECT_EQ(31, count_zeros(2));
-	EXPECT_EQ(30, count_zeros(3));
-	EXPECT_EQ(31, count_zeros(4));
-	EXPECT_EQ(30, count_zeros(5));
-	EXPECT_EQ(30, count_zeros(6));
-	EXPECT_EQ(29, count_zeros(7));
-	EXPECT_EQ(31, count_zeros(8));
-	EXPECT_EQ(30, count_zeros(9));
-	EXPECT_EQ(30, count_zeros(10));
-	EXPECT_EQ(29, count_zeros(11));
-	EXPECT_EQ(30, count_zeros(12));
-	EXPECT_EQ(29, count_zeros(13));
-	EXPECT_EQ(29, count_zeros(14));
-	EXPECT_EQ(28, count_zeros(15));
-	EXPECT_EQ(0, count_zeros((uint32_t)-1));
+	EXPECT_EQ((uint32_t)31, count_zeros(1));
+	EXPECT_EQ((uint32_t)31, count_zeros(2));
+	EXPECT_EQ((uint32_t)30, count_zeros(3));
+	EXPECT_EQ((uint32_t)31, count_zeros(4));
+	EXPECT_EQ((uint32_t)30, count_zeros(5));
+	EXPECT_EQ((uint32_t)30, count_zeros(6));
+	EXPECT_EQ((uint32_t)29, count_zeros(7));
+	EXPECT_EQ((uint32_t)31, count_zeros(8));
+	EXPECT_EQ((uint32_t)30, count_zeros(9));
+	EXPECT_EQ((uint32_t)30, count_zeros(10));
+	EXPECT_EQ((uint32_t)29, count_zeros(11));
+	EXPECT_EQ((uint32_t)30, count_zeros(12));
+	EXPECT_EQ((uint32_t)29, count_zeros(13));
+	EXPECT_EQ((uint32_t)29, count_zeros(14));
+	EXPECT_EQ((uint32_t)28, count_zeros(15));
+	EXPECT_EQ((uint32_t)0, count_zeros((uint32_t)-1));
 }
 
 TEST(math, powi)
