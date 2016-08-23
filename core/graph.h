@@ -15,14 +15,6 @@ struct graph
 
 	struct end_node
 	{
-	private:
-		friend class graph<value_type>;
-		friend class iterator;
-		friend class const_iterator;
-		end_node *left;
-		end_node *right;
-	
-	public:
 		end_node()
 		{
 			left = this;
@@ -32,6 +24,9 @@ struct graph
 		virtual ~end_node()
 		{
 		}
+
+		end_node *left;
+		end_node *right;
 	};
 
 	struct node : end_node 
@@ -53,48 +48,6 @@ struct graph
 		array<iterator> next;
 		array<iterator> prev;
 	};
-
-	graph()
-	{
-		left.right = &right;
-		right.left = &left;
-	}
-
-	graph(const graph<value_type> &copy)
-	{
-		clear();
-
-		map<node*, node*> node_map;
-		for (const_iterator i = copy.begin(); i; i++)
-			node_map.insert(i.loc, insert(*i).loc);
-		
-		for (typename map<node*, node*>::iterator i = node_map.begin(); i; i++)
-		{
-			i->second->next.reserve(i->left->next.size());
-			for (typename array<iterator>::const_iterator j = i->left->next.begin(); j; j++)
-			{
-				typename map<node*, node*>::iterator loc = node_map.find(j->loc);
-				if (loc)
-					i->value->next.push_back(loc->value);
-			}
-
-			i->second->prev.reserve(i->left->prev.size());
-			for (typename array<iterator>::const_iterator j = i->left->prev.begin(); j; j++)
-			{
-				typename map<node*, node*>::iterator loc = node_map.find(j->loc);
-				if (loc)
-					i->value->prev.push_back(loc->value);
-			}
-		}
-	}
-
-	~graph()
-	{
-		clear();
-	}
-
-	end_node left;
-	end_node right;
 
 	struct iterator
 	{
@@ -125,7 +78,7 @@ struct graph
 			loc = copy.loc;
 		}
 
-		operator bool()
+		operator bool() const
 		{
 			return loc != &root->left && loc != &root->right;
 		}
@@ -140,12 +93,12 @@ struct graph
 			return &((node*)loc)->value;
 		}
 
-		value_type *pointer()
+		value_type *ptr()
 		{
 			return &((node*)loc)->value;
 		}
 
-		value_type &value()
+		value_type &get()
 		{
 			return ((node*)loc)->value;
 		}
@@ -257,29 +210,46 @@ struct graph
 			return count;
 		}
 
-		bool operator==(const iterator &iter)
+		bool operator==(const iterator &iter) const
 		{
 			return loc == iter.loc;
 		}
 
-		bool operator!=(const iterator &iter)
+		bool operator!=(const iterator &iter) const
 		{
 			return loc != iter.loc;
 		}
 
 		value_type pop()
 		{
-			for (typename array<iterator>::iterator i = next().begin(); i; i++)
+			array<iterator> n = next();
+			array<iterator> p = prev();
+			for (typename array<iterator>::iterator i = n.begin(); i != n.end(); i++)
 				remove(i->prev(), *this);
-			for (typename array<iterator>::iterator i = prev().begin(); i; i++)
+			for (typename array<iterator>::iterator i = p.begin(); i != p.end(); i++)
 				remove(i->next(), *this);
-			value_type result = value();
+			value_type result = get();
 			loc->left->right = loc->right;
 			loc->right->left = loc->left;
 			delete loc;
 			root = NULL;
 			loc = NULL;
 			return result;
+		}
+
+		void drop()
+		{
+			array<iterator> n = next();
+			array<iterator> p = prev();
+			for (typename array<iterator>::iterator i = n.begin(); i != n.end(); i++)
+				remove(i->prev(), *this);
+			for (typename array<iterator>::iterator i = p.begin(); i != p.end(); i++)
+				remove(i->next(), *this);
+			loc->left->right = loc->right;
+			loc->right->left = loc->left;
+			delete loc;
+			root = NULL;
+			loc = NULL;
 		}
 
 		iterator link(iterator n)
@@ -318,7 +288,7 @@ struct graph
 			loc = NULL;
 		}
 
-		const_iterator(graph<value_type> *root, end_node *loc)
+		const_iterator(const graph<value_type> *root, const end_node *loc)
 		{
 			this->root = root;
 			this->loc = loc;
@@ -345,12 +315,12 @@ struct graph
 			return &((node*)loc)->value;
 		}
 
-		const value_type *pointer()
+		const value_type *ptr()
 		{
 			return &((node*)loc)->value;
 		}
 
-		const value_type &value()
+		const value_type &get()
 		{
 			return ((node*)loc)->value;
 		}
@@ -474,6 +444,49 @@ struct graph
 		}
 	};
 
+	end_node left;
+	end_node right;
+
+	graph()
+	{
+		left.right = &right;
+		right.left = &left;
+	}
+
+	graph(const graph<value_type> &copy)
+	{
+		left.right = &right;
+		right.left = &left;
+
+		map<const node*, node*> node_map;
+		for (const_iterator i = copy.begin(); i != copy.end(); i++)
+			node_map.insert((const node*)i.loc, (node*)insert(*i).loc);
+
+		for (typename map<const node*, node*>::iterator i = node_map.begin(); i; i++)
+		{
+			i->value->next.reserve(i->key->next.size());
+			for (typename array<iterator>::const_iterator j = i->key->next.begin(); j; j++)
+			{
+				typename map<const node*, node*>::iterator loc = node_map.find((const node*)j->loc);
+				if (loc)
+					i->value->next.push_back(iterator(this, loc->value));
+			}
+
+			i->value->prev.reserve(i->key->prev.size());
+			for (typename array<iterator>::const_iterator j = i->key->prev.begin(); j; j++)
+			{
+				typename map<const node*, node*>::iterator loc = node_map.find((const node*)j->loc);
+				if (loc)
+					i->value->prev.push_back(iterator(this, loc->value));
+			}
+		}
+	}
+
+	~graph()
+	{
+		clear();
+	}
+
 	void clear()
 	{
 		end_node *curr = left.right, *prev;
@@ -507,22 +520,22 @@ struct graph
 		return iterator(this, &left);
 	}
 
-	iterator begin() const
+	const_iterator begin() const
 	{
 		return const_iterator(this, left.right);
 	}
 
-	iterator rbegin() const
+	const_iterator rbegin() const
 	{
 		return const_iterator(this, right.left);
 	}
 
-	iterator end() const
+	const_iterator end() const
 	{
 		return const_iterator(this, &right);
 	}
 
-	iterator rend() const
+	const_iterator rend() const
 	{
 		return const_iterator(this, &left);
 	}
@@ -541,24 +554,24 @@ struct graph
 	{
 		clear();
 
-		map<node*, node*> node_map;
-		for (const_iterator i = copy.begin(); i; i++)
-			node_map.insert(i.loc, insert(*i).loc);
-		
-		for (typename map<node*, node*>::iterator i = node_map.begin(); i; i++)
+		map<const node*, node*> node_map;
+		for (const_iterator i = copy.begin(); i != copy.end(); i++)
+			node_map.insert((const node*)i.loc, (node*)insert(*i).loc);
+
+		for (typename map<const node*, node*>::iterator i = node_map.begin(); i; i++)
 		{
-			i->second->next.reserve(i->left->next.size());
-			for (typename array<iterator>::iterator j = i->left->next.begin(); j; j++)
+			i->value->next.reserve(i->key->next.size());
+			for (typename array<iterator>::const_iterator j = i->key->next.begin(); j; j++)
 			{
-				typename map<node*, node*>::iterator loc = node_map.find(j->loc);
+				typename map<const node*, node*>::iterator loc = node_map.find((const node*)j->loc);
 				if (loc)
-					i->second->next.push_back(iterator(this, loc->value));
+					i->value->next.push_back(iterator(this, loc->value));
 			}
 
-			i->second->prev.reserve(i->left->prev.size());
-			for (typename array<iterator>::iterator j = i->left->prev.begin(); j; j++)
+			i->value->prev.reserve(i->key->prev.size());
+			for (typename array<iterator>::const_iterator j = i->key->prev.begin(); j; j++)
 			{
-				typename map<node*, node*>::iterator loc = node_map.find(j->loc);
+				typename map<const node*, node*>::iterator loc = node_map.find((const node*)j->loc);
 				if (loc)
 					i->value->prev.push_back(iterator(this, loc->value));
 			}
@@ -566,7 +579,7 @@ struct graph
 		return *this;
 	}
 
-	struct refactoring
+	/*struct refactoring
 	{
 		refactoring() {}
 		~refactoring() {}
@@ -744,7 +757,7 @@ struct graph
 
 			return left;
 		}
-	};
+	};*/
 };
 
 }

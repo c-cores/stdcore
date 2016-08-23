@@ -1,4 +1,4 @@
-CXXFLAGS	 =  -O2 -Wall -fmessage-length=0 -I.
+CXXFLAGS	 =  -g -O2 -Wall -fmessage-length=0 -I.
 # -g -fprofile-arcs -ftest-coverage
 SOURCES		 := $(wildcard core/*.cpp)
 TESTS        := $(wildcard test/*.cpp)
