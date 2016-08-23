@@ -426,5 +426,13 @@ container1 difference(const container1 &c1, const container2 &c2)
 	return result;
 }
 
+template <typename container, typename value_type>
+void remove(container &c, value_type value)
+{
+	for (typename container::iterator i = c.rbegin(); i != c.rend(); i--)
+		if (*i == value)
+			i.drop();
+}
+
 }
 

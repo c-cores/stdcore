@@ -171,3 +171,19 @@ TEST(algorithm, difference)
 	EXPECT_EQ(difference(y, z), array<int>::values(5, 1, 2, 3, 4, 5));
 	EXPECT_EQ(difference(z, y), array<int>::values(5, 6, 7, 8, 9, 10));
 }
+
+TEST(algorithm, remove)
+{
+	array<int> y = array<int>::values(7, 2, 4, 6, 2, 7, 8, 8);
+	EXPECT_EQ(y, array<int>::values(7, 2, 4, 6, 2, 7, 8, 8));
+	remove(y, 2);
+	EXPECT_EQ(y, array<int>::values(5, 4, 6, 7, 8, 8));
+	remove(y, 7);
+	EXPECT_EQ(y, array<int>::values(4, 4, 6, 8, 8));
+	remove(y, 8);
+	EXPECT_EQ(y, array<int>::values(2, 4, 6));
+	remove(y, 4);
+	EXPECT_EQ(y, array<int>::values(1, 6));
+	remove(y, 6);
+	EXPECT_EQ(y, array<int>());
+}
