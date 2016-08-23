@@ -13,6 +13,7 @@
 #include <core/fill.h>
 #include <core/pair.h>
 #include <core/search.h>
+#include <core/ascii_stream.h>
 
 namespace core
 {
@@ -22,7 +23,6 @@ struct hash_set : list<pair<int, key_type> >
 {
 	typedef list<pair<int, key_type> > super;
 	typedef key_type type;
-	using super::size;
 	using super::left;
 	using super::right;
 	using typename super::end_item;
@@ -99,6 +99,11 @@ struct hash_set : list<pair<int, key_type> >
 		key_type &get()
 		{
 			return ((item*)loc)->value.second;
+		}
+
+		int bucket()
+		{
+			return ((item*)loc)->value.first >> root->shift;
 		}
 
 		iterator &operator++(int)
@@ -226,29 +231,40 @@ struct hash_set : list<pair<int, key_type> >
 				
 				for (int i = 0; i < n && loc != &root->right; i++)
 				{
+					for (int b = bucket(); b >= 0 && root->buckets[b].ptr() == &(((item*)loc)->value); b--)
+					{
+						printf("bucket %d/%d\n", b, root->buckets.size());
+						root->buckets[b]++;
+					}
+
 					end_item *temp = loc->next;
 					delete loc;
 					loc = temp;
+					root->count--;
 				}
 					
 				start->next = loc;
 				loc->prev = start;
-				root->count -= n;
 			}
 			else if (n < 0)
 			{
-				end_item *start = loc->prev;
+				iterator start = *this-1;
 				
-				for (int i = 0; i > n && start != &root->left; i--)
+				for (int i = 0; i > n && start.loc != &root->left; i--)
 				{
-					end_item *temp = start->prev;
-					delete start;
-					start = temp;
+					for (int b = start.bucket(); b < root->buckets.size() && root->buckets[b].ptr() == &(((item*)start.loc)->value); b++)
+					{
+						root->buckets[b]--;
+					}
+
+					end_item *temp = start.loc->prev;
+					delete start.loc;
+					start.loc = temp;
+					root->count--;
 				}
 				
-				start->next = loc;
-				loc->prev = start;
-				root->count += n;
+				start.loc->next = loc;
+				loc->prev = start.loc;
 			}
 		}
 	};
@@ -334,6 +350,11 @@ struct hash_set : list<pair<int, key_type> >
 		const key_type *ptr()
 		{
 			return &((const item*)loc)->value.second;
+		}
+
+		int bucket()
+		{
+			return ((item*)loc)->value.first >> root->shift;
 		}
 
 		const_iterator &operator++(int)
@@ -450,6 +471,7 @@ struct hash_set : list<pair<int, key_type> >
 		buckets.append_back(fill<typename super::iterator>(17, super::begin()));
 		shift = 28;
 		salt = rand();
+		count = 0;
 	}
 
 	~hash_set()
@@ -459,6 +481,7 @@ struct hash_set : list<pair<int, key_type> >
 	array<typename super::iterator> buckets;
 	uint32_t salt;
 	int shift;
+	int count;
 
 	iterator at(int i)
 	{
@@ -535,18 +558,23 @@ struct hash_set : list<pair<int, key_type> >
 		return const_iterator(this, &left);
 	}
 
+	int size()
+	{
+		return count;
+	}
+
 	iterator insert(const key_type &key)
 	{
 		bits h;
 		h << key;
 
-		uint32_t hash = hash_func(h.data, h.size(), salt);
+		uint32_t hash = hash_func((const char*)h.data, h.size(), salt);
 		int bucket = (int)(hash >> shift);
 
 		typename super::iterator pos = super::end();
 		pair<int, key_type> search(hash, key);
 		if (buckets[bucket] != super::end())
-			pos = search_tree(super::sub(buckets[bucket], buckets[bucket+1]-1), search);
+			pos = lower_bound(super::sub(buckets[bucket], buckets[bucket+1]), search);
 
 		pos.push(search);
 		typename super::iterator result = pos-1;
@@ -554,12 +582,14 @@ struct hash_set : list<pair<int, key_type> >
 		for (int i = bucket; i >= 0 && buckets[i] == pos; i--)
 			buckets[i] = result;
 
-		if (size() > buckets.size()-1)
+		count++;
+
+		if (count > buckets.size()-1)
 		{
 			shift--;
 
 			int old_size = buckets.size()-1;
-			buckets.push_back(buckets.size()-1, super::end());
+			buckets.append_back(fill<typename super::iterator>(buckets.size()-1, super::end()));
 			for (int i = old_size-1; i > 0; i--)
 				buckets[i*2] = buckets[i];
 			for (int i = 0; i < buckets.size()-1; i+=2)
@@ -580,13 +610,13 @@ struct hash_set : list<pair<int, key_type> >
 		bits h;
 		h << key;
 
-		uint32_t hash = hash_func(h.data, h.size(), salt);
+		uint32_t hash = hash_func((const char*)h.data, h.size(), salt);
 		int bucket = (int)(hash >> shift);
 
 		if (buckets[bucket] != super::end())
 		{
 			pair<int, key_type> search(hash, key);
-			typename super::iterator pos = search_tree(super::sub(buckets[bucket], buckets[bucket+1]-1), search);
+			typename super::iterator pos = lower_bound(super::sub(buckets[bucket], buckets[bucket+1]), search);
 			if (*pos != search)
 				return end();
 			else
@@ -594,6 +624,19 @@ struct hash_set : list<pair<int, key_type> >
 		}
 		else
 			return end();
+	}
+
+	int count_all(const key_type &key)
+	{
+		int result = 0;
+		iterator start = find(key);
+		while (start != end() && *start == key)
+		{
+			result++;
+			start++;
+		}
+
+		return result;
 	}
 
 	bool contains(const key_type &key)

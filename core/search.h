@@ -81,6 +81,15 @@ array<typename container::const_iterator> find_all(const container &c, const ele
 	return results;
 }
 
+template <typename container, typename element>
+int count_all(const container &c, const element &t)
+{
+	int result = 0;
+	for (typename container::const_iterator i = c.begin(); i != c.end(); i++)
+		result += (*i == t);
+	return result;
+}
+
 template <typename container1, typename container2>
 typename container1::iterator find_first_of(container1 &c1, const container2 &c2)
 {
@@ -147,6 +156,15 @@ array<typename container::const_iterator> find_all_of(const container &c, const 
 			results.push_back(i);
 
 	return results;
+}
+
+template <typename container, typename container2>
+int count_all_of(const container &c, const container2 &c2)
+{
+	int result = 0;
+	for (typename container::const_iterator i = c.begin(); i != c.end(); i++)
+		result += contains(c2, *i);
+	return result;
 }
 
 template <typename container, typename container2>
@@ -268,6 +286,28 @@ array<typename container::const_iterator> find_all_pattern(const container &c, c
 
 		if (found)
 			result.push_back(i);
+	}
+
+	return result;
+}
+
+template <typename container, typename container2>
+int count_all_pattern(const container &c, const container2 &t)
+{
+	int result = 0;
+	for (typename container::const_iterator i = c.begin(); i != c.end(); i++)
+	{
+		bool found = true;
+		typename container::const_iterator k = i;
+		for (typename container2::const_iterator j = t.begin(); j != t.end() && found; j++,k++)
+		{
+			if (k == c.end())
+				return result;
+			else
+				found = (*k == *j);
+		}
+
+		result += found;
 	}
 
 	return result;
