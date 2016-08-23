@@ -18,7 +18,7 @@
 namespace core
 {
 
-template <class key_type, uint32_t (*hash_func)(const char *,int,uint32_t)>
+template <class key_type, uint32_t (*hash_func)(const char *,int,uint32_t) = murmur3_32>
 struct hash_set : list<pair<int, key_type> >
 {
 	typedef list<pair<int, key_type> > super;
@@ -232,10 +232,7 @@ struct hash_set : list<pair<int, key_type> >
 				for (int i = 0; i < n && loc != &root->right; i++)
 				{
 					for (int b = bucket(); b >= 0 && root->buckets[b].ptr() == &(((item*)loc)->value); b--)
-					{
-						printf("bucket %d/%d\n", b, root->buckets.size());
 						root->buckets[b]++;
-					}
 
 					end_item *temp = loc->next;
 					delete loc;
@@ -253,9 +250,7 @@ struct hash_set : list<pair<int, key_type> >
 				for (int i = 0; i > n && start.loc != &root->left; i--)
 				{
 					for (int b = start.bucket(); b < root->buckets.size() && root->buckets[b].ptr() == &(((item*)start.loc)->value); b++)
-					{
 						root->buckets[b]--;
-					}
 
 					end_item *temp = start.loc->prev;
 					delete start.loc;
@@ -566,7 +561,7 @@ struct hash_set : list<pair<int, key_type> >
 	iterator insert(const key_type &key)
 	{
 		bits h;
-		h << key;
+		hash_data(h, key);
 
 		uint32_t hash = hash_func((const char*)h.data, h.size(), salt);
 		int bucket = (int)(hash >> shift);
@@ -608,7 +603,7 @@ struct hash_set : list<pair<int, key_type> >
 	iterator find(const key_type &key)
 	{
 		bits h;
-		h << key;
+		hash_data(h, key);
 
 		uint32_t hash = hash_func((const char*)h.data, h.size(), salt);
 		int bucket = (int)(hash >> shift);

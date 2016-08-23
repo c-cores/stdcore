@@ -13,7 +13,7 @@
 namespace core
 {
 
-template <class key_type, class value_type, typename hash_func>
+template <class key_type, class value_type, uint32_t (*hash_func)(const char *,int,uint32_t) = murmur3_32>
 struct hash_map : hash_set<implier<key_type, value_type>, hash_func>
 {
 	typedef hash_set<implier<key_type, value_type>, hash_func> super;
@@ -34,6 +34,12 @@ struct hash_map : hash_set<implier<key_type, value_type>, hash_func>
 	}
 
 	~hash_map() {}
+
+	value_type &operator[](const key_type &key)
+	{
+		iterator result = find(key);
+		return result->value;
+	}
 
 	iterator insert(const key_type &key, const value_type &value)
 	{

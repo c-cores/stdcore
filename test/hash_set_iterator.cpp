@@ -8,7 +8,7 @@ TEST(hash_set, increment)
 {
 	srand(0);
 
-	hash_set<int, murmur3_32> h;
+	hash_set<int> h;
 	array<int> counts(fill<int>(101, 0));
 	EXPECT_EQ(h.size(), 0);
 	EXPECT_EQ(h.buckets.size(), max(17, (1 << log2i(h.size()))+1));
@@ -27,7 +27,7 @@ TEST(hash_set, increment)
 	array<int> countsstar(fill<int>(101, 0));
 	array<int> countsget(fill<int>(101, 0));
 	array<int> countsptr(fill<int>(101, 0));
-	for (hash_set<int, murmur3_32>::iterator i = h.begin(); i != h.end(); i++)
+	for (hash_set<int>::iterator i = h.begin(); i != h.end(); i++)
 	{
 		countsstar[*i+50]++;
 		countsget[i.get()+50]++;
@@ -43,7 +43,7 @@ TEST(hash_set, decrement)
 {
 	srand(0);
 
-	hash_set<int, murmur3_32> h;
+	hash_set<int> h;
 	array<int> counts(fill<int>(101, 0));
 	EXPECT_EQ(h.size(), 0);
 	EXPECT_EQ(h.buckets.size(), max(17, (1 << log2i(h.size()))+1));
@@ -62,7 +62,7 @@ TEST(hash_set, decrement)
 	array<int> countsstar(fill<int>(101, 0));
 	array<int> countsget(fill<int>(101, 0));
 	array<int> countsptr(fill<int>(101, 0));
-	for (hash_set<int, murmur3_32>::iterator i = h.rbegin(); i != h.rend(); i--)
+	for (hash_set<int>::iterator i = h.rbegin(); i != h.rend(); i--)
 	{
 		countsstar[*i+50]++;
 		countsget[i.get()+50]++;
@@ -78,7 +78,7 @@ TEST(hash_set, at)
 {
 	srand(0);
 
-	hash_set<int, murmur3_32> h;
+	hash_set<int> h;
 	array<int> counts(fill<int>(101, 0));
 	EXPECT_EQ(h.size(), 0);
 	EXPECT_EQ(h.buckets.size(), max(17, (1 << log2i(h.size()))+1));
@@ -107,7 +107,7 @@ TEST(hash_set, drop_forward)
 {
 	srand(0);
 
-	hash_set<int, murmur3_32> h;
+	hash_set<int> h;
 	array<int> counts(fill<int>(101, 0));
 	EXPECT_EQ(h.size(), 0);
 	EXPECT_EQ(h.buckets.size(), max(17, (1 << log2i(h.size()))+1));
@@ -131,7 +131,7 @@ TEST(hash_set, drop_forward)
 	}
 
 	array<int> counts2(fill<int>(101, 0));
-	for (hash_set<int, murmur3_32>::iterator i = h.begin(); i != h.end(); i++)
+	for (hash_set<int>::iterator i = h.begin(); i != h.end(); i++)
 		counts2[*i+50]++;
 
 	EXPECT_EQ(counts, counts2);
@@ -141,7 +141,7 @@ TEST(hash_set, drop_backward)
 {
 	srand(0);
 
-	hash_set<int, murmur3_32> h;
+	hash_set<int> h;
 	array<int> counts(fill<int>(101, 0));
 	EXPECT_EQ(h.size(), 0);
 	EXPECT_EQ(h.buckets.size(), max(17, (1 << log2i(h.size()))+1));
@@ -165,7 +165,7 @@ TEST(hash_set, drop_backward)
 	}
 
 	array<int> counts2(fill<int>(101, 0));
-	for (hash_set<int, murmur3_32>::iterator i = h.begin(); i != h.end(); i++)
+	for (hash_set<int>::iterator i = h.begin(); i != h.end(); i++)
 		counts2[*i+50]++;
 
 	EXPECT_EQ(counts, counts2);

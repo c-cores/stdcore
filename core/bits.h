@@ -49,7 +49,7 @@ bits &operator<<(bits &str, double v);
 bits &operator<<(bits &str, const char *v);
 bits &operator<<(bits &str, char *v);
 
-template <class container>
+template <typename container>
 bits &operator<<(bits &str, const container &v)
 {
 	for (typename container::const_iterator i = v.begin(); i != v.end(); i++)
@@ -57,17 +57,31 @@ bits &operator<<(bits &str, const container &v)
 	return str;
 }
 
-template <class type0, class type1>
+template <typename type0, typename type1>
 bits &operator<<(bits &str, const pair<type0, type1> &v)
 {
 	str << v.first << v.second;
 	return str;
 }
 
-template <class type0, class type1>
+template <typename type0, typename type1>
 bits &operator<<(bits &str, const implier<type0, type1> &v)
 {
 	str << v.key << v.value;
+	return str;
+}
+
+template <typename T>
+bits &hash_data(bits &str, T value)
+{
+	str << value;
+	return str;
+}
+
+template <typename type0, typename type1>
+bits &hash_data(bits &str, const implier<type0, type1> &value)
+{
+	str << value.key;
 	return str;
 }
 
