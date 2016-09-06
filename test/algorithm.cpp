@@ -102,7 +102,10 @@ TEST(algorithm, intersection)
 	EXPECT_EQ(intersection(x, y, z), array<int>::values(1, 7));
 	EXPECT_EQ(intersection(x, w), array<int>());
 
-	array<array<int> > q = array<array<int> >::values(3, x, y, z);
+	array<array<int> > q;
+	q.push_back(x);
+	q.push_back(y);
+	q.push_back(z);
 	EXPECT_EQ(intersection(q), array<int>::values(1, 7));
 }
 
@@ -119,7 +122,10 @@ TEST(algorithm, intersection_size)
 	EXPECT_EQ(intersection_size(x, y, z), 1);
 	EXPECT_EQ(intersection_size(x, w), 0);
 
-	array<array<int> > q = array<array<int> >::values(3, x, y, z);
+	array<array<int> > q;
+	q.push_back(x);
+	q.push_back(y);
+	q.push_back(z);
 	EXPECT_EQ(intersection_size(q), 1);
 }
 
@@ -136,7 +142,10 @@ TEST(algorithm, intersects)
 	EXPECT_TRUE(intersects(x, y, z));
 	EXPECT_FALSE(intersects(x, w));
 
-	array<array<int> > q = array<array<int> >::values(3, x, y, z);
+	array<array<int> > q;
+	q.push_back(x);
+	q.push_back(y);
+	q.push_back(z);
 	EXPECT_TRUE(intersects(q));
 }
 
