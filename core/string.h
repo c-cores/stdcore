@@ -17,6 +17,10 @@ struct string : array<char>
 	{
 	}
 
+	string(const iterator &left, const iterator &right) : array<char>(left, right)
+	{
+	}
+
 	string(const string &str);
 	
 	string(const char *str);

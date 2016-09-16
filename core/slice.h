@@ -176,6 +176,10 @@ struct range
 
 	typedef const_iterator iterator;
 
+	range()
+	{
+	}
+
 	range(value_type start, value_type finish)
 	{
 		this->start = start;

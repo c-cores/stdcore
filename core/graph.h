@@ -80,7 +80,7 @@ struct graph
 
 		operator bool() const
 		{
-			return loc != &root->left && loc != &root->right;
+			return root != NULL && loc != &root->left && loc != &root->right;
 		}
 
 		value_type &operator*()
@@ -320,7 +320,7 @@ struct graph
 
 		operator bool()
 		{
-			return loc != &root->left && loc != &root->right;
+			return root != NULL && loc != &root->left && loc != &root->right;
 		}
 
 		const value_type &operator*()
