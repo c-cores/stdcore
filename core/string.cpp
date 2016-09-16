@@ -11,7 +11,11 @@ string::string()
 string::string(const char *cstr) : array<char>(wrapstr(cstr))
 {
 }
-	
+
+string::string(char cstr) : array<char>(cstr)
+{
+}
+
 string::string(const string &str) : array<char>(str)
 {
 }
@@ -83,6 +87,15 @@ string operator+(const string &s1, char *s2)
 	result.reserve(s1.size() + n);
 	result.append_back(s1);
 	result.append_back(wrapstr(s2, n));
+	return result;
+}
+
+string operator+(const string &s1, char s2)
+{
+	string result;
+	result.reserve(s1.size() + 1);
+	result.append_back(s1);
+	result.push_back(s2);
 	return result;
 }
 

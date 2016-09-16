@@ -356,16 +356,16 @@ TEST(slice_struct, array_drop)
 		x.push_back(i);
 	x.drop(3, 8);
 	EXPECT_EQ(x, array<int>()
-			<< range<int>(0, 3)
-			<< range<int>(8, 10));
+			+ range<int>(0, 3)
+			+ range<int>(8, 10));
 
 	x.clear();
 	for (array<int>::iterator i = y.begin(); i; i++)
 		x.push_back(i);
 	x.drop(-7, -2);
 	EXPECT_EQ(x, array<int>()
-			<< range<int>(0, 3)
-			<< range<int>(8, 10));
+			+ range<int>(0, 3)
+			+ range<int>(8, 10));
 }
 
 TEST(slice_struct, array_pop)
@@ -391,8 +391,8 @@ TEST(slice_struct, array_pop)
 		x.push_back(i);
 	y = x.pop(3, 8);
 	EXPECT_EQ(x, array<int>()
-			<< range<int>(0, 3)
-			<< range<int>(8, 10));
+			+ range<int>(0, 3)
+			+ range<int>(8, 10));
 	EXPECT_EQ(y, range<int>(3, 8));
 
 	x.clear();
@@ -400,14 +400,14 @@ TEST(slice_struct, array_pop)
 		x.push_back(i);
 	y = x.pop(-7, -2);
 	EXPECT_EQ(x, array<int>()
-			<< range<int>(0, 3)
-			<< range<int>(8, 10));
+			+ range<int>(0, 3)
+			+ range<int>(8, 10));
 	EXPECT_EQ(y, range<int>(3, 8));
 }
 
 TEST(slice_struct, array_push_back)
 {
-	array<int> z = array<int>() << range<int>(0, 10) << 20 << 8;
+	array<int> z = array<int>() + range<int>(0, 10) + 20 + 8;
 	slice<array<array<int>::iterator> > x;
 
 	EXPECT_EQ(0, x.count);
@@ -542,68 +542,68 @@ TEST(slice_struct, array_replace)
 
 	x.replace(0, 3, z.at(5));
 	EXPECT_EQ(x, array<int>()
-			<< 5
-			<< range<int>(3, 10));
+			+ 5
+			+ range<int>(3, 10));
 
 	x.clear();
 	for (array<int>::iterator i = z.begin(); i; i++)
 		x.push_back(i);
 	x.replace(7, 10, z.at(5));
 	EXPECT_EQ(x, array<int>()
-				<< range<int>(0, 7)
-				<< 5);
+				+ range<int>(0, 7)
+				+ 5);
 
 	x.clear();
 	for (array<int>::iterator i = z.begin(); i; i++)
 		x.push_back(i);
 	x.replace(3, 7, z.at(5));
 	EXPECT_EQ(x, array<int>()
-				<< range<int>(0, 3)
-				<< 5
-				<< range<int>(7, 10));
+				+ range<int>(0, 3)
+				+ 5
+				+ range<int>(7, 10));
 
 	x.clear();
 	for (array<int>::iterator i = z.begin(); i; i++)
 		x.push_back(i);
 	x.replace(-7, -3, z.at(5));
 	EXPECT_EQ(x, array<int>()
-				<< range<int>(0, 3)
-				<< 5
-				<< range<int>(7, 10));
+				+ range<int>(0, 3)
+				+ 5
+				+ range<int>(7, 10));
 
 	x.clear();
 	for (array<int>::iterator i = z.begin(); i; i++)
 		x.push_back(i);
 	x.replace(-7, 7, z.at(5));
 	EXPECT_EQ(x, array<int>()
-				<< range<int>(0, 3)
-				<< 5
-				<< range<int>(7, 10));
+				+ range<int>(0, 3)
+				+ 5
+				+ range<int>(7, 10));
 
 	x.clear();
 	for (array<int>::iterator i = z.begin(); i; i++)
 		x.push_back(i);
 	x.replace(3, -3, z.at(5));
 	EXPECT_EQ(x, array<int>()
-				<< range<int>(0, 3)
-				<< 5
-				<< range<int>(7, 10));
+				+ range<int>(0, 3)
+				+ 5
+				+ range<int>(7, 10));
 
 	x.clear();
 	for (array<int>::iterator i = z.begin(); i; i++)
 		x.push_back(i);
 	x.replace_front(3, z.at(5));
 	EXPECT_EQ(x, array<int>()
-			<< 5
-			<< range<int>(3, 10));
+			+ 5
+			+ range<int>(3, 10));
 
 	x.clear();
 	for (array<int>::iterator i = z.begin(); i; i++)
 		x.push_back(i);
 	x.replace_back(3, z.at(5));
 	EXPECT_EQ(x, array<int>()
-				<< range<int>(0, 7)
-				<< 5);
+				+ range<int>(0, 7)
+				+ 5);
 }
 
 TEST(slice_struct, array_replace_container)
@@ -617,68 +617,68 @@ TEST(slice_struct, array_replace_container)
 
 	x.replace(0, 3, y.sub().ref());
 	EXPECT_EQ(x, array<int>()
-			<< y
-			<< range<int>(3, 10));
+			+ y
+			+ range<int>(3, 10));
 
 	x.clear();
 	for (array<int>::iterator i = x0.begin(); i; i++)
 			x.push_back(i);
 	x.replace(7, 10, y.sub().ref());
 	EXPECT_EQ(x, array<int>()
-				<< range<int>(0, 7)
-				<< y);
+				+ range<int>(0, 7)
+				+ y);
 
 	x.clear();
 	for (array<int>::iterator i = x0.begin(); i; i++)
 			x.push_back(i);
 	x.replace(3, 7, y.sub().ref());
 	EXPECT_EQ(x, array<int>()
-				<< range<int>(0, 3)
-				<< y
-				<< range<int>(7, 10));
+				+ range<int>(0, 3)
+				+ y
+				+ range<int>(7, 10));
 
 	x.clear();
 	for (array<int>::iterator i = x0.begin(); i; i++)
 			x.push_back(i);
 	x.replace(-7, -3, y.sub().ref());
 	EXPECT_EQ(x, array<int>()
-				<< range<int>(0, 3)
-				<< y
-				<< range<int>(7, 10));
+				+ range<int>(0, 3)
+				+ y
+				+ range<int>(7, 10));
 
 	x.clear();
 	for (array<int>::iterator i = x0.begin(); i; i++)
 			x.push_back(i);
 	x.replace(-7, 7, y.sub().ref());
 	EXPECT_EQ(x, array<int>()
-				<< range<int>(0, 3)
-				<< y
-				<< range<int>(7, 10));
+				+ range<int>(0, 3)
+				+ y
+				+ range<int>(7, 10));
 
 	x.clear();
 	for (array<int>::iterator i = x0.begin(); i; i++)
 			x.push_back(i);
 	x.replace(3, -3, y.sub().ref());
 	EXPECT_EQ(x, array<int>()
-				<< range<int>(0, 3)
-				<< y
-				<< range<int>(7, 10));
+				+ range<int>(0, 3)
+				+ y
+				+ range<int>(7, 10));
 
 	x.clear();
 	for (array<int>::iterator i = x0.begin(); i; i++)
 			x.push_back(i);
 	x.replace_front(3, y.sub().ref());
 	EXPECT_EQ(x, array<int>()
-			<< y
-			<< range<int>(3, 10));
+			+ y
+			+ range<int>(3, 10));
 
 	x.clear();
 	for (array<int>::iterator i = x0.begin(); i; i++)
 			x.push_back(i);
 	x.replace_back(3, y.sub().ref());
 	EXPECT_EQ(x, array<int>()
-				<< range<int>(0, 7)
-				<< y);
+				+ range<int>(0, 7)
+				+ y);
 }
 
 TEST(slice_struct, array_swap)

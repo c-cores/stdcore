@@ -141,14 +141,14 @@ TEST(list_struct, drop)
 	x = sparse_range<int>(0, 10);
 	x.drop(3, 8);
 	EXPECT_EQ(x, list<int>()
-			<< sparse_range<int>(0, 3)
-			<< sparse_range<int>(8, 10));
+			+ sparse_range<int>(0, 3)
+			+ sparse_range<int>(8, 10));
 
 	x = sparse_range<int>(0, 10);
 	x.drop(-7, -2);
 	EXPECT_EQ(x, list<int>()
-			<< sparse_range<int>(0, 3)
-			<< sparse_range<int>(8, 10));
+			+ sparse_range<int>(0, 3)
+			+ sparse_range<int>(8, 10));
 }
 
 TEST(list_struct, pop)
@@ -166,15 +166,15 @@ TEST(list_struct, pop)
 	x = sparse_range<int>(0, 10);
 	y = x.pop(3, 8);
 	EXPECT_EQ(x, list<int>()
-			<< sparse_range<int>(0, 3)
-			<< sparse_range<int>(8, 10));
+			+ sparse_range<int>(0, 3)
+			+ sparse_range<int>(8, 10));
 	EXPECT_EQ(y, sparse_range<int>(3, 8));
 
 	x = sparse_range<int>(0, 10);
 	y = x.pop(-7, -2);
 	EXPECT_EQ(x, list<int>()
-			<< sparse_range<int>(0, 3)
-			<< sparse_range<int>(8, 10));
+			+ sparse_range<int>(0, 3)
+			+ sparse_range<int>(8, 10));
 	EXPECT_EQ(y, sparse_range<int>(3, 8));
 }
 
@@ -276,54 +276,54 @@ TEST(list_struct, replace)
 
 	x.replace(0, 3, 5);
 	EXPECT_EQ(x, list<int>()
-			<< 5
-			<< sparse_range<int>(3, 10));
+			+ 5
+			+ sparse_range<int>(3, 10));
 
 	x = sparse_range<int>(0, 10);
 	x.replace(7, 10, 5);
 	EXPECT_EQ(x, list<int>()
-				<< sparse_range<int>(0, 7)
-				<< 5);
+				+ sparse_range<int>(0, 7)
+				+ 5);
 
 	x = sparse_range<int>(0, 10);
 	x.replace(3, 7, 5);
 	EXPECT_EQ(x, list<int>()
-				<< sparse_range<int>(0, 3)
-				<< 5
-				<< sparse_range<int>(7, 10));
+				+ sparse_range<int>(0, 3)
+				+ 5
+				+ sparse_range<int>(7, 10));
 
 	x = sparse_range<int>(0, 10);
 	x.replace(-7, -3, 5);
 	EXPECT_EQ(x, list<int>()
-				<< sparse_range<int>(0, 3)
-				<< 5
-				<< sparse_range<int>(7, 10));
+				+ sparse_range<int>(0, 3)
+				+ 5
+				+ sparse_range<int>(7, 10));
 
 	x = sparse_range<int>(0, 10);
 	x.replace(-7, 7, 5);
 	EXPECT_EQ(x, list<int>()
-				<< sparse_range<int>(0, 3)
-				<< 5
-				<< sparse_range<int>(7, 10));
+				+ sparse_range<int>(0, 3)
+				+ 5
+				+ sparse_range<int>(7, 10));
 
 	x = sparse_range<int>(0, 10);
 	x.replace(3, -3, 5);
 	EXPECT_EQ(x, list<int>()
-				<< sparse_range<int>(0, 3)
-				<< 5
-				<< sparse_range<int>(7, 10));
+				+ sparse_range<int>(0, 3)
+				+ 5
+				+ sparse_range<int>(7, 10));
 
 	x = sparse_range<int>(0, 10);
 	x.replace_front(3, 5);
 	EXPECT_EQ(x, list<int>()
-			<< 5
-			<< sparse_range<int>(3, 10));
+			+ 5
+			+ sparse_range<int>(3, 10));
 
 	x = sparse_range<int>(0, 10);
 	x.replace_back(3, 5);
 	EXPECT_EQ(x, list<int>()
-				<< sparse_range<int>(0, 7)
-				<< 5);
+				+ sparse_range<int>(0, 7)
+				+ 5);
 }
 
 TEST(list_struct, replace_container)
@@ -334,54 +334,54 @@ TEST(list_struct, replace_container)
 
 	x.replace(0, 3, y);
 	EXPECT_EQ(x, list<int>()
-			<< y
-			<< sparse_range<int>(3, 10));
+			+ y
+			+ sparse_range<int>(3, 10));
 
 	x = sparse_range<int>(0, 10);
 	x.replace(7, 10, y);
 	EXPECT_EQ(x, list<int>()
-				<< sparse_range<int>(0, 7)
-				<< y);
+				+ sparse_range<int>(0, 7)
+				+ y);
 
 	x = sparse_range<int>(0, 10);
 	x.replace(3, 7, y);
 	EXPECT_EQ(x, list<int>()
-				<< sparse_range<int>(0, 3)
-				<< y
-				<< sparse_range<int>(7, 10));
+				+ sparse_range<int>(0, 3)
+				+ y
+				+ sparse_range<int>(7, 10));
 
 	x = sparse_range<int>(0, 10);
 	x.replace(-7, -3, y);
 	EXPECT_EQ(x, list<int>()
-				<< sparse_range<int>(0, 3)
-				<< y
-				<< sparse_range<int>(7, 10));
+				+ sparse_range<int>(0, 3)
+				+ y
+				+ sparse_range<int>(7, 10));
 
 	x = sparse_range<int>(0, 10);
 	x.replace(-7, 7, y);
 	EXPECT_EQ(x, list<int>()
-				<< sparse_range<int>(0, 3)
-				<< y
-				<< sparse_range<int>(7, 10));
+				+ sparse_range<int>(0, 3)
+				+ y
+				+ sparse_range<int>(7, 10));
 
 	x = sparse_range<int>(0, 10);
 	x.replace(3, -3, y);
 	EXPECT_EQ(x, list<int>()
-				<< sparse_range<int>(0, 3)
-				<< y
-				<< sparse_range<int>(7, 10));
+				+ sparse_range<int>(0, 3)
+				+ y
+				+ sparse_range<int>(7, 10));
 
 	x = sparse_range<int>(0, 10);
 	x.replace_front(3, y);
 	EXPECT_EQ(x, list<int>()
-			<< y
-			<< sparse_range<int>(3, 10));
+			+ y
+			+ sparse_range<int>(3, 10));
 
 	x = sparse_range<int>(0, 10);
 	x.replace_back(3, y);
 	EXPECT_EQ(x, list<int>()
-				<< sparse_range<int>(0, 7)
-				<< y);
+				+ sparse_range<int>(0, 7)
+				+ y);
 }
 
 TEST(list_struct, swap)

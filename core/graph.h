@@ -269,6 +269,24 @@ struct graph
 		{
 			return link(root->insert(value));
 		}
+
+		iterator rlink(iterator n)
+		{
+			prev().push_back(n);
+			n.next().push_back(*this);
+			return n;
+		}
+
+		void runlink(iterator n)
+		{
+			remove(prev(), n);
+			remove(n.next(), *this);
+		}
+
+		iterator rpush(const value_type &value)
+		{
+			return rlink(root->insert(value));
+		}
 	};
 
 	struct const_iterator

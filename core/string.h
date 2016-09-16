@@ -11,7 +11,6 @@ namespace core
 struct string : array<char>
 {
 	string();
-	string(const char *str);
 	
 	template <class container>
 	string(const container &str) : array<char>(str)
@@ -20,6 +19,9 @@ struct string : array<char>
 
 	string(const string &str);
 	
+	string(const char *str);
+	string(char str);
+
 	~string();
 
 	using array<char>::size;
@@ -38,6 +40,7 @@ struct string : array<char>
 string operator+(const string &s1, const string &s2);
 string operator+(const string &s1, const char *s2);
 string operator+(const string &s1, char *s2);
+string operator+(const string &s1, char s2);
 
 string &operator<<(string &s1, char s2);
 string &operator<<(string &s1, bool s2);

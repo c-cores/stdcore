@@ -705,6 +705,13 @@ struct list
 			end().push(*i);
 	}
 
+	list(const value_type &c)
+	{
+		left.next = &right;
+		right.prev = &left;
+		end().push(c);
+	}
+
 	// Initialize this list as a copy of some other container
 	template <class container>
 	list(typename container::const_iterator left, typename container::const_iterator right)
@@ -1219,14 +1226,14 @@ list<value_type> &operator<<(list<value_type> &os, const container &c)
 }
 
 template <class value_type>
-list<value_type> operator<<(list<value_type> os, const value_type &v)
+list<value_type> operator+(list<value_type> os, const value_type &v)
 {
 	os.push_back(v);
 	return os;
 }
 
 template <class value_type, class container>
-list<value_type> operator<<(list<value_type> os, const container &c)
+list<value_type> operator+(list<value_type> os, const container &c)
 {
 	os.append_back(c);
 	return os;

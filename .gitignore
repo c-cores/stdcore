@@ -2,6 +2,7 @@
 *.slo
 *.lo
 *.o
+*.d
 *.obj
 
 # Precompiled Headers
@@ -26,3 +27,6 @@
 *.exe
 *.out
 *.app
+
+.settings
+test_stdcore

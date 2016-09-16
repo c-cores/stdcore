@@ -694,6 +694,14 @@ struct array
 			new (ptr) value_type(*i);
 	}
 
+	array(const value_type &a)
+	{
+		count = 1;
+		capacity = 2;
+		data = (value_type*)malloc(sizeof(value_type)*capacity);
+		new (data) value_type(a);
+	}
+
 	// Initialize this array as a copy of some other container
 	template <class container>
 	array(typename container::const_iterator left, typename container::const_iterator right)
@@ -1358,17 +1366,23 @@ array<value_type> &operator<<(array<value_type> &os, const value_type &v)
 }
 
 template <class value_type, class container>
-array<value_type> operator<<(array<value_type> os, const container &c)
+array<value_type> operator+(const array<value_type> &os, const container &c)
 {
-	os.append_back(c);
-	return os;
+	array<value_type> result;
+	result.reserve(os.size() + c.size());
+	result.append_back(os);
+	result.append_back(c);
+	return result;
 }
 
 template <class value_type>
-array<value_type> operator<<(array<value_type> os, const value_type &v)
+array<value_type> operator+(const array<value_type> &os, const value_type &v)
 {
-	os.push_back(v);
-	return os;
+	array<value_type> result;
+	result.reserve(os.size() + 1);
+	result.append_back(os);
+	result.push_back(v);
+	return result;
 }
 
 template<class value_type>

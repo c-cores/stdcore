@@ -15,7 +15,7 @@ TEST_TARGET  = test_stdcore
 -include $(DEPS)
 -include $(TEST_DEPS)
 
-all: lib check
+all: lib
 
 lib: $(TARGET)
 
