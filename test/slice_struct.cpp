@@ -11,7 +11,7 @@ using namespace core;
 TEST(slice_struct, base_constructor_array)
 {
 	array<int> y = range<int>(0, 10);
-	slice<array<array<int>::iterator> > x = array<array<int>::iterator>::values(5, y.at(5), y.at(2), y.at(8), y.at(3), y.at(6));
+	slice<array<array<int>::iterator> > x = array<int>::values(5, 5, 2, 8, 3, 6).sample(y);
 	EXPECT_EQ(x.size(), 5);
 	EXPECT_EQ(5, x.get(0));
 	EXPECT_EQ(2, x.get(1));
@@ -23,7 +23,7 @@ TEST(slice_struct, base_constructor_array)
 TEST(slice_struct, base_constructor_list)
 {
 	array<int> y = range<int>(0, 10);
-	slice<list<array<int>::iterator> > x = list<array<int>::iterator>::values(5, y.at(5), y.at(2), y.at(8), y.at(3), y.at(6));
+	slice<list<array<int>::iterator> > x = list<int>::values(5, 5, 2, 8, 3, 6).sample(y);
 	EXPECT_EQ(x.size(), 5);
 	EXPECT_EQ(5, x.get(0));
 	EXPECT_EQ(2, x.get(1));
@@ -59,7 +59,7 @@ TEST(slice_struct, base_constructor_fill)
 TEST(slice_struct, copy_constructor)
 {
 	array<int> y = range<int>(0, 10);
-	slice<array<array<int>::iterator> > x = array<array<int>::iterator>::values(5, y.at(5), y.at(2), y.at(8), y.at(3), y.at(6));
+	slice<array<array<int>::iterator> > x = array<int>::values(5, 5, 2, 8, 3, 6).sample(y);
 	slice<array<array<int>::iterator> > z = x;
 	EXPECT_EQ(z.size(), 5);
 	EXPECT_EQ(5, z.get(0));
@@ -72,7 +72,7 @@ TEST(slice_struct, copy_constructor)
 TEST(slice_struct, range_constructor)
 {
 	array<int> y = range<int>(0, 10);
-	slice<array<array<int>::iterator> > x = array<array<int>::iterator>::values(5, y.at(5), y.at(2), y.at(8), y.at(3), y.at(6));
+	slice<array<array<int>::iterator> > x = array<int>::values(5, 5, 2, 8, 3, 6).sample(y);
 	slice<array<array<int>::iterator> > z(x.at(1), x.at(4));
 	EXPECT_EQ(z.size(), 3);
 	EXPECT_EQ(2, z.get(0));
