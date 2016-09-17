@@ -6,6 +6,7 @@
 #include <core/ascii_stream.h>
 #include <core/algorithm.h>
 #include <core/sparse_range.h>
+#include <core/compare.h>
 
 using namespace core;
 

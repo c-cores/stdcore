@@ -39,12 +39,12 @@ struct array
 		friend class const_iterator;
 
 		array<value_type> *root;
-		value_type *loc;
+		int index;
 
-		iterator(array<value_type> *root, value_type *loc)
+		iterator(array<value_type> *root, int index)
 		{
 			this->root = root;
-			this->loc = loc;
+			this->index = index;
 		}
 	public:
 		typedef value_type type;
@@ -52,33 +52,33 @@ struct array
 		iterator()
 		{
 			this->root = NULL;
-			this->loc = NULL;
+			this->index = 0;
 		}
 
 		~iterator() {}
 
 		operator bool() const
 		{
-			return root != NULL && loc >= root->data && loc < root->data+root->count;
+			return root != NULL && index >= 0 && index < root->count;
 		}
 
 		value_type &operator*() const
 		{
-			return *loc;
+			return root->data[index];
 		}
 		value_type *operator->() const
 		{
-			return loc;
+			return root->data + index;
 		}
 
 		value_type *ptr() const
 		{
-			return loc;
+			return root->data + index;
 		}
 
 		value_type &get() const
 		{
-			return *loc;
+			return root->data[index];
 		}
 
 		iterator &ref()
@@ -93,42 +93,42 @@ struct array
 
 		int idx() const
 		{
-			return loc - root->data;
+			return index;
 		}
 
 		iterator &operator++(int)
 		{
-			loc++;
+			index++;
 			return *this;
 		}
 
 		iterator &operator--(int)
 		{
-			loc--;
+			index--;
 			return *this;
 		}
 
 		iterator &operator++()
 		{
-			++loc;
+			++index;
 			return *this;
 		}
 
 		iterator &operator--()
 		{
-			--loc;
+			--index;
 			return *this;
 		}
 
 		iterator &operator+=(int n)
 		{
-			loc += n;
+			index += n;
 			return *this;
 		}
 
 		iterator &operator-=(int n)
 		{
-			loc -= n;
+			index -= n;
 			return *this;
 		}
 
@@ -136,7 +136,7 @@ struct array
 		{
 			iterator result;
 			result.root = root;
-			result.loc = loc + n;
+			result.index = index + n;
 			return result;
 		}
 
@@ -144,85 +144,85 @@ struct array
 		{
 			iterator result;
 			result.root = root;
-			result.loc = loc - n;
+			result.index = index - n;
 			return result;
 		}
 
 		iterator &operator=(iterator i)
 		{
 			root = i.root;
-			loc = i.loc;
+			index = i.index;
 			return *this;
 		}
 
 		bool operator==(iterator i) const
 		{
-			return loc == i.loc;
+			return index == i.index;
 		}
 
 		bool operator!=(iterator i) const
 		{
-			return loc != i.loc;
+			return index != i.index;
 		}
 
 		bool operator <(iterator i) const
 		{
-			return loc < i.loc;
+			return index < i.index;
 		}
 
 		bool operator >(iterator i) const
 		{
-			return loc > i.loc;
+			return index > i.index;
 		}
 
 		bool operator <=(iterator i) const
 		{
-			return loc <= i.loc;
+			return index <= i.index;
 		}
 
 		bool operator >=(iterator i) const
 		{
-			return loc >= i.loc;
+			return index >= i.index;
 		}
 
 		int operator-(iterator i) const
 		{
-			return loc - i.loc;
+			return index - i.index;
 		}
 
 		bool operator==(const_iterator i) const
 		{
-			return loc == i.loc;
+			return index == i.index;
 		}
 
 		bool operator!=(const_iterator i) const
 		{
-			return loc != i.loc;
+			return index != i.index;
 		}
 
 		bool operator <(const_iterator i) const
 		{
-			return loc < i.loc;
+			return index < i.index;
 		}
 
 		bool operator >(const_iterator i) const
 		{
-			return loc > i.loc;
+			return index > i.index;
 		}
 
 		bool operator <=(const_iterator i) const
 		{
-			return loc <= i.loc;
+			return index <= i.index;
 		}
 
 		bool operator >=(const_iterator i) const
 		{
-			return loc >= i.loc;
+			return index >= i.index;
 		}
 
 		int operator-(const_iterator i) const
 		{
-			return loc - i.loc;
+			return index - i.index;
 		}
 
 		void alloc(int n = 1)
@@ -234,9 +234,8 @@ struct array
 			if (neg)
 				n = -n;
 
-			int offset = loc - root->data;
 			if (root->count > 0 && root->count+n <= root->capacity)
-				memmove(loc+n, loc, (root->count-offset)*sizeof(value_type));
+				memmove(root->data+index+n, root->data+index, (root->count-index)*sizeof(value_type));
 			else if (root->count+n > root->capacity)
 			{
 				root->capacity = (1 << (log2i(root->count + n)+1));
@@ -244,16 +243,15 @@ struct array
 
 				if (root->data != NULL)
 				{
-					memcpy(newdata, root->data, offset*sizeof(value_type));
-					memcpy(newdata+offset+n, loc, (root->count-offset)*sizeof(value_type));
+					memcpy(newdata, root->data, index*sizeof(value_type));
+					memcpy(newdata+index+n, root->data+index, (root->count-index)*sizeof(value_type));
 					free(root->data);
 				}
 				root->data = newdata;
-				loc = root->data + offset;
 			}
 
 			if (neg)
-				loc += n;
+				index += n;
 
 			root->count += n;
 		}
@@ -267,15 +265,14 @@ struct array
 			bool neg = n < 0;
 			if (neg)
 			{
-				loc += n;
+				index += n;
 				n = -n;
 			}
 
-			int offset = loc - root->data;
-			n = min(offset + n, root->count) - offset;
-			for (value_type *i = loc; i < loc+n; i++)
+			n = min(index + n, root->count) - index;
+			for (value_type *i = root->data+index; i < root->data+index+n; i++)
 				i->~value_type();
-			memmove(loc, loc+n, (root->count-offset-n)*sizeof(value_type));
+			memmove(root->data+index, root->data+index+n, (root->count-index-n)*sizeof(value_type));
 
 			root->count -= n;
 		}
@@ -292,16 +289,15 @@ struct array
 			bool neg = n < 0;
 			if (neg)
 			{
-				loc += n;
+				index += n;
 				n = -n;
 			}
 
-			int offset = loc - root->data;
-			n = min(offset + n, root->count) - offset;
+			n = min(index + n, root->count) - index;
 			result.reserve(n);
-			memcpy(result.data, loc, n*sizeof(value_type));
+			memcpy(result.data, root->data+index, n*sizeof(value_type));
 			result.count = n;
-			memmove(loc, loc+n, (root->count-offset-n)*sizeof(value_type));
+			memmove(root->data+index, root->data+index+n, (root->count-index-n)*sizeof(value_type));
 			root->count -= n;
 
 			return result;
@@ -310,8 +306,8 @@ struct array
 		void push(value_type v)
 		{
 			alloc(1);
-			new (loc) value_type(v);
-			loc++;
+			new (root->data+index) value_type(v);
+			index++;
 		}
 
 		template <class container>
@@ -323,8 +319,8 @@ struct array
 
 			for (i = c.begin(); i; i++)
 			{
-				new (loc) value_type(*i);
-				loc++;
+				new (root->data+index) value_type(*i);
+				index++;
 			}
 		}
 
@@ -333,18 +329,18 @@ struct array
 			bool neg = n < 0;
 			if (neg)
 			{
-				loc += n;
+				index += n;
 				n = -n;
 			}
 			else if (n == 0)
 				return;
 
-			*loc = v;
+			root->data[index] = v;
 
 			if (n > 1)
 			{
-				value_type *mid = loc+1;
-				value_type *fin = loc+n;
+				value_type *mid = root->data+index+1;
+				value_type *fin = root->data+index+n;
 				for (value_type *i = mid; i < fin; i++)
 					i->~value_type();
 				memmove(mid, fin, (root->count - n)*sizeof(value_type));
@@ -352,7 +348,7 @@ struct array
 			}
 
 			if (neg)
-				loc++;
+				index++;
 		}
 
 		template <class container>
@@ -362,7 +358,7 @@ struct array
 			bool neg = n < 0;
 			if (neg)
 			{
-				loc += n;
+				index += n;
 				n = -n;
 			}
 
@@ -379,10 +375,10 @@ struct array
 			}
 
 			int diff = upper-lower;
-			value_type *mid = loc+lower;
-			value_type *fin = loc+upper;
+			value_type *mid = root->data+index+lower;
+			value_type *fin = root->data+index+upper;
 			typename container::const_iterator j = c.begin();
-			for (value_type *i = loc; i < mid && j; i++, j++)
+			for (value_type *i = root->data+index; i < mid && j; i++, j++)
 				*i = *j;
 
 			if (s < n)
@@ -397,22 +393,22 @@ struct array
 			{
 				alloc(diff);
 				// mid and fin are no longer valid after alloc
-				mid = loc+lower;
-				fin = loc+upper;
+				mid = root->data+index+lower;
+				fin = root->data+index+upper;
 				for (value_type *i = mid; i < fin && j; i++, j++)
 					new (i) value_type(*j);
 			}
 
 			if (neg)
-				loc += s;
+				index += s;
 		}
 
 		template <class iterator_type>
 		void swap(iterator_type i)
 		{
 			value_type temp;
-			memcpy(&temp, loc, sizeof(value_type));
-			memcpy(loc, i.ptr(), sizeof(value_type));
+			memcpy(&temp, root->data+index, sizeof(value_type));
+			memcpy(root->data+index, i.ptr(), sizeof(value_type));
 			memcpy(i.ptr(), &temp, sizeof(value_type));
 		}
 
@@ -449,12 +445,12 @@ struct array
 		friend class array<value_type>;
 		friend class iterator;
 		const array<value_type> *root;
-		const value_type *loc;
+		int index;
 
-		const_iterator(const array<value_type> *root, const value_type *loc)
+		const_iterator(const array<value_type> *root, int index)
 		{
 			this->root = root;
-			this->loc = loc;
+			this->index = index;
 		}
 	public:
 		typedef value_type type;
@@ -462,39 +458,39 @@ struct array
 		const_iterator()
 		{
 			root = NULL;
-			loc = NULL;
+			index = 0;
 		}
 
 		const_iterator(iterator copy)
 		{
 			root = copy.root;
-			loc = copy.loc;
+			index = copy.index;
 		}
 
 		~const_iterator() {}
 
 		operator bool() const
 		{
-			return root != NULL && loc >= root->data && loc < root->data+root->count;
+			return root != NULL && index >= 0 && index < root->count;
 		}
 
 		const value_type &operator*() const
 		{
-			return *loc;
+			return root->data[index];
 		}
 		const value_type *operator->() const
 		{
-			return loc;
+			return root->data+index;
 		}
 
 		const value_type *ptr() const
 		{
-			return loc;
+			return root->data+index;
 		}
 
 		const value_type &get() const
 		{
-			return *loc;
+			return root->data[index];
 		}
 
 		const_iterator &ref()
@@ -509,42 +505,42 @@ struct array
 
 		int idx() const
 		{
-			return loc - root->data;
+			return index;
 		}
 
 		const_iterator &operator++(int)
 		{
-			loc++;
+			index++;
 			return *this;
 		}
 
 		const_iterator &operator--(int)
 		{
-			loc--;
+			index--;
 			return *this;
 		}
 
 		const_iterator &operator++()
 		{
-			++loc;
+			++index;
 			return *this;
 		}
 
 		const_iterator &operator--()
 		{
-			--loc;
+			--index;
 			return *this;
 		}
 
 		const_iterator &operator+=(int n)
 		{
-			loc += n;
+			index += n;
 			return *this;
 		}
 
 		const_iterator &operator-=(int n)
 		{
-			loc -= n;
+			index -= n;
 			return *this;
 		}
 
@@ -552,7 +548,7 @@ struct array
 		{
 			const_iterator result;
 			result.root = root;
-			result.loc = loc + n;
+			result.index = index + n;
 			return result;
 		}
 
@@ -560,92 +556,92 @@ struct array
 		{
 			const_iterator result;
 			result.root = root;
-			result.loc = loc - n;
+			result.index = index - n;
 			return result;
 		}
 
 		const_iterator &operator=(const_iterator i)
 		{
 			root = i.root;
-			loc = i.loc;
+			index = i.index;
 			return *this;
 		}
 
 		bool operator==(const_iterator i) const
 		{
-			return loc == i.loc;
+			return index == i.index;
 		}
 
 		bool operator!=(const_iterator i) const
 		{
-			return loc != i.loc;
+			return index != i.index;
 		}
 
 		bool operator <(const_iterator i) const
 		{
-			return loc < i.loc;
+			return index < i.index;
 		}
 
 		bool operator >(const_iterator i) const
 		{
-			return loc > i.loc;
+			return index > i.index;
 		}
 
 		bool operator <=(const_iterator i) const
 		{
-			return loc <= i.loc;
+			return index <= i.index;
 		}
 
 		bool operator >=(const_iterator i) const
 		{
-			return loc >= i.loc;
+			return index >= i.index;
 		}
 
 		int operator-(const_iterator i) const
 		{
-			return loc - i.loc;
+			return index - i.index;
 		}
 
 		const_iterator &operator=(iterator i)
 		{
 			root = i.root;
-			loc = i.loc;
+			index = i.index;
 			return *this;
 		}
 
 		bool operator==(iterator i) const
 		{
-			return loc == i.loc;
+			return index == i.index;
 		}
 
 		bool operator!=(iterator i) const
 		{
-			return loc != i.loc;
+			return index != i.index;
 		}
 
 		bool operator <(iterator i) const
 		{
-			return loc < i.loc;
+			return index < i.index;
 		}
 
 		bool operator >(iterator i) const
 		{
-			return loc > i.loc;
+			return index > i.index;
 		}
 
 		bool operator <=(iterator i) const
 		{
-			return loc <= i.loc;
+			return index <= i.index;
 		}
 
 		bool operator >=(iterator i) const
 		{
-			return loc >= i.loc;
+			return index >= i.index;
 		}
 
 		int operator-(iterator i) const
 		{
-			return loc - i.loc;
+			return index - i.index;
 		}
 
 		core::slice<range<const_iterator> > sub(int length)
@@ -795,22 +791,22 @@ struct array
 
 	iterator at(int i)
 	{
-		return iterator(this, data + (i < 0 ? i+count : i));
+		return iterator(this, (i < 0 ? i+count : i));
 	}
 
 	const_iterator at(int i) const
 	{
-		return const_iterator(this, data + (i < 0 ? i+count : i));
+		return const_iterator(this, (i < 0 ? i+count : i));
 	}
 
 	value_type &get(int i)
 	{
-		return *(data + (i < 0 ? i+count : i));
+		return data[i < 0 ? i+count : i];
 	}
 
 	const value_type &get(int i) const
 	{
-		return *(data + (i < 0 ? i+count : i));
+		return data[i < 0 ? i+count : i];
 	}
 
 	value_type *ptr(int i)
@@ -825,12 +821,12 @@ struct array
 
 	value_type &operator[](int i)
 	{
-		return *(data + (i < 0 ? i+count : i));
+		return data[i < 0 ? i+count : i];
 	}
 
 	const value_type &operator[](int i) const
 	{
-		return *(data + (i < 0 ? i+count : i));
+		return data[i < 0 ? i+count : i];
 	}
 
 	core::slice<array<value_type> > deref()
@@ -889,42 +885,42 @@ struct array
 
 	iterator begin()
 	{
-		return iterator(this, data);
+		return iterator(this, 0);
 	}
 
 	iterator end()
 	{
-		return iterator(this, data+count);
+		return iterator(this, count);
 	}
 
 	iterator rbegin()
 	{
-		return iterator(this, data+count-1);
+		return iterator(this, count-1);
 	}
 
 	iterator rend()
 	{
-		return iterator(this, data-1);
+		return iterator(this, -1);
 	}
 
 	const_iterator begin() const
 	{
-		return const_iterator(this, data);
+		return const_iterator(this, 0);
 	}
 
 	const_iterator end() const
 	{
-		return const_iterator(this, data+count);
+		return const_iterator(this, count);
 	}
 
 	const_iterator rbegin() const
 	{
-		return const_iterator(this, data+count-1);
+		return const_iterator(this, count-1);
 	}
 
 	const_iterator rend() const
 	{
-		return const_iterator(this, data-1);
+		return const_iterator(this, -1);
 	}
 
 	core::slice<range<iterator> > sub(int start, int end)
@@ -1490,6 +1486,79 @@ bool operator<=(slice<container> a0, array<value_type> a1)
 
 template<class container, class value_type>
 bool operator>=(slice<container> a0, array<value_type> a1)
+{
+	return !less_than(a0, a1);
+}
+
+template<class value_type>
+bool operator==(array<value_type> a0, range<value_type> a1)
+{
+	return equal_to(a0, a1);
+}
+
+template<class value_type>
+bool operator!=(array<value_type> a0, range<value_type> a1)
+{
+	return !equal_to(a0, a1);
+}
+
+template<class value_type>
+bool operator<(array<value_type> a0, range<value_type> a1)
+{
+	return less_than(a0, a1);
+}
+
+template<class value_type>
+bool operator>(array<value_type> a0, range<value_type> a1)
+{
+	return greater_than(a0, a1);
+}
+
+template<class value_type>
+bool operator<=(array<value_type> a0, range<value_type> a1)
+{
+	return !greater_than(a0, a1);
+}
+
+template<class value_type>
+bool operator>=(array<value_type> a0, range<value_type> a1)
+{
+	return !less_than(a0, a1);
+}
+
+
+template<class value_type>
+bool operator==(range<value_type> a0, array<value_type> a1)
+{
+	return equal_to(a0, a1);
+}
+
+template<class value_type>
+bool operator!=(range<value_type> a0, array<value_type> a1)
+{
+	return !equal_to(a0, a1);
+}
+
+template<class value_type>
+bool operator<(range<value_type> a0, array<value_type> a1)
+{
+	return less_than(a0, a1);
+}
+
+template<class value_type>
+bool operator>(range<value_type> a0, array<value_type> a1)
+{
+	return greater_than(a0, a1);
+}
+
+template<class value_type>
+bool operator<=(range<value_type> a0, array<value_type> a1)
+{
+	return !greater_than(a0, a1);
+}
+
+template<class value_type>
+bool operator>=(range<value_type> a0, array<value_type> a1)
 {
 	return !less_than(a0, a1);
 }

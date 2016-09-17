@@ -1348,5 +1348,78 @@ bool operator>=(slice<container> a0, list<value_type> a1)
 	return !less_than(a0, a1);
 }
 
+template<class value_type>
+bool operator==(list<value_type> a0, range<value_type> a1)
+{
+	return equal_to(a0, a1);
+}
+
+template<class value_type>
+bool operator!=(list<value_type> a0, range<value_type> a1)
+{
+	return !equal_to(a0, a1);
+}
+
+template<class value_type>
+bool operator<(list<value_type> a0, range<value_type> a1)
+{
+	return less_than(a0, a1);
+}
+
+template<class value_type>
+bool operator>(list<value_type> a0, range<value_type> a1)
+{
+	return greater_than(a0, a1);
+}
+
+template<class value_type>
+bool operator<=(list<value_type> a0, range<value_type> a1)
+{
+	return !greater_than(a0, a1);
+}
+
+template<class value_type>
+bool operator>=(list<value_type> a0, range<value_type> a1)
+{
+	return !less_than(a0, a1);
+}
+
+
+template<class value_type>
+bool operator==(range<value_type> a0, list<value_type> a1)
+{
+	return equal_to(a0, a1);
+}
+
+template<class value_type>
+bool operator!=(range<value_type> a0, list<value_type> a1)
+{
+	return !equal_to(a0, a1);
+}
+
+template<class value_type>
+bool operator<(range<value_type> a0, list<value_type> a1)
+{
+	return less_than(a0, a1);
+}
+
+template<class value_type>
+bool operator>(range<value_type> a0, list<value_type> a1)
+{
+	return greater_than(a0, a1);
+}
+
+template<class value_type>
+bool operator<=(range<value_type> a0, list<value_type> a1)
+{
+	return !greater_than(a0, a1);
+}
+
+template<class value_type>
+bool operator>=(range<value_type> a0, list<value_type> a1)
+{
+	return !less_than(a0, a1);
+}
+
 }
 

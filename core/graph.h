@@ -558,6 +558,38 @@ struct graph
 		return const_iterator(this, &left);
 	}
 
+	array<iterator> next(const array<iterator> &curr) const
+	{
+		array<iterator> result;
+		for (typename array<iterator>::const_iterator i = curr.begin(); i != curr.end(); i++)
+			result.append(i->next());
+		return result;
+	}
+
+	array<const_iterator> next(const array<const_iterator> &curr) const
+	{
+		array<iterator> result;
+		for (typename array<iterator>::const_iterator i = curr.begin(); i != curr.end(); i++)
+			result.append(i->next());
+		return result;
+	}
+
+	array<iterator> prev(const array<iterator> &curr) const
+	{
+		array<iterator> result;
+		for (typename array<iterator>::const_iterator i = curr.begin(); i != curr.end(); i++)
+			result.append(i->prev());
+		return result;
+	}
+
+	array<const_iterator> prev(const array<const_iterator> &curr) const
+	{
+		array<iterator> result;
+		for (typename array<iterator>::const_iterator i = curr.begin(); i != curr.end(); i++)
+			result.append(i->prev());
+		return result;
+	}
+
 	iterator insert(const value_type &value)
 	{
 		node *result = new node(value);

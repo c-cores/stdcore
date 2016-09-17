@@ -512,4 +512,76 @@ bool operator>=(slice<container1> s1, sparse_range<value_type2, step_type2> s2)
 	return !less_than(s1, s2);
 }
 
+template <class value_type, class step_type>
+bool operator==(sparse_range<value_type, step_type> s1, range<value_type> s2)
+{
+	return equal_to(s1, s2);
+}
+
+template <class value_type, class step_type>
+bool operator!=(sparse_range<value_type, step_type> s1, range<value_type> s2)
+{
+	return !equal_to(s1, s2);
+}
+
+template <class value_type, class step_type>
+bool operator<(sparse_range<value_type, step_type> s1, range<value_type> s2)
+{
+	return less_than(s1, s2);
+}
+
+template <class value_type, class step_type>
+bool operator>(sparse_range<value_type, step_type> s1, range<value_type> s2)
+{
+	return greater_than(s1, s2);
+}
+
+template <class value_type, class step_type>
+bool operator<=(sparse_range<value_type, step_type> s1, range<value_type> s2)
+{
+	return !greater_than(s1, s2);
+}
+
+template <class value_type, class step_type>
+bool operator>=(sparse_range<value_type, step_type> s1, range<value_type> s2)
+{
+	return !less_than(s1, s2);
+}
+
+template <class value_type, class step_type>
+bool operator==(range<value_type> s1, sparse_range<value_type, step_type> s2)
+{
+	return equal_to(s1, s2);
+}
+
+template <class value_type, class step_type>
+bool operator!=(range<value_type> s1, sparse_range<value_type, step_type> s2)
+{
+	return !equal_to(s1, s2);
+}
+
+template <class value_type, class step_type>
+bool operator<(range<value_type> s1, sparse_range<value_type, step_type> s2)
+{
+	return less_than(s1, s2);
+}
+
+template <class value_type, class step_type>
+bool operator>(range<value_type> s1, sparse_range<value_type, step_type> s2)
+{
+	return greater_than(s1, s2);
+}
+
+template <class value_type, class step_type>
+bool operator<=(range<value_type> s1, sparse_range<value_type, step_type> s2)
+{
+	return !greater_than(s1, s2);
+}
+
+template <class value_type, class step_type>
+bool operator>=(range<value_type> s1, sparse_range<value_type, step_type> s2)
+{
+	return !less_than(s1, s2);
+}
+
 }

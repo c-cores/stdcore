@@ -3,6 +3,7 @@
 #include <core/array.h>
 #include <core/fill.h>
 #include <core/ascii_stream.h>
+#include <core/compare.h>
 
 using namespace core;
 

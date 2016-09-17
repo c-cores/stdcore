@@ -236,93 +236,167 @@ string &operator<<(string &s1, const parsable<string> &p)
 
 bool operator==(string s1, string s2)
 {
-	return (compare(s1, s2) == 0);
+	return equal_to(s1, s2);
 }
 
 bool operator!=(string s1, string s2)
 {
-	return (compare(s1, s2) != 0);
+	return !equal_to(s1, s2);
 }
 
 bool operator<(string s1, string s2)
 {
-	return (compare(s1, s2) < 0);
+	return less_than(s1, s2);
 }
 
 bool operator>(string s1, string s2)
 {
-	return (compare(s1, s2) > 0);
+	return greater_than(s1, s2);
 }
 
 bool operator<=(string s1, string s2)
 {
-	return (compare(s1, s2) <= 0);
+	return !greater_than(s1, s2);
 }
 
 bool operator>=(string s1, string s2)
 {
-	return (compare(s1, s2) >= 0);
+	return !less_than(s1, s2);
 }
 
 bool operator==(string s1, const char* s2)
 {
-	return (compare(s1, wrapstr(s2)) == 0);
+	return equal_to(s1, wrapstr(s2));
 }
 
 bool operator!=(string s1, const char* s2)
 {
-	return (compare(s1, wrapstr(s2)) != 0);
+	return !equal_to(s1, wrapstr(s2));
 }
 
 bool operator<(string s1, const char* s2)
 {
-	return (compare(s1, wrapstr(s2)) < 0);
+	return less_than(s1, wrapstr(s2));
 }
 
 bool operator>(string s1, const char* s2)
 {
-	return (compare(s1, wrapstr(s2)) > 0);
+	return greater_than(s1, wrapstr(s2));
 }
 
 bool operator<=(string s1, const char* s2)
 {
-	return (compare(s1, wrapstr(s2)) <= 0);
+	return !greater_than(s1, wrapstr(s2));
 }
 
 bool operator>=(string s1, const char* s2)
 {
-	return (compare(s1, wrapstr(s2)) >= 0);
+	return !less_than(s1, wrapstr(s2));
 }
 
 bool operator==(const char* s1, string s2)
 {
-	return (compare(wrapstr(s1), s2) == 0);
+	return equal_to(wrapstr(s1), s2);
 }
 
 bool operator!=(const char* s1, string s2)
 {
-	return (compare(wrapstr(s1), s2) != 0);
+	return !equal_to(wrapstr(s1), s2);
 }
 
 bool operator<(const char* s1, string s2)
 {
-	return (compare(wrapstr(s1), s2) < 0);
+	return less_than(wrapstr(s1), s2);
 }
 
 bool operator>(const char* s1, string s2)
 {
-	return (compare(wrapstr(s1), s2) > 0);
+	return greater_than(wrapstr(s1), s2);
 }
 
 bool operator<=(const char* s1, string s2)
 {
-	return (compare(wrapstr(s1), s2) <= 0);
+	return !greater_than(wrapstr(s1), s2);
 }
 
 bool operator>=(const char* s1, string s2)
 {
-	return (compare(wrapstr(s1), s2) >= 0);
+	return !less_than(wrapstr(s1), s2);
 }
+
+template<class container>
+bool operator==(string a0, slice<container> a1)
+{
+	return equal_to(a0, a1);
+}
+
+template<class container>
+bool operator!=(string a0, slice<container> a1)
+{
+	return !equal_to(a0, a1);
+}
+
+template<class container>
+bool operator<(string a0, slice<container> a1)
+{
+	return less_than(a0, a1);
+}
+
+template<class container>
+bool operator>(string a0, slice<container> a1)
+{
+	return greater_than(a0, a1);
+}
+
+template<class container>
+bool operator<=(string a0, slice<container> a1)
+{
+	return !greater_than(a0, a1);
+}
+
+template<class container>
+bool operator>=(string a0, slice<container> a1)
+{
+	return !less_than(a0, a1);
+}
+
+
+template<class container>
+bool operator==(slice<container> a0, string a1)
+{
+	return equal_to(a0, a1);
+}
+
+template<class container>
+bool operator!=(slice<container> a0, string a1)
+{
+	return !equal_to(a0, a1);
+}
+
+template<class container>
+bool operator<(slice<container> a0, string a1)
+{
+	return less_than(a0, a1);
+}
+
+template<class container>
+bool operator>(slice<container> a0, string a1)
+{
+	return greater_than(a0, a1);
+}
+
+template<class container>
+bool operator<=(slice<container> a0, string a1)
+{
+	return !greater_than(a0, a1);
+}
+
+template<class container>
+bool operator>=(slice<container> a0, string a1)
+{
+	return !less_than(a0, a1);
+}
+
 
 /*Is this character a legal name starter character?
  */
