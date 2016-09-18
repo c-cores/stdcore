@@ -19,6 +19,7 @@ struct graph
 		{
 			left = this;
 			right = this;
+			index = -1;
 		}
 
 		virtual ~end_node()
@@ -27,6 +28,7 @@ struct graph
 
 		end_node *left;
 		end_node *right;
+		int index;
 	};
 
 	struct node : end_node 
@@ -103,6 +105,11 @@ struct graph
 			return ((node*)loc)->value;
 		}
 
+		int idx() const
+		{
+			return loc->index;
+		}
+
 		iterator &operator++(int)
 		{
 			loc = loc->right;
@@ -176,48 +183,72 @@ struct graph
 
 		int operator-(iterator i) const
 		{
-			int count = 0;
-			while (i.loc != loc && i.loc != &i.root->right)
-			{
-				count++;
-				i.loc = i.loc->right;
-			}
-
-			while (i.loc != loc && i.loc != &i.root->left)
-			{
-				count--;
-				i.loc = i.loc->left;
-			}
-
-			return count;
+			return loc->index - i.loc->index;
 		}
 
 		int operator-(const_iterator i) const
 		{
-			int count = 0;
-			while (i.loc != loc && i.loc != &i.root->right)
-			{
-				count++;
-				i.loc = i.loc->right;
-			}
-
-			while (i.loc != loc && i.loc != &i.root->left)
-			{
-				count--;
-				i.loc = i.loc->left;
-			}
-
-			return count;
+			return loc->index - i.loc->index;
 		}
 
-		bool operator==(const iterator &iter) const
+		bool operator==(iterator iter) const
 		{
-			return loc == iter.loc;
+			return loc->index == iter.loc->index;
 		}
 
-		bool operator!=(const iterator &iter) const
+		bool operator!=(iterator iter) const
 		{
-			return loc != iter.loc;
+			return loc->index != iter.loc->index;
+		}
+
+		bool operator<(iterator iter) const
+		{
+			return loc->index < iter.loc->index;
+		}
+
+		bool operator>(iterator iter) const
+		{
+			return loc->index > iter.loc->index;
+		}
+
+		bool operator<=(iterator iter) const
+		{
+			return loc->index <= iter.loc->index;
+		}
+
+		bool operator>=(iterator iter) const
+		{
+			return loc->index >= iter.loc->index;
+		}
+
+		bool operator==(const_iterator iter) const
+		{
+			return loc->index == iter.loc->index;
+		}
+
+		bool operator!=(const_iterator iter) const
+		{
+			return loc->index != iter.loc->index;
+		}
+
+		bool operator<(const_iterator iter) const
+		{
+			return loc->index < iter.loc->index;
+		}
+
+		bool operator>(const_iterator iter) const
+		{
+			return loc->index > iter.loc->index;
+		}
+
+		bool operator<=(const_iterator iter) const
+		{
+			return loc->index <= iter.loc->index;
+		}
+
+		bool operator>=(const_iterator iter) const
+		{
+			return loc->index >= iter.loc->index;
 		}
 
 		value_type pop()
@@ -231,9 +262,10 @@ struct graph
 			value_type result = get();
 			loc->left->right = loc->right;
 			loc->right->left = loc->left;
-			delete loc;
-			root = NULL;
-			loc = NULL;
+			end_node *del = loc;
+			loc = loc->left;
+			delete del;
+			root->update_index(loc);
 			return result;
 		}
 
@@ -247,9 +279,10 @@ struct graph
 				remove(i->next(), *this);
 			loc->left->right = loc->right;
 			loc->right->left = loc->left;
-			delete loc;
-			root = NULL;
-			loc = NULL;
+			end_node *del = loc;
+			loc = loc->left;
+			delete del;
+			root->update_index(loc);
 		}
 
 		iterator link(iterator n)
@@ -343,6 +376,11 @@ struct graph
 			return ((node*)loc)->value;
 		}
 
+		int index() const
+		{
+			return loc->index;
+		}
+
 		const_iterator &operator++(int)
 		{
 			loc = loc->right;
@@ -413,18 +451,72 @@ struct graph
 
 		int operator-(const_iterator i) const
 		{
-			int count = 0;
-			for (const_iterator j = i; j.loc != loc && j.loc != &j.root->right; j++)
-				count++;
-			return count;
+			return loc->index - i.loc->index;
 		}
 
 		int operator-(iterator i) const
 		{
-			int count = 0;
-			for (const_iterator j = i; j.loc != loc && j.loc != &j.root->right; j++)
-				count++;
-			return count;
+			return loc->index - i.loc->index;
+		}
+
+		bool operator==(iterator iter) const
+		{
+			return loc->index == iter.loc->index;
+		}
+
+		bool operator!=(iterator iter) const
+		{
+			return loc->index != iter.loc->index;
+		}
+
+		bool operator<(iterator iter) const
+		{
+			return loc->index < iter.loc->index;
+		}
+
+		bool operator>(iterator iter) const
+		{
+			return loc->index > iter.loc->index;
+		}
+
+		bool operator<=(iterator iter) const
+		{
+			return loc->index <= iter.loc->index;
+		}
+
+		bool operator>=(iterator iter) const
+		{
+			return loc->index >= iter.loc->index;
+		}
+
+		bool operator==(const_iterator iter) const
+		{
+			return loc->index == iter.loc->index;
+		}
+
+		bool operator!=(const_iterator iter) const
+		{
+			return loc->index != iter.loc->index;
+		}
+
+		bool operator<(const_iterator iter) const
+		{
+			return loc->index < iter.loc->index;
+		}
+
+		bool operator>(const_iterator iter) const
+		{
+			return loc->index > iter.loc->index;
+		}
+
+		bool operator<=(const_iterator iter) const
+		{
+			return loc->index <= iter.loc->index;
+		}
+
+		bool operator>=(const_iterator iter) const
+		{
+			return loc->index >= iter.loc->index;
 		}
 
 		const_iterator &operator=(const const_iterator &copy)
@@ -434,31 +526,11 @@ struct graph
 			return *this;
 		}
 
-		bool operator==(const const_iterator &iter) const
-		{
-			return loc == iter.loc;
-		}
-
-		bool operator!=(const const_iterator &iter) const
-		{
-			return loc != iter.loc;
-		}
-
 		const_iterator &operator=(const iterator &copy)
 		{
 			root = copy.root;
 			loc = copy.loc;
 			return *this;
-		}
-
-		bool operator==(const iterator &iter) const
-		{
-			return loc == iter.loc;
-		}
-
-		bool operator!=(const iterator &iter) const
-		{
-			return loc != iter.loc;
 		}
 	};
 
@@ -469,12 +541,14 @@ struct graph
 	{
 		left.right = &right;
 		right.left = &left;
+		right.index = 0;
 	}
 
 	graph(const graph<value_type> &copy)
 	{
 		left.right = &right;
 		right.left = &left;
+		right.index = 0;
 
 		map<const node*, node*> node_map;
 		for (const_iterator i = copy.begin(); i != copy.end(); i++)
@@ -516,6 +590,7 @@ struct graph
 		}
 		left.right = &right;
 		right.left = &left;
+		right.index = 0;
 	}
 
 	iterator begin()
@@ -579,6 +654,8 @@ struct graph
 		array<iterator> result;
 		for (typename array<iterator>::const_iterator i = curr.begin(); i != curr.end(); i++)
 			result.append(i->prev());
+		sort_quick_inplace(result);
+		collapse_inplace(result);
 		return result;
 	}
 
@@ -587,6 +664,8 @@ struct graph
 		array<iterator> result;
 		for (typename array<iterator>::const_iterator i = curr.begin(); i != curr.end(); i++)
 			result.append(i->prev());
+		sort_quick_inplace(result);
+		collapse_inplace(result);
 		return result;
 	}
 
@@ -597,6 +676,8 @@ struct graph
 		result->right = &right;
 		result->left->right = result;
 		result->right->left = result;
+		result->index = right.index;
+		right.index++;
 		return iterator(this, result);
 	}
 
@@ -808,6 +889,13 @@ struct graph
 			return left;
 		}
 	};*/
+
+protected:
+	void update_index(end_node *loc)
+	{
+		for (; loc != &right; loc = loc->right)
+			loc->right->index = loc->index + 1;
+	}
 };
 
 }

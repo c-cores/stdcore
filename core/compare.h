@@ -7,6 +7,7 @@
 
 #include <core/array.h>
 #include <core/list.h>
+#include <core/index_list.h>
 #include <core/fill.h>
 #include <core/sparse_range.h>
 
@@ -306,7 +307,6 @@ bool operator>=(array<value_type> s1, sparse_range<value_type, step_type> s2)
 	return !less_than(s1, s2);
 }
 
-
 template <class value_type, class step_type>
 bool operator==(sparse_range<value_type, step_type> s1, list<value_type> s2)
 {
@@ -379,7 +379,6 @@ bool operator>=(list<value_type> s1, sparse_range<value_type, step_type> s2)
 	return !less_than(s1, s2);
 }
 
-
 template <class value_type, class step_type>
 bool operator==(sparse_range<value_type, step_type> s1, fill<value_type> s2)
 {
@@ -448,6 +447,224 @@ bool operator<=(fill<value_type> s1, sparse_range<value_type, step_type> s2)
 
 template <class value_type, class step_type>
 bool operator>=(fill<value_type> s1, sparse_range<value_type, step_type> s2)
+{
+	return !less_than(s1, s2);
+}
+
+template<class value_type>
+bool operator==(array<value_type> a0, index_list<value_type> a1)
+{
+	return equal_to(a0, a1);
+}
+
+template<class value_type>
+bool operator!=(array<value_type> a0, index_list<value_type> a1)
+{
+	return !equal_to(a0, a1);
+}
+
+template<class value_type>
+bool operator<(array<value_type> a0, index_list<value_type> a1)
+{
+	return less_than(a0, a1);
+}
+
+template<class value_type>
+bool operator>(array<value_type> a0, index_list<value_type> a1)
+{
+	return greater_than(a0, a1);
+}
+
+template<class value_type>
+bool operator<=(array<value_type> a0, index_list<value_type> a1)
+{
+	return !greater_than(a0, a1);
+}
+
+template<class value_type>
+bool operator>=(array<value_type> a0, index_list<value_type> a1)
+{
+	return !less_than(a0, a1);
+}
+
+
+template<class value_type>
+bool operator==(index_list<value_type> a0, array<value_type> a1)
+{
+	return equal_to(a0, a1);
+}
+
+template<class value_type>
+bool operator!=(index_list<value_type> a0, array<value_type> a1)
+{
+	return !equal_to(a0, a1);
+}
+
+template<class value_type>
+bool operator<(index_list<value_type> a0, array<value_type> a1)
+{
+	return less_than(a0, a1);
+}
+
+template<class value_type>
+bool operator>(index_list<value_type> a0, array<value_type> a1)
+{
+	return greater_than(a0, a1);
+}
+
+template<class value_type>
+bool operator<=(index_list<value_type> a0, array<value_type> a1)
+{
+	return !greater_than(a0, a1);
+}
+
+template<class value_type>
+bool operator>=(index_list<value_type> a0, array<value_type> a1)
+{
+	return !less_than(a0, a1);
+}
+
+template<class value_type>
+bool operator==(fill<value_type> a0, index_list<value_type> a1)
+{
+	return equal_to(a0, a1);
+}
+
+template<class value_type>
+bool operator!=(fill<value_type> a0, index_list<value_type> a1)
+{
+	return !equal_to(a0, a1);
+}
+
+template<class value_type>
+bool operator<(fill<value_type> a0, index_list<value_type> a1)
+{
+	return less_than(a0, a1);
+}
+
+template<class value_type>
+bool operator>(fill<value_type> a0, index_list<value_type> a1)
+{
+	return greater_than(a0, a1);
+}
+
+template<class value_type>
+bool operator<=(fill<value_type> a0, index_list<value_type> a1)
+{
+	return !greater_than(a0, a1);
+}
+
+template<class value_type>
+bool operator>=(fill<value_type> a0, index_list<value_type> a1)
+{
+	return !less_than(a0, a1);
+}
+
+
+template<class value_type>
+bool operator==(index_list<value_type> a0, fill<value_type> a1)
+{
+	return equal_to(a0, a1);
+}
+
+template<class value_type>
+bool operator!=(index_list<value_type> a0, fill<value_type> a1)
+{
+	return !equal_to(a0, a1);
+}
+
+template<class value_type>
+bool operator<(index_list<value_type> a0, fill<value_type> a1)
+{
+	return less_than(a0, a1);
+}
+
+template<class value_type>
+bool operator>(index_list<value_type> a0, fill<value_type> a1)
+{
+	return greater_than(a0, a1);
+}
+
+template<class value_type>
+bool operator<=(index_list<value_type> a0, fill<value_type> a1)
+{
+	return !greater_than(a0, a1);
+}
+
+template<class value_type>
+bool operator>=(index_list<value_type> a0, fill<value_type> a1)
+{
+	return !less_than(a0, a1);
+}
+
+template <class value_type, class step_type>
+bool operator==(sparse_range<value_type, step_type> s1, index_list<value_type> s2)
+{
+	return equal_to(s1, s2);
+}
+
+template <class value_type, class step_type>
+bool operator!=(sparse_range<value_type, step_type> s1, index_list<value_type> s2)
+{
+	return !equal_to(s1, s2);
+}
+
+template <class value_type, class step_type>
+bool operator<(sparse_range<value_type, step_type> s1, index_list<value_type> s2)
+{
+	return less_than(s1, s2);
+}
+
+template <class value_type, class step_type>
+bool operator>(sparse_range<value_type, step_type> s1, index_list<value_type> s2)
+{
+	return greater_than(s1, s2);
+}
+
+template <class value_type, class step_type>
+bool operator<=(sparse_range<value_type, step_type> s1, index_list<value_type> s2)
+{
+	return !greater_than(s1, s2);
+}
+
+template <class value_type, class step_type>
+bool operator>=(sparse_range<value_type, step_type> s1, index_list<value_type> s2)
+{
+	return !less_than(s1, s2);
+}
+
+template <class value_type, class step_type>
+bool operator==(index_list<value_type> s1, sparse_range<value_type, step_type> s2)
+{
+	return equal_to(s1, s2);
+}
+
+template <class value_type, class step_type>
+bool operator!=(index_list<value_type> s1, sparse_range<value_type, step_type> s2)
+{
+	return !equal_to(s1, s2);
+}
+
+template <class value_type, class step_type>
+bool operator<(index_list<value_type> s1, sparse_range<value_type, step_type> s2)
+{
+	return less_than(s1, s2);
+}
+
+template <class value_type, class step_type>
+bool operator>(index_list<value_type> s1, sparse_range<value_type, step_type> s2)
+{
+	return greater_than(s1, s2);
+}
+
+template <class value_type, class step_type>
+bool operator<=(index_list<value_type> s1, sparse_range<value_type, step_type> s2)
+{
+	return !greater_than(s1, s2);
+}
+
+template <class value_type, class step_type>
+bool operator>=(index_list<value_type> s1, sparse_range<value_type, step_type> s2)
 {
 	return !less_than(s1, s2);
 }
