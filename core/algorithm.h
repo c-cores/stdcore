@@ -455,5 +455,21 @@ void remove(container &c, value_type value)
 			i.drop();
 }
 
+template <typename container1, typename container2>
+void remove_all(container1 &c1, const container2 &c2)
+{
+	typename container1::iterator i = c1.begin();
+	typename container2::const_iterator j = c2.begin();
+	while (i != c1.end() && j != c2.end())
+	{
+		if (*i < *j)
+			i++;
+		else if (*j < *i)
+			j++;
+		else
+			i.drop();
+	}
+}
+
 }
 

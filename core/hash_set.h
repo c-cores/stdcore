@@ -82,26 +82,26 @@ struct hash_set : list<pair<int, key_type> >
 
 		~iterator() {}
 
-		key_type &operator*()
+		key_type &operator*() const
 		{
 			return ((item*)loc)->value.second;
 		}
-		key_type *operator->()
+		key_type *operator->() const
 		{
 			return &((item*)loc)->value.second;
 		}
 
-		key_type *ptr()
+		key_type *ptr() const
 		{
 			return &((item*)loc)->value.second;
 		}
 
-		key_type &get()
+		key_type &get() const
 		{
 			return ((item*)loc)->value.second;
 		}
 
-		int bucket()
+		int bucket() const
 		{
 			return ((item*)loc)->value.first >> root->shift;
 		}
@@ -327,27 +327,27 @@ struct hash_set : list<pair<int, key_type> >
 
 		~const_iterator() {}
 
-		const key_type &operator*()
+		key_type &operator*() const
 		{
-			return ((const item*)loc)->value.second;
+			return ((item*)loc)->value.second;
 		}
 
-		const key_type *operator->()
+		key_type *operator->() const
 		{
-			return &((const item*)loc)->value.second;
+			return &((item*)loc)->value.second;
 		}
 
-		const key_type &get()
+		key_type &get() const
 		{
-			return ((const item*)loc)->value.second;
+			return ((item*)loc)->value.second;
 		}
 
-		const key_type *ptr()
+		key_type *ptr() const
 		{
-			return &((const item*)loc)->value.second;
+			return &((item*)loc)->value.second;
 		}
 
-		int bucket()
+		int bucket() const
 		{
 			return ((item*)loc)->value.first >> root->shift;
 		}
@@ -553,7 +553,7 @@ struct hash_set : list<pair<int, key_type> >
 		return const_iterator(this, &left);
 	}
 
-	int size()
+	int size() const
 	{
 		return count;
 	}
@@ -616,6 +616,27 @@ struct hash_set : list<pair<int, key_type> >
 				return end();
 			else
 				return iterator(this, super::get_item(pos));
+		}
+		else
+			return end();
+	}
+
+	const_iterator find(const key_type &key) const
+	{
+		bits h;
+		hash_data(h, key);
+
+		uint32_t hash = hash_func((const char*)h.data, h.size(), salt);
+		int bucket = (int)(hash >> shift);
+
+		if (buckets[bucket] != super::end())
+		{
+			pair<int, key_type> search(hash, key);
+			typename super::iterator pos = lower_bound(super::sub(buckets[bucket], buckets[bucket+1]), search);
+			if (*pos != search)
+				return end();
+			else
+				return const_iterator(this, super::get_item(pos));
 		}
 		else
 			return end();

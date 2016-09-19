@@ -51,7 +51,12 @@ struct hash_map : hash_set<implier<key_type, value_type>, hash_func>
 		return super::find(implier<key_type, value_type>(key, value_type()));
 	}
 
-	bool contains(const key_type &key)
+	const_iterator find(const key_type &key) const
+	{
+		return super::find(implier<key_type, value_type>(key, value_type()));
+	}
+
+	bool contains(const key_type &key) const
 	{
 		return find(key) != end();
 	}

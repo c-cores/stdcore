@@ -148,7 +148,7 @@ container &sort_quick_inplace(container &c, typename container::iterator pivot =
 }
 
 template <class container1, class container2>
-container1 sort_merge(const container1 &c1, const container1 &c2)
+container1 sort_merge(const container1 &c1, const container2 &c2)
 {
 	container1 result;
 	typename container1::const_iterator i = c1.begin();
@@ -180,9 +180,9 @@ container1 sort_merge(const container1 &c1, const container1 &c2)
 }
 
 template <class container1, class container2>
-container1 &sort_merge_inplace(container1 &c1, const container1 &c2)
+container1 &sort_merge_inplace(container1 &c1, const container2 &c2)
 {
-	typename container1::const_iterator i = c1.begin();
+	typename container1::iterator i = c1.begin();
 	typename container2::const_iterator j = c2.begin();
 	while (i != c1.end() && j != c2.end())
 	{
@@ -206,7 +206,7 @@ container1 &sort_merge_inplace(container1 &c1, const container1 &c2)
 }
 
 template <class container, class element>
-typename container::iterator &sort_insert(container &c1, const element &c2)
+typename container::iterator sort_insert(container &c1, const element &c2)
 {
 	typename container::iterator result = lower_bound(c1, c2);
 	result.push(c2);

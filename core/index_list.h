@@ -98,16 +98,16 @@ struct index_list
 			return root != NULL && loc != &root->left && loc != &root->right;
 		}
 
-		value_type &operator*()
+		value_type &operator*() const
 		{
 			return ((item*)loc)->value;
 		}
-		value_type *operator->()
+		value_type *operator->() const
 		{
 			return &((item*)loc)->value;
 		}
 
-		value_type *ptr()
+		value_type *ptr() const
 		{
 			return &((item*)loc)->value;
 		}
@@ -127,7 +127,7 @@ struct index_list
 			return *this;
 		}
 
-		int idx()
+		int idx() const
 		{
 			return loc->index;
 		}
@@ -281,7 +281,7 @@ struct index_list
 			return loc->index - i.loc->index;
 		}
 
-		core::slice<range<iterator> > sub(int length)
+		core::slice<range<iterator> > sub(int length) const
 		{
 			if (length < 0)
 				return range<iterator>(*this+length, *this);
@@ -289,7 +289,7 @@ struct index_list
 				return range<iterator>(*this, *this+length);
 		}
 
-		index_list<value_type> subcpy(int length)
+		index_list<value_type> subcpy(int length) const
 		{
 			if (length < 0)
 				return range<iterator>(*this+length, *this).deref();
@@ -297,12 +297,12 @@ struct index_list
 				return range<iterator>(*this, *this+length).deref();
 		}
 
-		core::slice<range<iterator> > sub()
+		core::slice<range<iterator> > sub() const
 		{
 			return range<iterator>(*this, root->end());
 		}
 
-		index_list<value_type> subcpy()
+		index_list<value_type> subcpy() const
 		{
 			return range<iterator>(*this, root->end()).deref();
 		}
@@ -364,7 +364,7 @@ struct index_list
 			root->update_index(start);
 		}
 
-		void push(value_type v)
+		void push(value_type v) const
 		{
 			end_item *start = loc->prev;
 			start->next = new item(v);
@@ -376,19 +376,20 @@ struct index_list
 		}
 
 		template <class container>
-		void append(const container &c)
+		void append(const container &c) const
 		{
 			end_item *start = loc->prev;
-			for (typename container::const_iterator i = c.begin(); i; i++)
+			for (typename container::const_iterator i = c.begin(); i != c.end(); i++)
 			{
 				start->next = new item(*i);
+				start->next->index = start->index+1;
 				start->next->prev = start;
 				start = start->next;
 			}
 
 			start->next = loc;
-			root->update_index(loc->prev);
 			loc->prev = start;
+			root->update_index(start);
 		}
 
 		void replace(int n, value_type v)
@@ -437,7 +438,7 @@ struct index_list
 		}
 
 		template <class iterator_type>
-		void swap(iterator_type i)
+		void swap(iterator_type i) const
 		{
 			value_type temp;
 			memcpy(&temp, &((item*)loc)->value, sizeof(value_type));
@@ -516,24 +517,24 @@ struct index_list
 			return root != NULL && loc != &root->left && loc != &root->right;
 		}
 
-		const value_type &operator*()
+		value_type &operator*() const
 		{
-			return ((const item*)loc)->value;
+			return ((item*)loc)->value;
 		}
 
-		const value_type *operator->()
+		value_type *operator->() const
 		{
-			return &((const item*)loc)->value;
+			return &((item*)loc)->value;
 		}
 
-		const value_type &get() const
+		value_type &get() const
 		{
-			return ((const item*)loc)->value;
+			return ((item*)loc)->value;
 		}
 
-		const value_type *ptr()
+		value_type *ptr() const
 		{
-			return &((const item*)loc)->value;
+			return &((item*)loc)->value;
 		}
 
 		const_iterator &ref()
@@ -546,7 +547,7 @@ struct index_list
 			return *this;
 		}
 
-		int idx()
+		int idx() const
 		{
 			return loc->index;
 		}
@@ -707,7 +708,7 @@ struct index_list
 			return loc->index - i.loc->index;
 		}
 
-		core::slice<range<const_iterator> > sub(int length)
+		core::slice<range<const_iterator> > sub(int length) const
 		{
 			if (length < 0)
 				return range<const_iterator>(*this+length, *this);
@@ -715,7 +716,7 @@ struct index_list
 				return range<const_iterator>(*this, *this+length);
 		}
 
-		index_list<value_type> subcpy(int length)
+		index_list<value_type> subcpy(int length) const
 		{
 			if (length < 0)
 				return range<const_iterator>(*this+length, *this).deref();
@@ -723,12 +724,12 @@ struct index_list
 				return range<const_iterator>(*this, *this+length).deref();
 		}
 
-		core::slice<range<const_iterator> > sub()
+		core::slice<range<const_iterator> > sub() const
 		{
 			return range<const_iterator>(*this, root->end());
 		}
 
-		index_list<value_type> subcpy()
+		index_list<value_type> subcpy() const
 		{
 			return range<const_iterator>(*this, root->end()).deref();
 		}
@@ -1070,6 +1071,7 @@ struct index_list
 		end.loc->prev = start.loc->prev;
 		result.left.next->prev = &result.left;
 		result.right.prev->next = &result.right;
+		result.update_index(&result.left);
 		end.root->update_index(end.loc->prev);
 		return result;
 	}
@@ -1258,7 +1260,12 @@ struct index_list
 	}
 
 protected:
-	end_item* get_item(iterator i)
+	end_item* get_item(iterator i) const
+	{
+		return i.loc;
+	}
+
+	end_item* get_item(const_iterator i) const
 	{
 		return i.loc;
 	}

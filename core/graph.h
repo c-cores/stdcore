@@ -93,22 +93,22 @@ struct graph
 			return root != NULL && loc != &root->left && loc != &root->right;
 		}
 
-		value_type &operator*()
+		value_type &operator*() const
 		{
 			return ((node*)loc)->value;
 		}
 
-		value_type *operator->()
+		value_type *operator->() const
 		{
 			return &((node*)loc)->value;
 		}
 
-		value_type *ptr()
+		value_type *ptr() const
 		{
 			return &((node*)loc)->value;
 		}
 
-		value_type &get()
+		value_type &get() const
 		{
 			return ((node*)loc)->value;
 		}
@@ -172,12 +172,12 @@ struct graph
 			return result;
 		}
 
-		links &next()
+		links &next() const
 		{
 			return ((node*)loc)->next;
 		}
 
-		links &prev()
+		links &prev() const
 		{
 			return ((node*)loc)->prev;
 		}
@@ -293,38 +293,38 @@ struct graph
 			root->update_index(loc);
 		}
 
-		iterator link(iterator n)
+		iterator link(iterator n) const
 		{
 			lower_bound(next(), n).push(n);
 			lower_bound(n.prev(), n).push(*this);
 			return n;
 		}
 
-		void unlink(iterator n)
+		void unlink(iterator n) const
 		{
 			remove(next(), n);
 			remove(n.prev(), *this);
 		}
 
-		iterator push(const value_type &value)
+		iterator push(const value_type &value) const
 		{
 			return link(root->insert(value));
 		}
 
-		iterator rlink(iterator n)
+		iterator rlink(iterator n) const
 		{
 			lower_bound(prev(), n).push(n);
 			lower_bound(n.next(), n).push(*this);
 			return n;
 		}
 
-		void runlink(iterator n)
+		void runlink(iterator n) const
 		{
 			remove(prev(), n);
 			remove(n.next(), *this);
 		}
 
-		iterator rpush(const value_type &value)
+		iterator rpush(const value_type &value) const
 		{
 			return rlink(root->insert(value));
 		}
@@ -359,27 +359,27 @@ struct graph
 			loc = copy.loc;
 		}
 
-		operator bool()
+		operator bool() const
 		{
 			return root != NULL && loc != &root->left && loc != &root->right;
 		}
 
-		const value_type &operator*()
+		value_type &operator*() const
 		{
 			return ((node*)loc)->value;
 		}
 
-		const value_type *operator->()
+		value_type *operator->() const
 		{
 			return &((node*)loc)->value;
 		}
 
-		const value_type *ptr()
+		value_type *ptr() const
 		{
 			return &((node*)loc)->value;
 		}
 
-		const value_type &get()
+		value_type &get() const
 		{
 			return ((node*)loc)->value;
 		}
@@ -447,7 +447,7 @@ struct graph
 			return result;
 		}
 
-		const_links next()
+		const_links next() const
 		{
 			const_links result;
 			result.reserve(((node*)loc)->next.size());
@@ -456,7 +456,7 @@ struct graph
 			return result;
 		}
 
-		const_links prev()
+		const_links prev() const
 		{
 			const_links result;
 			result.reserve(((node*)loc)->prev.size());
@@ -695,7 +695,7 @@ struct graph
 		}
 
 		for (typename map<iterator, array<link_iterator> >::iterator i = result.rbegin(); i != result.rend(); i--)
-			if (!is_superset(i->value, i->key.prev()))
+			if (!is_subset(i->value.deref(), i->key.prev()))
 				i.drop();
 
 		return result;

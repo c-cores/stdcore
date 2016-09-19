@@ -326,19 +326,21 @@ int count_all_pattern(const container &c, const container2 &t)
 template <typename container, typename element>
 typename container::iterator lower_bound(container &c, const element &t, int radix = 2)
 {
-	return lower_bound(c.begin(), c.end(), t, radix);
+	return lower_bound(c.begin(), c.end(), t, radix, c.size());
 }
 
 template <typename container, typename element>
 typename container::const_iterator lower_bound(const container &c, const element &t, int radix = 2)
 {
-	return lower_bound(c.begin(), c.end(), t, radix);
+	return lower_bound(c.begin(), c.end(), t, radix, c.size());
 }
 
 template <typename iterator, typename element>
-iterator lower_bound(iterator start, iterator end, const element &t, int radix = 2)
+iterator lower_bound(iterator start, iterator end, const element &t, int radix = 2, int size = -1)
 {
-	int size = end - start;
+	if (size < 0)
+		size = end - start;
+
 	if (size >= radix)
 	{
 		int D = radix - size;
@@ -347,7 +349,7 @@ iterator lower_bound(iterator start, iterator end, const element &t, int radix =
 			if (D > 0)
 			{
 				if (t <= *(i-1))
-					return lower_bound(start, i, t, radix);
+					return lower_bound(start, i, t, radix, size/radix);
 				start = i;
 				D += radix - size;
 			}
@@ -355,7 +357,7 @@ iterator lower_bound(iterator start, iterator end, const element &t, int radix =
 				D += radix;
 		}
 
-		return lower_bound(start, end, t, radix);
+		return lower_bound(start, end, t, radix, size%radix);
 	}
 	else
 	{
@@ -369,19 +371,21 @@ iterator lower_bound(iterator start, iterator end, const element &t, int radix =
 template <typename container, typename element>
 typename container::iterator upper_bound(container &c, const element &t, int radix = 2)
 {
-	return upper_bound(c.begin(), c.end(), t, radix);
+	return upper_bound(c.begin(), c.end(), t, radix, c.size());
 }
 
 template <typename container, typename element>
 typename container::const_iterator upper_bound(const container &c, const element &t, int radix = 2)
 {
-	return upper_bound(c.begin(), c.end(), t, radix);
+	return upper_bound(c.begin(), c.end(), t, radix, c.size());
 }
 
 template <typename iterator, typename element>
-iterator upper_bound(iterator start, iterator end, const element &t, int radix = 2)
+iterator upper_bound(iterator start, iterator end, const element &t, int radix = 2, int size = -1)
 {
-	int size = end - start;
+	if (size < 0)
+		size = end - start;
+
 	if (size >= radix)
 	{
 		int D = radix - size;
@@ -390,7 +394,7 @@ iterator upper_bound(iterator start, iterator end, const element &t, int radix =
 			if (D > 0)
 			{
 				if (t < *(i-1))
-					return upper_bound(start, i, t, radix);
+					return upper_bound(start, i, t, radix, size/radix);
 				start = i;
 				D += radix - size;
 			}
@@ -398,7 +402,7 @@ iterator upper_bound(iterator start, iterator end, const element &t, int radix =
 				D += radix;
 		}
 
-		return upper_bound(start, end, t, radix);
+		return upper_bound(start, end, t, radix, size%radix);
 	}
 	else
 	{

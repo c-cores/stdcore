@@ -474,21 +474,22 @@ struct array
 			return root != NULL && index >= 0 && index < root->count;
 		}
 
-		const value_type &operator*() const
+		value_type &operator*() const
 		{
 			return root->data[index];
 		}
-		const value_type *operator->() const
+
+		value_type *operator->() const
 		{
 			return root->data+index;
 		}
 
-		const value_type *ptr() const
+		value_type *ptr() const
 		{
 			return root->data+index;
 		}
 
-		const value_type &get() const
+		value_type &get() const
 		{
 			return root->data[index];
 		}
