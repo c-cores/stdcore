@@ -110,10 +110,10 @@ typename container1::const_iterator find_first_of(const container1 &c1, const co
 	return c1.end();
 }
 
-template <typename container, typename element>
-bool contains_one_of(const container &c, const element &t)
+template <typename container1, typename container2>
+bool contains_one_of(const container1 &c1, const container2 &c2)
 {
-	return (find_first_of(c, t) != c.end());
+	return (find_first_of(c1, c2) != c1.end());
 }
 
 template <typename container1, typename container2>
@@ -145,6 +145,16 @@ array<typename container::iterator> find_all_of(container &c, const container2 &
 			results.push_back(i);
 
 	return results;
+}
+
+template <typename container1, typename container2>
+bool contains_all_of(const container1 &c1, const container2 &c2)
+{
+	for (typename container2::const_iterator i = c2.begin(); i != c2.end(); i++)
+		if (!contains(c1, *i))
+			return false;
+
+	return true;
 }
 
 template <typename container, typename container2>

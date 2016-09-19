@@ -426,6 +426,27 @@ container1 difference(const container1 &c1, const container2 &c2)
 	return result;
 }
 
+template <class container1, class container2>
+bool is_subset(const container1 &c1, const container2 &c2)
+{
+	typename container1::const_iterator i = c1.begin();
+	typename container2::const_iterator j = c2.begin();
+	while (i != c1.end() && j != c2.end())
+	{
+		if (*i < *j)
+			i++;
+		else if (*j < *i)
+			return false;
+		else
+		{
+			i++;
+			j++;
+		}
+	}
+
+	return j == c2.end();
+}
+
 template <typename container, typename value_type>
 void remove(container &c, value_type value)
 {

@@ -694,10 +694,10 @@ struct graph
 				sort_insert(result[n[j]], i);
 		}
 
-		for (typename map<iterator, array<link_iterator> >::iterator i = result.begin(); i != result.end(); i++)
-		{
-			links p = i->key.prev();
-		}
+		for (typename map<iterator, array<link_iterator> >::iterator i = result.rbegin(); i != result.rend(); i--)
+			if (!is_superset(i->value, i->key.prev()))
+				i.drop();
+
 		return result;
 	}
 
