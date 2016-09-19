@@ -9,7 +9,7 @@
 
 #include <core/list.h>
 #include <core/implier.h>
-#include <core/search.h>
+#include <core/sort.h>
 
 namespace core
 {

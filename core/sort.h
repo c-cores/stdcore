@@ -9,6 +9,7 @@
 
 #include <core/slice.h>
 #include <core/ascii_stream.h>
+#include <core/search.h>
 
 namespace core
 {
@@ -48,10 +49,10 @@ type median_iterator(type t1, type t2, type t3)
 template <class container>
 container sort_selection(container c)
 {
-	for (typename container::iterator i = c.begin(); i; i++)
+	for (typename container::iterator i = c.begin(); i != c.end(); i++)
 	{
 		typename container::iterator max_j = i;
-		for (typename container::iterator j = i+1; j; j++)
+		for (typename container::iterator j = i+1; j != c.end(); j++)
 			if (*j < *max_j)
 				max_j = j;
 
@@ -62,12 +63,12 @@ container sort_selection(container c)
 }
 
 template <class container>
-container sort_selection_inplace(container &c)
+container &sort_selection_inplace(container &c)
 {
-	for (typename container::iterator i = c.begin(); i; i++)
+	for (typename container::iterator i = c.begin(); i != c.end(); i++)
 	{
 		typename container::iterator max_j = i;
-		for (typename container::iterator j = i+1; j; j++)
+		for (typename container::iterator j = i+1; j != c.end(); j++)
 			if (*j < *max_j)
 				max_j = j;
 
@@ -78,13 +79,21 @@ container sort_selection_inplace(container &c)
 }
 
 template <class container>
-container sort_quick(container c)
+container sort_quick(container c, typename container::iterator pivot = typename container::iterator())
 {
-	if (c.size() > 2)
+	if (c.begin() == c.end() || c.begin()+1 == c.end())
+		return c;
+	else if (c.begin()+2 == c.end())
 	{
-		typename container::iterator pivot = median_iterator(c.begin(), c.begin() + c.size()/2, c.rbegin());
+		if (*c.rbegin() < *c.begin())
+			c.begin().swap(c.rbegin());
+		return c;
+	}
+	else
+	{
+		if (pivot)
+			pivot.swap(c.rbegin());
 
-		pivot.swap(c.rbegin());
 		pivot = c.rbegin();
 
 		typename container::iterator store = c.begin();
@@ -99,22 +108,26 @@ container sort_quick(container c)
 
 		sort_quick(c.sub(c.begin(), store));
 		sort_quick(c.sub(store+1, c.end()));
+		return c;
 	}
-	else if (c.size() > 1)
-		if (*c.rbegin() < *c.begin())
-			c.begin().swap(c.rbegin());
-
-	return c;
 }
 
 template <class container>
-container sort_quick_inplace(container &c)
+container &sort_quick_inplace(container &c, typename container::iterator pivot = typename container::iterator())
 {
-	if (c.size() > 2)
+	if (c.begin() == c.end() || c.begin()+1 == c.end())
+		return c;
+	else if (c.begin()+2 == c.end())
 	{
-		typename container::iterator pivot = median_iterator(c.begin(), c.begin() + c.size()/2, c.rbegin());
+		if (*c.rbegin() < *c.begin())
+			c.begin().swap(c.rbegin());
+		return c;
+	}
+	else
+	{
+		if (pivot)
+			pivot.swap(c.rbegin());
 
-		pivot.swap(c.rbegin());
 		pivot = c.rbegin();
 
 		typename container::iterator store = c.begin();
@@ -129,12 +142,75 @@ container sort_quick_inplace(container &c)
 
 		sort_quick(c.sub(c.begin(), store));
 		sort_quick(c.sub(store+1, c.end()));
-	}
-	else if (c.size() > 1)
-		if (*c.rbegin() < *c.begin())
-			c.begin().swap(c.rbegin());
 
-	return c;
+		return c;
+	}
+}
+
+template <class container1, class container2>
+container1 sort_merge(const container1 &c1, const container1 &c2)
+{
+	container1 result;
+	typename container1::const_iterator i = c1.begin();
+	typename container2::const_iterator j = c2.begin();
+	while (i != c1.end() && j != c2.end())
+	{
+		if (*i < *j)
+		{
+			result.push_back(*i);
+			i++;
+		}
+		else if (*j < *i)
+		{
+			result.push_back(*j);
+			j++;
+		}
+		else
+		{
+			result.push_back(*i);
+			result.push_back(*j);
+			i++;
+			j++;
+		}
+	}
+
+	result.append_back(i.sub());
+	result.append_back(j.sub());
+	return result;
+}
+
+template <class container1, class container2>
+container1 &sort_merge_inplace(container1 &c1, const container1 &c2)
+{
+	typename container1::const_iterator i = c1.begin();
+	typename container2::const_iterator j = c2.begin();
+	while (i != c1.end() && j != c2.end())
+	{
+		if (*i < *j)
+			i++;
+		else if (*j < *i)
+		{
+			i.push(*j);
+			j++;
+		}
+		else
+		{
+			i++;
+			i.push(*j);
+			j++;
+		}
+	}
+
+	c1.append_back(j.sub());
+	return c1;
+}
+
+template <class container, class element>
+typename container::iterator &sort_insert(container &c1, const element &c2)
+{
+	typename container::iterator result = lower_bound(c1, c2);
+	result.push(c2);
+	return result-1;
 }
 
 template <class container>
@@ -166,7 +242,7 @@ container reverse(container c)
 }
 
 template <class container>
-container reverse_inplace(container &c)
+container &reverse_inplace(container &c)
 {
 	for (typename container::iterator i = c.begin(), j = c.rbegin(); i != j && i != j+1; i++, j--)
 		i.swap(j);

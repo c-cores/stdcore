@@ -430,6 +430,26 @@ struct list
 			memcpy(&((item*)loc)->value, &((item*)i.loc)->value, sizeof(value_type));
 			memcpy(&((item*)i.loc)->value, &temp, sizeof(value_type));
 		}
+
+		void swap(iterator &i)
+		{
+			end_item *next1 = loc->next;
+			end_item *prev1 = loc->prev;
+			end_item *next2 = i.loc->next;
+			end_item *prev2 = i.loc->prev;
+			next1->prev = i.loc;
+			prev1->next = i.loc;
+			next2->prev = loc;
+			prev2->next = loc;
+			loc->next = next2;
+			loc->prev = prev2;
+			i.loc->next = next1;
+			i.loc->prev = prev1;
+
+			next1 = loc;
+			loc = i.loc;
+			i.loc = next1;
+		}
 	};
 
 	struct const_iterator

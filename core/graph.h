@@ -3,6 +3,7 @@
 #include <core/array.h>
 #include <core/map.h>
 #include <core/algorithm.h>
+#include <core/sort.h>
 
 namespace core
 {
@@ -12,6 +13,13 @@ struct graph
 {
 	struct iterator;
 	struct const_iterator;
+
+	typedef array<iterator> links;
+	typedef array<const_iterator> const_links;
+	typedef typename array<iterator>::iterator link_iterator;
+	typedef typename array<const_iterator>::iterator const_link_iterator;
+	typedef typename array<iterator>::const_iterator link_const_iterator;
+	typedef typename array<const_iterator>::const_iterator const_link_const_iterator;
 
 	struct end_node
 	{
@@ -47,8 +55,8 @@ struct graph
 		}
 
 		value_type value;
-		array<iterator> next;
-		array<iterator> prev;
+		links next;
+		links prev;
 	};
 
 	struct iterator
@@ -164,12 +172,12 @@ struct graph
 			return result;
 		}
 
-		array<iterator> &next()
+		links &next()
 		{
 			return ((node*)loc)->next;
 		}
 
-		array<iterator> &prev()
+		links &prev()
 		{
 			return ((node*)loc)->prev;
 		}
@@ -253,11 +261,11 @@ struct graph
 
 		value_type pop()
 		{
-			array<iterator> n = next();
-			array<iterator> p = prev();
-			for (typename array<iterator>::iterator i = n.begin(); i != n.end(); i++)
+			links n = next();
+			links p = prev();
+			for (link_iterator i = n.begin(); i != n.end(); i++)
 				remove(i->prev(), *this);
-			for (typename array<iterator>::iterator i = p.begin(); i != p.end(); i++)
+			for (link_iterator i = p.begin(); i != p.end(); i++)
 				remove(i->next(), *this);
 			value_type result = get();
 			loc->left->right = loc->right;
@@ -271,11 +279,11 @@ struct graph
 
 		void drop()
 		{
-			array<iterator> n = next();
-			array<iterator> p = prev();
-			for (typename array<iterator>::iterator i = n.begin(); i != n.end(); i++)
+			links n = next();
+			links p = prev();
+			for (link_iterator i = n.begin(); i != n.end(); i++)
 				remove(i->prev(), *this);
-			for (typename array<iterator>::iterator i = p.begin(); i != p.end(); i++)
+			for (link_iterator i = p.begin(); i != p.end(); i++)
 				remove(i->next(), *this);
 			loc->left->right = loc->right;
 			loc->right->left = loc->left;
@@ -287,8 +295,8 @@ struct graph
 
 		iterator link(iterator n)
 		{
-			next().push_back(n);
-			n.prev().push_back(*this);
+			lower_bound(next(), n).push(n);
+			lower_bound(n.prev(), n).push(*this);
 			return n;
 		}
 
@@ -305,8 +313,8 @@ struct graph
 
 		iterator rlink(iterator n)
 		{
-			prev().push_back(n);
-			n.next().push_back(*this);
+			lower_bound(prev(), n).push(n);
+			lower_bound(n.next(), n).push(*this);
 			return n;
 		}
 
@@ -439,14 +447,22 @@ struct graph
 			return result;
 		}
 
-		array<const_iterator> &next()
+		const_links next()
 		{
-			return ((node*)loc)->next;
+			const_links result;
+			result.reserve(((node*)loc)->next.size());
+			for (int i = 0; i < ((node*)loc)->next.size(); i++)
+				result.push_back_unsafe(const_iterator(root, ((node*)loc)->next[i].loc));
+			return result;
 		}
 
-		array<const_iterator> &prev()
+		const_links prev()
 		{
-			return ((node*)loc)->prev;
+			const_links result;
+			result.reserve(((node*)loc)->prev.size());
+			for (int i = 0; i < ((node*)loc)->prev.size(); i++)
+				result.push_back_unsafe(const_iterator(root, ((node*)loc)->prev[i].loc));
+			return result;
 		}
 
 		int operator-(const_iterator i) const
@@ -557,7 +573,7 @@ struct graph
 		for (typename map<const node*, node*>::iterator i = node_map.begin(); i; i++)
 		{
 			i->value->next.reserve(i->key->next.size());
-			for (typename array<iterator>::const_iterator j = i->key->next.begin(); j; j++)
+			for (const_link_iterator j = i->key->next.begin(); j; j++)
 			{
 				typename map<const node*, node*>::iterator loc = node_map.find((const node*)j->loc);
 				if (loc)
@@ -565,7 +581,7 @@ struct graph
 			}
 
 			i->value->prev.reserve(i->key->prev.size());
-			for (typename array<iterator>::const_iterator j = i->key->prev.begin(); j; j++)
+			for (const_link_iterator j = i->key->prev.begin(); j; j++)
 			{
 				typename map<const node*, node*>::iterator loc = node_map.find((const node*)j->loc);
 				if (loc)
@@ -633,39 +649,56 @@ struct graph
 		return const_iterator(this, &left);
 	}
 
-	array<iterator> next(const array<iterator> &curr) const
+	links next(const links &curr) const
 	{
-		array<iterator> result;
-		for (typename array<iterator>::const_iterator i = curr.begin(); i != curr.end(); i++)
-			result.append(i->next());
+		links result;
+		for (link_const_iterator i = curr.begin(); i != curr.end(); i++)
+			sort_merge(result, i->next());
 		return result;
 	}
 
-	array<const_iterator> next(const array<const_iterator> &curr) const
+	const_links next(const const_links &curr) const
 	{
-		array<iterator> result;
-		for (typename array<iterator>::const_iterator i = curr.begin(); i != curr.end(); i++)
-			result.append(i->next());
+		const_links result;
+		for (const_link_const_iterator i = curr.begin(); i != curr.end(); i++)
+			sort_merge(result, i->next());
 		return result;
 	}
 
-	array<iterator> prev(const array<iterator> &curr) const
+	links prev(const links &curr) const
 	{
-		array<iterator> result;
-		for (typename array<iterator>::const_iterator i = curr.begin(); i != curr.end(); i++)
-			result.append(i->prev());
-		sort_quick_inplace(result);
+		links result;
+		for (link_const_iterator i = curr.begin(); i != curr.end(); i++)
+			sort_merge(result, i->prev());
 		collapse_inplace(result);
 		return result;
 	}
 
-	array<const_iterator> prev(const array<const_iterator> &curr) const
+	const_links prev(const const_links &curr) const
 	{
-		array<iterator> result;
-		for (typename array<iterator>::const_iterator i = curr.begin(); i != curr.end(); i++)
-			result.append(i->prev());
-		sort_quick_inplace(result);
+		const_links result;
+		for (const_link_const_iterator i = curr.begin(); i != curr.end(); i++)
+			sort_merge(result, i->prev());
 		collapse_inplace(result);
+		return result;
+	}
+
+	map<iterator, array<link_iterator> > next_conj(links curr) const
+	{
+		map<iterator, array<link_iterator> > result;
+		for (link_iterator i = curr.begin(); i != curr.end(); i++)
+		{
+			links n = i->next();
+
+			for (int j = 0; j < n.size(); j++)
+				sort_insert(result[n[j]], i);
+		}
+
+		for (typename map<iterator, array<link_iterator> >::iterator i = result.begin(); i != result.end(); i++)
+		{
+			links p = i->key.prev();
+			if ()
+		}
 		return result;
 	}
 
