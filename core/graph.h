@@ -573,7 +573,7 @@ struct graph
 		for (typename map<const node*, node*>::iterator i = node_map.begin(); i; i++)
 		{
 			i->value->next.reserve(i->key->next.size());
-			for (const_link_iterator j = i->key->next.begin(); j; j++)
+			for (link_const_iterator j = i->key->next.begin(); j; j++)
 			{
 				typename map<const node*, node*>::iterator loc = node_map.find((const node*)j->loc);
 				if (loc)
@@ -581,7 +581,7 @@ struct graph
 			}
 
 			i->value->prev.reserve(i->key->prev.size());
-			for (const_link_iterator j = i->key->prev.begin(); j; j++)
+			for (link_const_iterator j = i->key->prev.begin(); j; j++)
 			{
 				typename map<const node*, node*>::iterator loc = node_map.find((const node*)j->loc);
 				if (loc)
@@ -697,7 +697,6 @@ struct graph
 		for (typename map<iterator, array<link_iterator> >::iterator i = result.begin(); i != result.end(); i++)
 		{
 			links p = i->key.prev();
-			if ()
 		}
 		return result;
 	}
