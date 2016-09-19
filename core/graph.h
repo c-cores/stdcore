@@ -701,6 +701,24 @@ struct graph
 		return result;
 	}
 
+	map<iterator, array<link_iterator> > prev_conj(links curr) const
+	{
+		map<iterator, array<link_iterator> > result;
+		for (link_iterator i = curr.begin(); i != curr.end(); i++)
+		{
+			links p = i->prev();
+
+			for (int j = 0; j < p.size(); j++)
+				sort_insert(result[p[j]], i);
+		}
+
+		for (typename map<iterator, array<link_iterator> >::iterator i = result.rbegin(); i != result.rend(); i--)
+			if (!is_subset(i->value.deref(), i->key.next()))
+				i.drop();
+
+		return result;
+	}
+
 	iterator insert(const value_type &value)
 	{
 		node *result = new node(value);

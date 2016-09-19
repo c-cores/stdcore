@@ -317,7 +317,7 @@ struct array
 			typename container::const_iterator i = c.begin();
 			alloc(n);
 
-			for (i = c.begin(); i; i++)
+			for (i = c.begin(); i != c.end(); i++)
 			{
 				new (root->data+index) value_type(*i);
 				index++;

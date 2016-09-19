@@ -9,6 +9,11 @@
 
 #include <core/slice.h>
 
+#ifdef DEBUG
+#include <stdlib.h>
+#include <stdio.h>
+#endif
+
 namespace core
 {
 
@@ -113,6 +118,13 @@ container unique(container c)
 template <class container1, class container2>
 container1 intersection(const container1 &c1, const container2 &c2)
 {
+#ifdef DEBUG
+	if (!is_sorted(c1))
+		printf("%s:%s:%d error: c1 should be sorted.\n", __FILE__, __FUNCTION__, __LINE__);
+	if (!is_sorted(c2))
+		printf("%s:%s:%d error: c2 should be sorted.\n", __FILE__, __FUNCTION__, __LINE__);
+#endif
+
 	container1 result;
 	typename container1::const_iterator i = c1.begin();
 	typename container2::const_iterator j = c2.begin();
@@ -135,6 +147,13 @@ container1 intersection(const container1 &c1, const container2 &c2)
 template <class container1, class container2>
 int intersection_size(const container1 &c1, const container2 &c2)
 {
+#ifdef DEBUG
+	if (!is_sorted(c1))
+		printf("%s:%s:%d error: c1 should be sorted.\n", __FILE__, __FUNCTION__, __LINE__);
+	if (!is_sorted(c2))
+		printf("%s:%s:%d error: c2 should be sorted.\n", __FILE__, __FUNCTION__, __LINE__);
+#endif
+
 	int result = 0;
 	typename container1::const_iterator i = c1.begin();
 	typename container2::const_iterator j = c2.begin();
@@ -157,6 +176,13 @@ int intersection_size(const container1 &c1, const container2 &c2)
 template <class container1, class container2>
 bool intersects(const container1 &c1, const container2 &c2)
 {
+#ifdef DEBUG
+	if (!is_sorted(c1))
+		printf("%s:%s:%d error: c1 should be sorted.\n", __FILE__, __FUNCTION__, __LINE__);
+	if (!is_sorted(c2))
+		printf("%s:%s:%d error: c2 should be sorted.\n", __FILE__, __FUNCTION__, __LINE__);
+#endif
+
 	typename container1::const_iterator i = c1.begin();
 	typename container2::const_iterator j = c2.begin();
 	while (i && j)
@@ -174,6 +200,15 @@ bool intersects(const container1 &c1, const container2 &c2)
 template <class container1, class container2, class container3>
 container1 intersection(const container1 &c1, const container2 &c2, const container3 &c3)
 {
+#ifdef DEBUG
+	if (!is_sorted(c1))
+		printf("%s:%s:%d error: c1 should be sorted.\n", __FILE__, __FUNCTION__, __LINE__);
+	if (!is_sorted(c2))
+		printf("%s:%s:%d error: c2 should be sorted.\n", __FILE__, __FUNCTION__, __LINE__);
+	if (!is_sorted(c3))
+		printf("%s:%s:%d error: c3 should be sorted.\n", __FILE__, __FUNCTION__, __LINE__);
+#endif
+
 	container1 result;
 	typename container1::const_iterator i = c1.begin();
 	typename container1::const_iterator j = c2.begin();
@@ -200,6 +235,15 @@ container1 intersection(const container1 &c1, const container2 &c2, const contai
 template <class container1, class container2, class container3>
 int intersection_size(const container1 &c1, const container2 &c2, const container3 &c3)
 {
+#ifdef DEBUG
+	if (!is_sorted(c1))
+		printf("%s:%s:%d error: c1 should be sorted.\n", __FILE__, __FUNCTION__, __LINE__);
+	if (!is_sorted(c2))
+		printf("%s:%s:%d error: c2 should be sorted.\n", __FILE__, __FUNCTION__, __LINE__);
+	if (!is_sorted(c3))
+		printf("%s:%s:%d error: c3 should be sorted.\n", __FILE__, __FUNCTION__, __LINE__);
+#endif
+
 	int result = 0;
 	typename container1::const_iterator i = c1.begin();
 	typename container1::const_iterator j = c2.begin();
@@ -226,6 +270,15 @@ int intersection_size(const container1 &c1, const container2 &c2, const containe
 template <class container1, class container2, class container3>
 bool intersects(const container1 &c1, const container2 &c2, const container3 &c3)
 {
+#ifdef DEBUG
+	if (!is_sorted(c1))
+		printf("%s:%s:%d error: c1 should be sorted.\n", __FILE__, __FUNCTION__, __LINE__);
+	if (!is_sorted(c2))
+		printf("%s:%s:%d error: c2 should be sorted.\n", __FILE__, __FUNCTION__, __LINE__);
+	if (!is_sorted(c3))
+		printf("%s:%s:%d error: c3 should be sorted.\n", __FILE__, __FUNCTION__, __LINE__);
+#endif
+
 	typename container1::const_iterator i = c1.begin();
 	typename container1::const_iterator j = c2.begin();
 	typename container1::const_iterator k = c3.begin();
@@ -246,6 +299,12 @@ bool intersects(const container1 &c1, const container2 &c2, const container3 &c3
 template <class container>
 typename container::type intersection(const container &c)
 {
+#ifdef DEBUG
+	for (typename container::iterator i = c.begin(); i != c.end(); i++)
+		if (!is_sorted(*i))
+			printf("%s:%s:%d error: c[%d] should be sorted.\n", __FILE__, __FUNCTION__, __LINE__, i.idx());
+#endif
+
 	typedef typename container::const_iterator iterator;
 
 	typedef typename container::type type;
@@ -292,6 +351,12 @@ typename container::type intersection(const container &c)
 template <class container>
 int intersection_size(const container &c)
 {
+#ifdef DEBUG
+	for (typename container::iterator i = c.begin(); i != c.end(); i++)
+		if (!is_sorted(*i))
+			printf("%s:%s:%d error: c[%d] should be sorted.\n", __FILE__, __FUNCTION__, __LINE__, i.idx());
+#endif
+
 	typedef typename container::const_iterator iterator;
 
 	typedef typename container::type type;
@@ -338,6 +403,12 @@ int intersection_size(const container &c)
 template <class container>
 bool intersects(const container &c)
 {
+#ifdef DEBUG
+	for (typename container::iterator i = c.begin(); i != c.end(); i++)
+		if (!is_sorted(*i))
+			printf("%s:%s:%d error: c[%d] should be sorted.\n", __FILE__, __FUNCTION__, __LINE__, i.idx());
+#endif
+
 	typedef typename container::const_iterator iterator;
 
 	typedef typename container::type type;
@@ -383,6 +454,13 @@ bool intersects(const container &c)
 template <class container1, class container2>
 void symmetric_compliment(container1 &c1, container2 &c2)
 {
+#ifdef DEBUG
+	if (!is_sorted(c1))
+		printf("%s:%s:%d error: c1 should be sorted.\n", __FILE__, __FUNCTION__, __LINE__);
+	if (!is_sorted(c2))
+		printf("%s:%s:%d error: c2 should be sorted.\n", __FILE__, __FUNCTION__, __LINE__);
+#endif
+
 	typename container1::iterator i = c1.begin();
 	typename container2::iterator j = c2.begin();
 	while (i && j)
@@ -402,6 +480,13 @@ void symmetric_compliment(container1 &c1, container2 &c2)
 template <class container1, class container2>
 container1 difference(const container1 &c1, const container2 &c2)
 {
+#ifdef DEBUG
+	if (!is_sorted(c1))
+		printf("%s:%s:%d error: c1 should be sorted.\n", __FILE__, __FUNCTION__, __LINE__);
+	if (!is_sorted(c2))
+		printf("%s:%s:%d error: c2 should be sorted.\n", __FILE__, __FUNCTION__, __LINE__);
+#endif
+
 	container1 result;
 	typename container1::const_iterator i = c1.begin();
 	typename container2::const_iterator j = c2.begin();
@@ -429,6 +514,13 @@ container1 difference(const container1 &c1, const container2 &c2)
 template <class container1, class container2>
 bool is_subset(const container1 &c1, const container2 &c2)
 {
+#ifdef DEBUG
+	if (!is_sorted(c1))
+		printf("%s:%s:%d error: c1 should be sorted.\n", __FILE__, __FUNCTION__, __LINE__);
+	if (!is_sorted(c2))
+		printf("%s:%s:%d error: c2 should be sorted.\n", __FILE__, __FUNCTION__, __LINE__);
+#endif
+
 	typename container1::const_iterator i = c1.begin();
 	typename container2::const_iterator j = c2.begin();
 	while (i != c1.end() && j != c2.end())
@@ -458,6 +550,13 @@ void remove(container &c, value_type value)
 template <typename container1, typename container2>
 void remove_all(container1 &c1, const container2 &c2)
 {
+#ifdef DEBUG
+	if (!is_sorted(c1))
+		printf("%s:%s:%d error: c1 should be sorted.\n", __FILE__, __FUNCTION__, __LINE__);
+	if (!is_sorted(c2))
+		printf("%s:%s:%d error: c2 should be sorted.\n", __FILE__, __FUNCTION__, __LINE__);
+#endif
+
 	typename container1::iterator i = c1.begin();
 	typename container2::const_iterator j = c2.begin();
 	while (i != c1.end() && j != c2.end())
