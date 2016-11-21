@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include <core/hash_set.h>
-#include <core/implier.h>
+#include <std/hash_set.h>
+#include <std/implier.h>
 
 namespace core
 {

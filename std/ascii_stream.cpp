@@ -5,7 +5,7 @@
  *      Author: nbingham
  */
 
-#include <core/ascii_stream.h>
+#include <std/ascii_stream.h>
 
 namespace core
 {

@@ -5,8 +5,8 @@
  *      Author: nbingham
  */
 
-#include <core/string.h>
-#include <core/stream.h>
+#include <std/string.h>
+#include <std/stream.h>
 
 #pragma once
 

@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include <core/slice.h>
-#include <core/array.h>
+#include <std/slice.h>
+#include <std/array.h>
 
 namespace core
 {

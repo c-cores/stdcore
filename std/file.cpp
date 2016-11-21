@@ -5,8 +5,8 @@
  *      Author: nbingham
  */
 
-#include <core/file.h>
-#include <core/string.h>
+#include <std/file.h>
+#include <std/string.h>
 
 #include <stdarg.h>
 #include <stdint.h>

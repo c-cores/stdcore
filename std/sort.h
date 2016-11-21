@@ -7,9 +7,9 @@
 
 #pragma once
 
-#include <core/slice.h>
-#include <core/ascii_stream.h>
-#include <core/search.h>
+#include <std/slice.h>
+#include <std/ascii_stream.h>
+#include <std/search.h>
 
 namespace core
 {

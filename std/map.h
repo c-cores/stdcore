@@ -7,9 +7,9 @@
 
 #pragma once
 
-#include <core/list.h>
-#include <core/implier.h>
-#include <core/sort.h>
+#include <std/list.h>
+#include <std/implier.h>
+#include <std/sort.h>
 
 namespace core
 {

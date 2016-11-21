@@ -1,5 +1,5 @@
-#include <core/string.h>
-#include <core/fill.h>
+#include <std/string.h>
+#include <std/fill.h>
 
 namespace core
 {
@@ -134,7 +134,7 @@ string &operator<<(string &s1, short s2)
 
 string &operator<<(string &s1, long s2)
 {
-	s1.reserve(s1.size() + 21);
+	s1.reserve(s1.size() + 12);
 	s1.alloc_back_unsafe(itoa((int)s2, s1.data + s1.size()));
 	return s1;
 }
@@ -169,7 +169,7 @@ string &operator<<(string &s1, unsigned short s2)
 
 string &operator<<(string &s1, unsigned long s2)
 {
-	s1.reserve(s1.size() + 21);
+	s1.reserve(s1.size() + 12);
 	s1.alloc_back_unsafe(itoa((unsigned int)s2, s1.data + s1.size()));
 	return s1;
 }
@@ -180,6 +180,182 @@ string &operator<<(string &s1, unsigned long long s2)
 	s1.alloc_back_unsafe(itoa(s2, s1.data + s1.size()));
 	return s1;
 }
+
+string &operator<<(string &s1, options<int> s2)
+{
+	switch (s2.radix)
+	{
+	case 2:
+		s1.reserve(s1.size() + 33);
+		s1.alloc_back_unsafe(itob(*s2.value, s1.data+s1.size()));
+		break;
+	case 16:
+		s1.reserve(s1.size() + 9);
+		s1.alloc_back_unsafe(itox(*s2.value, s1.data+s1.size()));
+		break;
+	default:
+		s1.reserve(s1.size() + 12);
+		s1.alloc_back_unsafe(itoa(*s2.value, s1.data+s1.size()));
+	}
+
+	return s1;
+}
+
+string &operator<<(string &s1, options<short> s2)
+{
+	switch (s2.radix)
+	{
+	case 2:
+		s1.reserve(s1.size() + 17);
+		s1.alloc_back_unsafe(itob(*s2.value, s1.data+s1.size()));
+		break;
+	case 16:
+		s1.reserve(s1.size() + 5);
+		s1.alloc_back_unsafe(itox(*s2.value, s1.data+s1.size()));
+		break;
+	default:
+		s1.reserve(s1.size() + 7);
+		s1.alloc_back_unsafe(itoa(*s2.value, s1.data+s1.size()));
+	}
+
+	return s1;
+}
+
+string &operator<<(string &s1, options<long> s2)
+{
+	switch (s2.radix)
+	{
+	case 2:
+		s1.reserve(s1.size() + 33);
+		s1.alloc_back_unsafe(itob(*s2.value, s1.data+s1.size()));
+		break;
+	case 16:
+		s1.reserve(s1.size() + 9);
+		s1.alloc_back_unsafe(itox(*s2.value, s1.data+s1.size()));
+		break;
+	default:
+		s1.reserve(s1.size() + 12);
+		s1.alloc_back_unsafe(itoa((int)*s2.value, s1.data+s1.size()));
+	}
+
+	return s1;
+}
+
+string &operator<<(string &s1, options<long long> s2)
+{
+	switch (s2.radix)
+	{
+	case 2:
+		s1.reserve(s1.size() + 65);
+		s1.alloc_back_unsafe(itob(*s2.value, s1.data+s1.size()));
+		break;
+	case 16:
+		s1.reserve(s1.size() + 17);
+		s1.alloc_back_unsafe(itox(*s2.value, s1.data+s1.size()));
+		break;
+	default:
+		s1.reserve(s1.size() + 21);
+		s1.alloc_back_unsafe(itoa(*s2.value, s1.data+s1.size()));
+	}
+
+	return s1;
+}
+
+string &operator<<(string &s1, options<unsigned char> s2)
+{
+	switch (s2.radix)
+	{
+	case 2:
+		s1.reserve(s1.size() + 9);
+		s1.alloc_back_unsafe(itob(*s2.value, s1.data+s1.size()));
+		break;
+	case 16:
+		s1.reserve(s1.size() + 3);
+		s1.alloc_back_unsafe(itox(*s2.value, s1.data+s1.size()));
+		break;
+	default:
+		s1.reserve(s1.size() + 5);
+		s1.alloc_back_unsafe(itoa(*s2.value, s1.data+s1.size()));
+	}
+	return s1;
+}
+
+string &operator<<(string &s1, options<unsigned int> s2)
+{
+	switch (s2.radix)
+	{
+	case 2:
+		s1.reserve(s1.size() + 32);
+		s1.alloc_back_unsafe(itob(*s2.value, s1.data+s1.size()));
+		break;
+	case 16:
+		s1.reserve(s1.size() + 8);
+		s1.alloc_back_unsafe(itox(*s2.value, s1.data+s1.size()));
+		break;
+	default:
+		s1.reserve(s1.size() + 12);
+		s1.alloc_back_unsafe(itoa(*s2.value, s1.data+s1.size()));
+	}
+	return s1;
+}
+
+string &operator<<(string &s1, options<unsigned short> s2)
+{
+	switch (s2.radix)
+	{
+	case 2:
+		s1.reserve(s1.size() + 16);
+		s1.alloc_back_unsafe(itob(*s2.value, s1.data+s1.size()));
+		break;
+	case 16:
+		s1.reserve(s1.size() + 4);
+		s1.alloc_back_unsafe(itox(*s2.value, s1.data+s1.size()));
+		break;
+	default:
+		s1.reserve(s1.size() + 7);
+		s1.alloc_back_unsafe(itoa(*s2.value, s1.data+s1.size()));
+	}
+	return s1;
+}
+
+string &operator<<(string &s1, options<unsigned long> s2)
+{
+	switch (s2.radix)
+	{
+	case 2:
+		s1.reserve(s1.size() + 32);
+		s1.alloc_back_unsafe(itob(*s2.value, s1.data+s1.size()));
+		break;
+	case 16:
+		s1.reserve(s1.size() + 8);
+		s1.alloc_back_unsafe(itox(*s2.value, s1.data+s1.size()));
+		break;
+	default:
+		s1.reserve(s1.size() + 12);
+		s1.alloc_back_unsafe(itoa((unsigned int)*s2.value, s1.data+s1.size()));
+	}
+	return s1;
+}
+
+string &operator<<(string &s1, options<unsigned long long> s2)
+{
+	switch (s2.radix)
+	{
+	case 2:
+		s1.reserve(s1.size() + 64);
+		s1.alloc_back_unsafe(itob(*s2.value, s1.data+s1.size()));
+		break;
+	case 16:
+		s1.reserve(s1.size() + 16);
+		s1.alloc_back_unsafe(itox(*s2.value, s1.data+s1.size()));
+		break;
+	default:
+		s1.reserve(s1.size() + 21);
+		s1.alloc_back_unsafe(itoa(*s2.value, s1.data+s1.size()));
+	}
+	return s1;
+}
+
 
 string &operator<<(string &s1, float s2)
 {
@@ -231,6 +407,13 @@ template <>
 string &operator<<(string &s1, const parsable<string> &p)
 {
 	s1 << format_string(*p.obj, "\"");
+	return s1;
+}
+
+template <>
+string &operator<<(string &s1, const options<parsable<string> > &p)
+{
+	s1 << format_string(*p.value->obj, "\"");
 	return s1;
 }
 

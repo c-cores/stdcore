@@ -7,13 +7,13 @@
 
 #pragma once
 
-#include <core/array.h>
-#include <core/list.h>
-#include <core/bits.h>
-#include <core/fill.h>
-#include <core/pair.h>
-#include <core/search.h>
-#include <core/ascii_stream.h>
+#include <std/array.h>
+#include <std/list.h>
+#include <std/bits.h>
+#include <std/fill.h>
+#include <std/pair.h>
+#include <std/search.h>
+#include <std/ascii_stream.h>
 
 namespace core
 {

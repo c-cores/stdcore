@@ -1,6 +1,6 @@
 CXXFLAGS	 =  -g -O2 -Wall -fmessage-length=0 -I.
 # -g -fprofile-arcs -ftest-coverage
-SOURCES		 := $(wildcard core/*.cpp)
+SOURCES		 := $(wildcard std/*.cpp)
 TESTS        := $(wildcard test/*.cpp)
 OBJECTS		 := $(SOURCES:%.cpp=%.o)
 TEST_OBJECTS := $(TESTS:.cpp=.o)
@@ -27,7 +27,7 @@ check: test
 $(TARGET): $(OBJECTS)
 	ar rvs $(TARGET) $(OBJECTS)
 
-core/%.o: core/%.cpp 
+std/%.o: std/%.cpp 
 	$(CXX) $(CXXFLAGS) -MM -MF $(patsubst %.o,%.d,$@) -MT $@ -c $<
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
@@ -42,8 +42,8 @@ test/gtest_main.o: $(GTEST)/src/gtest_main.cc
 	$(CXX) $(CXXFLAGS) $(GTEST_I) $< -c -o $@
 
 clean:
-	rm -f core/*.o test/*.o
-	rm -f core/*.d test/*.d
-	rm -f core/*.gcda test/*.gcda
-	rm -f core/*.gcno test/*.gcno
+	rm -f std/*.o test/*.o
+	rm -f std/*.d test/*.d
+	rm -f std/*.gcda test/*.gcda
+	rm -f std/*.gcno test/*.gcno
 	rm -f $(TARGET) $(TEST_TARGET)

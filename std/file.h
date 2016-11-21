@@ -5,8 +5,8 @@
  *      Author: nbingham
  */
 
-#include <core/search.h>
-#include <core/array.h>
+#include <std/search.h>
+#include <std/array.h>
 
 #include <stdlib.h>
 #include <stdio.h>

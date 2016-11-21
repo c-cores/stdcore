@@ -5,8 +5,8 @@
  *      Author: nbingham
  */
 
-#include <core/bits.h>
-#include <core/stream.h>
+#include <std/bits.h>
+#include <std/stream.h>
 
 #pragma once
 

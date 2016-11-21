@@ -5,7 +5,7 @@
  *      Author: nbingham
  */
 
-#include <core/bits.h>
+#include <std/bits.h>
 
 namespace core
 {

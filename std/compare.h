@@ -5,11 +5,11 @@
  *      Author: nbingham
  */
 
-#include <core/array.h>
-#include <core/list.h>
-#include <core/index_list.h>
-#include <core/fill.h>
-#include <core/sparse_range.h>
+#include <std/array.h>
+#include <std/list.h>
+#include <std/index_list.h>
+#include <std/fill.h>
+#include <std/sparse_range.h>
 
 #pragma once
 

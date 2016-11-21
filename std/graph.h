@@ -1,9 +1,9 @@
 #pragma once
 
-#include <core/array.h>
-#include <core/map.h>
-#include <core/algorithm.h>
-#include <core/sort.h>
+#include <std/array.h>
+#include <std/map.h>
+#include <std/algorithm.h>
+#include <std/sort.h>
 
 namespace core
 {
