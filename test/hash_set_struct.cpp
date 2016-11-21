@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
 
-#include <core/hash_set.h>
-#include <core/search.h>
-#include <core/math.h>
+#include <std/hash_set.h>
+#include <std/search.h>
+#include <std/math.h>
 
 using namespace core;
 

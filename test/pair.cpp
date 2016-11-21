@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <core/pair.h>
+#include <std/pair.h>
 
 using namespace core;
 

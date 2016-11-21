@@ -1,10 +1,10 @@
 #include <gtest/gtest.h>
 
-#include <core/search.h>
-#include <core/array.h>
-#include <core/list.h>
-#include <core/fill.h>
-#include <core/ascii_stream.h>
+#include <std/search.h>
+#include <std/array.h>
+#include <std/list.h>
+#include <std/fill.h>
+#include <std/ascii_stream.h>
 
 using namespace core;
 

@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <core/math.h>
+#include <std/math.h>
 
 using namespace core;
 

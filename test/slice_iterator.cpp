@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
 
-#include <core/array.h>
-#include <core/fill.h>
-#include <core/list.h>
-#include <core/ascii_stream.h>
+#include <std/array.h>
+#include <std/fill.h>
+#include <std/list.h>
+#include <std/ascii_stream.h>
 
 using namespace core;
 

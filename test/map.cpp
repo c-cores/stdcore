@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
-#include <core/map.h>
-#include <core/sort.h>
+#include <std/map.h>
+#include <std/sort.h>
 
 using namespace core;
 

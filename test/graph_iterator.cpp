@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <core/graph.h>
+#include <std/graph.h>
 
 using namespace core;
 
