@@ -38,6 +38,7 @@ struct file
 	array<char> read(int n = -1);
 	array<char> read(const char *delimiter);
 	array<char> read(const array<char> &delimiter);
+	char get();
 
 	void write(const char *str);
 	void write(const char *str, int n);
@@ -96,6 +97,11 @@ inline int file::read(char *str, int n)
 	int result = (int)fread(str, 1, n-1, ptr);
 	str[result] = '\0';
 	return result;
+}
+
+inline char file::get()
+{
+	return fgetc(ptr);
 }
 
 inline void file::write(const char *str)
