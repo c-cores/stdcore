@@ -44,10 +44,7 @@ struct ascii_stream
 
 	~ascii_stream()
 	{
-		if (ptr != NULL)
-			fclose(ptr);
-		ptr = NULL;
-		count = 0;
+		close();
 	}
 
 	FILE *ptr;
@@ -56,6 +53,10 @@ struct ascii_stream
 	bool debug;
 	int count;
 	const char *end;
+
+	void open(const char *filename);
+	void close();
+	void flush(const char *path, int line);
 };
 
 template <typename type>

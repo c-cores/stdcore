@@ -10,18 +10,40 @@
 namespace core
 {
 
+void ascii_stream::open(const char *filename)
+{
+	ptr = fopen(filename, "w");
+}
+
+void ascii_stream::close()
+{
+	flush(__FILE__, __LINE__);
+	if (ptr != NULL)
+		fclose(ptr);
+	ptr = NULL;
+	count = 0;
+}
+
+void ascii_stream::flush(const char *path, int line)
+{
+	if (debug)
+		fprintf(ptr, "%s:%d: ", path, line);
+	if (msg != NULL)
+		fprintf(ptr, "%s: ", msg);
+	if (ptr != NULL)
+	{
+		fwrite(store.data, 1, store.size(), ptr);
+		fputs(end, ptr);
+		fflush(ptr);
+	}
+	store.clear();
+	count++;
+}
+
 template <>
 ascii_stream &operator<<(ascii_stream &s1, stream_flush s2)
 {
-	if (s1.debug)
-		fprintf(s1.ptr, "%s:%d: ", s2.path, s2.line);
-	if (s1.msg != NULL)
-		fprintf(s1.ptr, "%s: ", s1.msg);
-	fwrite(s1.store.data, 1, s1.store.size(), s1.ptr);
-	fputs(s1.end, s1.ptr);
-	fflush(s1.ptr);
-	s1.store.clear();
-	s1.count++;
+	s1.flush(s2.path, s2.line);
 	return s1;
 }
 
