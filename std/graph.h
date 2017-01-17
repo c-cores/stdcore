@@ -590,7 +590,7 @@ struct graph
 		}
 	}
 
-	~graph()
+	virtual ~graph()
 	{
 		clear();
 	}
@@ -719,7 +719,7 @@ struct graph
 		return result;
 	}
 
-	iterator insert(const value_type &value)
+	virtual iterator insert(const value_type &value)
 	{
 		node *result = new node(value);
 		result->left = right.left;
