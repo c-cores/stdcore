@@ -300,6 +300,13 @@ struct graph
 			return n;
 		}
 
+		links link(links n) const
+		{
+			for (int i = 0; i < n.size(); i++)
+				link(n[i]);
+			return n;
+		}
+
 		void unlink(iterator n) const
 		{
 			remove(next(), n);
@@ -607,6 +614,11 @@ struct graph
 		left.right = &right;
 		right.left = &left;
 		right.index = 0;
+	}
+
+	int size()
+	{
+		return right.index;
 	}
 
 	iterator begin()
