@@ -26,16 +26,19 @@ void ascii_stream::close()
 
 void ascii_stream::flush(const char *path, int line)
 {
-	if (debug)
-		fprintf(ptr, "%s:%d: ", path, line);
-	if (msg != NULL)
-		fprintf(ptr, "%s: ", msg);
-	if (ptr != NULL)
+	if (ptr != NULL && store.size() > 0)
 	{
+		if (debug)
+			fprintf(ptr, "%s:%d: ", path, line);
+		if (msg != NULL && strlen(msg) > 0)
+			fprintf(ptr, "%s: ", msg);
+
 		fwrite(store.data, 1, store.size(), ptr);
 		fputs(end, ptr);
-		fflush(ptr);
 	}
+
+	if (ptr != NULL)
+		fflush(ptr);
 	store.clear();
 	count++;
 }
