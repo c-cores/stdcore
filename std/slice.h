@@ -55,9 +55,19 @@ struct range
 			return root != NULL && value != root->start-1 && value != root->finish;
 		}
 
-		value_type operator*()
+		value_type operator*() const
 		{
 			return value;
+		}
+
+		const value_type *operator->() const
+		{
+			return &value;
+		}
+
+		const value_type *ptr() const
+		{
+			return &value;
 		}
 
 		value_type get() const
@@ -75,7 +85,7 @@ struct range
 			return *this;
 		}
 
-		int idx()
+		int idx() const
 		{
 			return value - root->start;
 		}
@@ -879,7 +889,7 @@ struct slice : container
 		return container::get(i);
 	}
 
-	type operator[](int i) const
+	type &operator[](int i) const
 	{
 		return container::get(i).get();
 	}

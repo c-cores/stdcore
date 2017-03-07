@@ -77,6 +77,16 @@ struct fill
 			return root->value;
 		}
 
+		const value_type *operator->() const
+		{
+			return &root->value;
+		}
+
+		const value_type *ptr() const
+		{
+			return &root->value;
+		}
+
 		value_type get()
 		{
 			return root->value;
@@ -92,7 +102,7 @@ struct fill
 			return *this;
 		}
 
-		int idx()
+		int idx() const
 		{
 			return index;
 		}

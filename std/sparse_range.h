@@ -55,9 +55,19 @@ struct sparse_range
 									(value <= root->start && value > root->finish));
 		}
 
-		value_type operator*()
+		value_type operator*() const
 		{
 			return value;
+		}
+
+		const value_type *operator->() const
+		{
+			return &value;
+		}
+
+		const value_type *ptr() const
+		{
+			return &value;
 		}
 
 		value_type get() const
@@ -65,7 +75,7 @@ struct sparse_range
 			return value;
 		}
 
-		int idx()
+		int idx() const
 		{
 			return (value - root->start)/root->step;
 		}
