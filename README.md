@@ -25,7 +25,7 @@ g++ example.cpp -Ipath/to/include -Lpath/to/lib -lstdcore -o example
 
 # Paradigms
 
-This library differs from the C++ Standard Library on a few key paradigms. It's these paradigms that make it this library unique.
+This library differs from the C++ Standard Library on a few key paradigms. It is these paradigms that make this library unique.
 
 ## The Simple Things in Life
 
@@ -108,7 +108,7 @@ slc = {2, 100, 4, 200}
 
 ## Simplicity Breeds Sanity
 
-Finally, all algorithmic functions like sort, unique, reverse, etc can be run either in place or on a copy of the container in line.
+All algorithmic functions like sort, unique, reverse, etc can be run either in place or on a copy of the container in line.
 
 ```c++
 array<int> arr = array<int>::values(10, 2, 6, 3, 2, 7, 3, 7, 5, 1, 0);
@@ -125,3 +125,26 @@ sort_quick(arr) = {0, 1, 2, 2, 3, 3, 5, 6, 7, 7}
 arr = {2, 6, 3, 2, 7, 3, 7, 5, 1, 0}
 arr = {0, 1, 2, 2, 3, 3, 5, 6, 7, 7}
 ```
+
+## Logging Hastens Deforestation
+
+Finally, there are multiple stream interfaces provided for different logging purposes and its easy to create more.
+
+```c++
+ascii_stream cself(stdout, "\n", "Look at me", true);
+cout << "Hello World!" << endl;
+cnote << "World is asleep." << endl;
+cwarn << "Do not wake world." << endl;
+cerr << "World awoken." << endl;
+cfate << "World floats away." << endl;
+cself << "SPACE!" << endl;
+```
+
+```
+Hello World!
+note: World is asleep.
+warning: Do not wake world.
+error: World awoken.
+example.cpp:13: fatal: World floats away.
+example.cpp:14: Look at me: SPACE!
+``` 
