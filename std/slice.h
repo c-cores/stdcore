@@ -214,64 +214,14 @@ struct range
 
 	}
 
+	// Utility
+
 	int size() const
 	{
 		return finish - start;
 	}
 
-	const_iterator at(int i) const
-	{
-		if (i < 0)
-			i += size();
-
-		return const_iterator(this, start + i);
-	}
-
-	value_type get(int i) const
-	{
-		if (i < 0)
-			i += size();
-		return start + i;
-	}
-
-	value_type operator[](int i) const
-	{
-		if (i < 0)
-			i += size();
-		return start + i;
-	}
-
-	core::slice<range<value_type> > deref()
-	{
-		return *this;
-	}
-
-	template <class container>
-	range<typename container::iterator> sample(container &c)
-	{
-		return range<typename container::iterator>(c.at(start), c.at(finish)).deref();
-	}
-
-	template <class container>
-	range<typename container::const_iterator> sample(const container &c)
-	{
-		return range<typename container::const_iterator>(c.at(start), c.at(finish)).deref();
-	}
-
-	range<int> idx()
-	{
-		return range<int>(start.idx(), finish.idx());
-	}
-
-	value_type front() const
-	{
-		return start;
-	}
-
-	value_type back() const
-	{
-		return finish-1;
-	}
+	// Iterators
 
 	const_iterator begin() const
 	{
@@ -291,6 +241,47 @@ struct range
 	const_iterator rend() const
 	{
 		return const_iterator(this, start-1);
+	}
+
+	const_iterator at(int i) const
+	{
+		if (i < 0)
+			i += size();
+
+		return const_iterator(this, start + i);
+	}
+
+	// Accessors
+
+	value_type front() const
+	{
+		return start;
+	}
+
+	value_type back() const
+	{
+		return finish-1;
+	}
+
+	value_type get(int i) const
+	{
+		if (i < 0)
+			i += size();
+		return start + i;
+	}
+
+	value_type operator[](int i) const
+	{
+		if (i < 0)
+			i += size();
+		return start + i;
+	}
+
+	// Slicing
+
+	core::slice<range<value_type> > deref()
+	{
+		return *this;
 	}
 
 	core::slice<range<iterator> > sub(int start, int end)
@@ -369,6 +360,25 @@ struct range
 		return range<const_iterator>(start, end).deref();
 	}
 
+	template <class container>
+	range<typename container::iterator> sample(container &c)
+	{
+		return range<typename container::iterator>(c.at(start), c.at(finish)).deref();
+	}
+
+	template <class container>
+	range<typename container::const_iterator> sample(const container &c)
+	{
+		return range<typename container::const_iterator>(c.at(start), c.at(finish)).deref();
+	}
+
+	range<int> idx()
+	{
+		return range<int>(start.idx(), finish.idx());
+	}
+
+	// Modifiers	
+	
 	void swap(range<value_type> &root)
 	{
 		value_type tmp_start = start;

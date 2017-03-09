@@ -18,27 +18,6 @@ template <class value_type>
 struct fill
 {
 	typedef value_type type;
-	struct const_iterator;
-
-	fill(int count, value_type value)
-	{
-		this->count = count;
-		this->value = value;
-	}
-
-	fill(const_iterator left, const_iterator right)
-	{
-		this->count = right - left;
-		this->value = left.root->value;
-	}
-
-	virtual ~fill()
-	{
-
-	}
-
-	int count;
-	value_type value;
 
 	struct const_iterator
 	{
@@ -203,60 +182,34 @@ struct fill
 
 	typedef const_iterator iterator;
 
+	int count;
+	value_type value;
+
+	fill(int count, value_type value)
+	{
+		this->count = count;
+		this->value = value;
+	}
+
+	fill(const_iterator left, const_iterator right)
+	{
+		this->count = right - left;
+		this->value = left.root->value;
+	}
+
+	virtual ~fill()
+	{
+
+	}
+
+	// Utility
+
 	int size() const
 	{
 		return count;
 	}
 
-	const_iterator at(int i) const
-	{
-		if (i < 0)
-			i += size();
-
-		return const_iterator(this, i);
-	}
-
-	value_type get(int i) const
-	{
-		return value;
-	}
-
-	value_type operator[](int i) const
-	{
-		return value;
-	}
-
-	core::slice<fill<value_type> > deref()
-	{
-		return *this;
-	}
-
-	template <class container>
-	fill<typename container::iterator> sample(container &c)
-	{
-		return fill<typename container::iterator>(count, c.at(value));
-	}
-
-	template <class container>
-	fill<typename container::const_iterator> sample(const container &c)
-	{
-		return fill<typename container::iterator>(count, c.at(value));
-	}
-
-	fill<int> idx()
-	{
-		return fill<int>(count, value.idx());
-	}
-
-	value_type front() const
-	{
-		return value;
-	}
-
-	value_type back() const
-	{
-		return value;
-	}
+	// Iterators
 
 	const_iterator begin() const
 	{
@@ -276,6 +229,43 @@ struct fill
 	const_iterator rend() const
 	{
 		return const_iterator(this, -1);
+	}
+
+	const_iterator at(int i) const
+	{
+		if (i < 0)
+			i += size();
+
+		return const_iterator(this, i);
+	}
+
+	// Accessors
+
+	value_type front() const
+	{
+		return value;
+	}
+
+	value_type back() const
+	{
+		return value;
+	}
+
+	value_type get(int i) const
+	{
+		return value;
+	}
+
+	value_type operator[](int i) const
+	{
+		return value;
+	}
+
+	// Slicing
+
+	core::slice<fill<value_type> > deref()
+	{
+		return *this;
 	}
 
 	core::slice<range<iterator> > sub(int start, int end)
@@ -348,6 +338,25 @@ struct fill
 	{
 		return range<const_iterator>(start, end).deref();
 	}
+
+	template <class container>
+	fill<typename container::iterator> sample(container &c)
+	{
+		return fill<typename container::iterator>(count, c.at(value));
+	}
+
+	template <class container>
+	fill<typename container::const_iterator> sample(const container &c)
+	{
+		return fill<typename container::iterator>(count, c.at(value));
+	}
+
+	fill<int> idx()
+	{
+		return fill<int>(count, value.idx());
+	}
+
+	// Modifiers
 
 	void swap(fill<value_type> &root)
 	{

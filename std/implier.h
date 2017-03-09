@@ -19,6 +19,18 @@ struct implier
 };
 
 template <class ktype, class vtype>
+bool operator==(implier<ktype, vtype> i0, implier<ktype, vtype> i1)
+{
+	return (i0.key == i1.key);
+}
+
+template <class ktype, class vtype>
+bool operator!=(implier<ktype, vtype> i0, implier<ktype, vtype> i1)
+{
+	return (i0.key != i1.key);
+}
+
+template <class ktype, class vtype>
 bool operator<(implier<ktype, vtype> i0, implier<ktype, vtype> i1)
 {
 	return (i0.key < i1.key);
@@ -42,16 +54,17 @@ bool operator>=(implier<ktype, vtype> i0, implier<ktype, vtype> i1)
 	return (i0.key >= i1.key);
 }
 
+
 template <class ktype, class vtype>
-bool operator==(implier<ktype, vtype> i0, implier<ktype, vtype> i1)
+bool operator==(implier<ktype, vtype> i0, ktype i1)
 {
-	return (i0.key == i1.key);
+	return (i0.key == i1);
 }
 
 template <class ktype, class vtype>
-bool operator!=(implier<ktype, vtype> i0, implier<ktype, vtype> i1)
+bool operator!=(implier<ktype, vtype> i0, ktype i1)
 {
-	return (i0.key != i1.key);
+	return (i0.key != i1);
 }
 
 template <class ktype, class vtype>
@@ -78,16 +91,17 @@ bool operator>=(implier<ktype, vtype> i0, ktype i1)
 	return (i0.key >= i1);
 }
 
+
 template <class ktype, class vtype>
-bool operator==(implier<ktype, vtype> i0, ktype i1)
+bool operator==(ktype i0, implier<ktype, vtype> i1)
 {
-	return (i0.key == i1);
+	return (i0 == i1.key);
 }
 
 template <class ktype, class vtype>
-bool operator!=(implier<ktype, vtype> i0, ktype i1)
+bool operator!=(ktype i0, implier<ktype, vtype> i1)
 {
-	return (i0.key != i1);
+	return (i0 != i1.key);
 }
 
 template <class ktype, class vtype>
@@ -112,18 +126,6 @@ template <class ktype, class vtype>
 bool operator>=(ktype i0, implier<ktype, vtype> i1)
 {
 	return (i0 >= i1.key);
-}
-
-template <class ktype, class vtype>
-bool operator==(ktype i0, implier<ktype, vtype> i1)
-{
-	return (i0 == i1.key);
-}
-
-template <class ktype, class vtype>
-bool operator!=(ktype i0, implier<ktype, vtype> i1)
-{
-	return (i0 != i1.key);
 }
 
 }
