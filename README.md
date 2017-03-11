@@ -2,6 +2,8 @@
 
 Welcome to the Standard Core. This is a library for standard containers and their associated algorithms.
 
+For thorough documentation, check out the [wiki](https://github.com/nbingham1/stdcore/wiki).
+
 # Why does this exist?
 
 I've been working with C++ for over a decade at this point. Every now and then, I would need to do something that the C++ Standard Library couldn't do. So I would make the necessary thing and move on. After a while, I noticed that I had managed to implement a full standard library scattered throughout my code base. So, I pulled it all together into a library, and well... here we are.
