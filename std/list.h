@@ -205,13 +205,6 @@ struct list
 			return result;
 		}
 
-		iterator &operator=(iterator i)
-		{
-			root = i.root;
-			loc = i.loc;
-			return *this;
-		}
-
 		bool operator==(iterator i) const
 		{
 			return loc == i.loc;
@@ -298,28 +291,6 @@ struct list
 			return range<iterator>(*this, root->end()).deref();
 		}
 
-		list<value_type> pop(int n = 1)
-		{
-			list<value_type> result;
-			end_item *start = loc;
-			for (int i = 0; i < n && loc != &root->right; i++)
-				loc = loc->next;
-			for (int i = 0; i > n && start != &root->left && start != root->left.next; i--)
-				start = start->prev;
-
-			if (start != loc)
-			{
-				result.left.next = start;
-				result.right.prev = loc->prev;
-				start->prev->next = loc;
-				loc->prev = start->prev;
-				result.left.next->prev = &result.left;
-				result.right.prev->next = &result.right;
-			}
-
-			return result;
-		}
-
 		void drop(int n = 1)
 		{
 			if (n > 0)
@@ -350,6 +321,28 @@ struct list
 				start->next = loc;
 				loc->prev = start;
 			}
+		}
+
+		list<value_type> pop(int n = 1)
+		{
+			list<value_type> result;
+			end_item *start = loc;
+			for (int i = 0; i < n && loc != &root->right; i++)
+				loc = loc->next;
+			for (int i = 0; i > n && start != &root->left && start != root->left.next; i--)
+				start = start->prev;
+
+			if (start != loc)
+			{
+				result.left.next = start;
+				result.right.prev = loc->prev;
+				start->prev->next = loc;
+				loc->prev = start->prev;
+				result.left.next->prev = &result.left;
+				result.right.prev->next = &result.right;
+			}
+
+			return result;
 		}
 
 		void push(value_type v) const
@@ -450,6 +443,13 @@ struct list
 			loc = i.loc;
 			i.loc = next1;
 		}
+
+		iterator &operator=(iterator i)
+		{
+			root = i.root;
+			loc = i.loc;
+			return *this;
+		}
 	};
 
 	struct const_iterator
@@ -499,22 +499,22 @@ struct list
 			return root != NULL && loc != &root->left && loc != &root->right;
 		}
 
-		value_type &operator*() const
+		const value_type &operator*() const
 		{
 			return ((item*)loc)->value;
 		}
 
-		value_type *operator->() const
+		const value_type *operator->() const
 		{
 			return &((item*)loc)->value;
 		}
 
-		value_type &get() const
+		const value_type &get() const
 		{
 			return ((item*)loc)->value;
 		}
 
-		value_type *ptr() const
+		const value_type *ptr() const
 		{
 			return &((item*)loc)->value;
 		}
@@ -609,19 +609,22 @@ struct list
 			return result;
 		}
 
-		const_iterator &operator=(const_iterator i)
-		{
-			root = i.root;
-			loc = i.loc;
-			return *this;
-		}
-
 		bool operator==(const_iterator i) const
 		{
 			return root == i.root && loc == i.loc;
 		}
 
 		bool operator!=(const_iterator i) const
+		{
+			return root != i.root || loc != i.loc;
+		}
+
+		bool operator==(iterator i) const
+		{
+			return root == i.root && loc == i.loc;
+		}
+
+		bool operator!=(iterator i) const
 		{
 			return root != i.root || loc != i.loc;
 		}
@@ -644,23 +647,6 @@ struct list
 				return c1;
 			else
 				return c1 - c0;
-		}
-
-		const_iterator &operator=(iterator i)
-		{
-			root = i.root;
-			loc = i.loc;
-			return *this;
-		}
-
-		bool operator==(iterator i) const
-		{
-			return root == i.root && loc == i.loc;
-		}
-
-		bool operator!=(iterator i) const
-		{
-			return root != i.root || loc != i.loc;
 		}
 
 		int operator-(iterator i) const
@@ -708,12 +694,33 @@ struct list
 		{
 			return range<const_iterator>(*this, root->end()).deref();
 		}
+
+		const_iterator &operator=(const_iterator i)
+		{
+			root = i.root;
+			loc = i.loc;
+			return *this;
+		}
+
+		const_iterator &operator=(iterator i)
+		{
+			root = i.root;
+			loc = i.loc;
+			return *this;
+		}
 	};
 
 	list()
 	{
 		left.next = &right;
 		right.prev = &left;
+	}
+
+	list(const value_type &c)
+	{
+		left.next = &right;
+		right.prev = &left;
+		end().push(c);
 	}
 
 	template <class container>
@@ -725,20 +732,19 @@ struct list
 			end().push(*i);
 	}
 
-	list(const value_type &c)
+	list(const list<value_type> &c)
 	{
 		left.next = &right;
 		right.prev = &left;
-		end().push(c);
+		for (const_iterator i = c.begin(); i; i++)
+			end().push(*i);
 	}
 
-	// Initialize this list as a copy of some other container
-	template <class container>
-	list(typename container::const_iterator left, typename container::const_iterator right)
+	list(iterator left, iterator right)
 	{
 		this->left.next = &this->right;
 		this->right.prev = &this->left;
-		for (typename container::const_iterator i = left; i != right; i++)
+		for (iterator i = left; i != right; i++)
 			end().push(*i);
 	}
 
@@ -760,19 +766,13 @@ struct list
 			end().push(*i);
 	}
 
-	list(iterator left, iterator right)
+	// Initialize this list as a copy of some other container
+	template <class container>
+	list(typename container::const_iterator left, typename container::const_iterator right)
 	{
 		this->left.next = &this->right;
 		this->right.prev = &this->left;
-		for (iterator i = left; i != right; i++)
-			end().push(*i);
-	}
-
-	list(const list<value_type> &c)
-	{
-		left.next = &right;
-		right.prev = &left;
-		for (const_iterator i = c.begin(); i; i++)
+		for (typename container::const_iterator i = left; i != right; i++)
 			end().push(*i);
 	}
 
@@ -796,97 +796,6 @@ struct list
 	int size() const
 	{
 		return end() - begin();
-	}
-
-	iterator at(int i)
-	{
-		return i < 0 ? end()+i : begin()+i;
-	}
-
-	const_iterator at(int i) const
-	{
-		return i < 0 ? end()+i : begin()+i;
-	}
-
-	value_type &get(int i)
-	{
-		return i < 0 ? (end()+i).get() : (begin()+i).get();
-	}
-
-	const value_type &get(int i) const
-	{
-		return i < 0 ? (end()+i).get() : (begin()+i).get();
-	}
-
-	value_type *ptr(int i)
-	{
-		return i < 0 ? (end()+i).ptr() : (begin()+i).ptr();
-	}
-
-	const value_type *ptr(int i) const
-	{
-		return i < 0 ? (end()+i).ptr() : (begin()+i).ptr();
-	}
-
-	value_type &operator[](int i)
-	{
-		return i < 0 ? (end()+i).get() : (begin()+i).get();
-	}
-
-	const value_type &operator[](int i) const
-	{
-		return i < 0 ? (end()+i).get() : (begin()+i).get();
-	}
-
-	core::slice<list<value_type> > deref()
-	{
-		return *this;
-	}
-
-	template <class container>
-	list<typename container::iterator> sample(container &c)
-	{
-		list<typename container::iterator> result;
-		for (iterator i = begin(); i != end(); i++)
-			result.push_back(c.at(*i));
-		return result;
-	}
-
-	template <class container>
-	list<typename container::const_iterator> sample(const container &c)
-	{
-		list<typename container::const_iterator> result;
-		for (iterator i = begin(); i != end(); i++)
-			result.push_back(c.at(*i));
-		return result;
-	}
-
-	list<int> idx()
-	{
-		list<int> result;
-		for (iterator i = begin(); i != end(); i++)
-			result.push_back(i->idx());
-		return result;
-	}
-
-	value_type &front()
-	{
-		return *begin();
-	}
-
-	const value_type &front() const
-	{
-		return *begin();
-	}
-
-	value_type &back()
-	{
-		return *rbegin();
-	}
-
-	const value_type &back() const
-	{
-		return *rbegin();
 	}
 
 	iterator begin()
@@ -927,6 +836,79 @@ struct list
 	const_iterator rend() const
 	{
 		return const_iterator(this, &left);
+	}
+
+	iterator at(int i)
+	{
+		return i < 0 ? end()+i : begin()+i;
+	}
+
+	const_iterator at(int i) const
+	{
+		return i < 0 ? end()+i : begin()+i;
+	}
+
+	value_type &front()
+	{
+		return *begin();
+	}
+
+	const value_type &front() const
+	{
+		return *begin();
+	}
+
+	value_type &back()
+	{
+		return *rbegin();
+	}
+
+	const value_type &back() const
+	{
+		return *rbegin();
+	}
+
+	value_type &get(int i)
+	{
+		return i < 0 ? (end()+i).get() : (begin()+i).get();
+	}
+
+	const value_type &get(int i) const
+	{
+		return i < 0 ? (end()+i).get() : (begin()+i).get();
+	}
+
+	value_type *ptr(int i)
+	{
+		return i < 0 ? (end()+i).ptr() : (begin()+i).ptr();
+	}
+
+	const value_type *ptr(int i) const
+	{
+		return i < 0 ? (end()+i).ptr() : (begin()+i).ptr();
+	}
+
+	value_type &operator[](int i)
+	{
+		return i < 0 ? (end()+i).get() : (begin()+i).get();
+	}
+
+	const value_type &operator[](int i) const
+	{
+		return i < 0 ? (end()+i).get() : (begin()+i).get();
+	}
+
+	core::slice<list<value_type> > deref()
+	{
+		return *this;
+	}
+
+	list<int> idx()
+	{
+		list<int> result;
+		for (iterator i = begin(); i != end(); i++)
+			result.push_back(i->idx());
+		return result;
 	}
 
 	core::slice<range<iterator> > sub(int start, int end)
@@ -999,6 +981,24 @@ struct list
 		return range<const_iterator>(start, end).deref();
 	}
 
+	template <class container>
+	list<typename container::iterator> sample(container &c)
+	{
+		list<typename container::iterator> result;
+		for (iterator i = begin(); i != end(); i++)
+			result.push_back(c.at(*i));
+		return result;
+	}
+
+	template <class container>
+	list<typename container::const_iterator> sample(const container &c)
+	{
+		list<typename container::const_iterator> result;
+		for (iterator i = begin(); i != end(); i++)
+			result.push_back(c.at(*i));
+		return result;
+	}
+
 	static void drop(iterator start, iterator end)
 	{
 		list<value_type> result;
@@ -1011,21 +1011,21 @@ struct list
 		result.release();
 	}
 
-	list<value_type> drop(int start, int end)
+	void drop(int start, int end)
 	{
 		iterator l = start < 0 ? this->end()+start : this->begin()+start;
 		iterator r = end < 0 ? this->end()+end : this->begin()+end;
-		return pop(l, r);
+		drop(l, r);
 	}
 
-	void drop_front(unsigned int n = 1)
+	void drop_front(int n = 1)
 	{
-		drop(begin(), begin()+(int)n);
+		drop(begin(), begin()+n);
 	}
 
-	void drop_back(unsigned int n = 1)
+	void drop_back(int n = 1)
 	{
-		drop(end()-(int)n, end());
+		drop(end()-n, end());
 	}
 
 	static list<value_type> pop(iterator start, iterator end)
@@ -1048,14 +1048,14 @@ struct list
 		return pop(l, r);
 	}
 
-	list<value_type> pop_back(unsigned int n = 1)
+	list<value_type> pop_back(int n = 1)
 	{
-		return pop(end()-(int)n, end());
+		return pop(end()-n, end());
 	}
 
-	list<value_type> pop_front(unsigned int n = 1)
+	list<value_type> pop_front(int n = 1)
 	{
-		return pop(begin(), begin()+(int)n);
+		return pop(begin(), begin()+n);
 	}
 
 	void push_back(const value_type &value)
@@ -1092,11 +1092,6 @@ struct list
 			start.push(v);
 	}
 
-	void replace(int start, int end, value_type v)
-	{
-		replace(at(start), at(end), v);
-	}
-
 	template <class container>
 	static void replace(iterator start, iterator end, const container &c)
 	{
@@ -1114,6 +1109,11 @@ struct list
 			start.append(i.sub());
 	}
 
+	void replace(int start, int end, value_type v)
+	{
+		replace(at(start), at(end), v);
+	}
+	
 	template <class container>
 	void replace(int start, int end, const container &c)
 	{
@@ -1142,7 +1142,27 @@ struct list
 		replace(begin(), at(n), c);
 	}
 
-	void resize(int n, value_type v)
+	void swap(list<value_type> &lst)
+	{
+		end_item* tmp_left = left.next;
+		end_item* tmp_right = right.prev;
+
+		left.next = lst.left.next;
+		left.prev = &left;
+		left.next->prev = &left;
+		right.prev = lst.right.prev;
+		right.next = &right;
+		right.prev->next = &right;
+
+		lst.left.next = tmp_left;
+		lst.left.prev = &lst.left;
+		lst.left.next->prev = &lst.left;
+		lst.right.prev = tmp_right;
+		lst.right.next = &lst.right;
+		lst.right.prev->next = &lst.right;
+	}
+
+	void resize(int n, const value_type &v = value_type())
 	{
 		iterator i = begin();
 		while (i != end() && n > 0)
@@ -1200,26 +1220,6 @@ struct list
 		clear();
 		append_back(c);
 		return *this;
-	}
-
-	void swap(list<value_type> &lst)
-	{
-		end_item* tmp_left = left.next;
-		end_item* tmp_right = right.prev;
-
-		left.next = lst.left.next;
-		left.prev = &left;
-		left.next->prev = &left;
-		right.prev = lst.right.prev;
-		right.next = &right;
-		right.prev->next = &right;
-
-		lst.left.next = tmp_left;
-		lst.left.prev = &lst.left;
-		lst.left.next->prev = &lst.left;
-		lst.right.prev = tmp_right;
-		lst.right.next = &lst.right;
-		lst.right.prev->next = &lst.right;
 	}
 
 protected:

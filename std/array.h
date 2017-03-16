@@ -148,13 +148,6 @@ struct array
 			return result;
 		}
 
-		iterator &operator=(iterator i)
-		{
-			root = i.root;
-			index = i.index;
-			return *this;
-		}
-
 		bool operator==(iterator i) const
 		{
 			return index == i.index;
@@ -183,11 +176,6 @@ struct array
 		bool operator >=(iterator i) const
 		{
 			return index >= i.index;
-		}
-
-		int operator-(iterator i) const
-		{
-			return index - i.index;
 		}
 
 		bool operator==(const_iterator i) const
@@ -220,9 +208,40 @@ struct array
 			return index >= i.index;
 		}
 
+		int operator-(iterator i) const
+		{
+			return index - i.index;
+		}
+
 		int operator-(const_iterator i) const
 		{
 			return index - i.index;
+		}
+
+		core::slice<range<iterator> > sub(int length)
+		{
+			if (length < 0)
+				return range<iterator>(*this+length, *this);
+			else
+				return range<iterator>(*this, *this+length);
+		}
+
+		array<value_type> subcpy(int length)
+		{
+			if (length < 0)
+				return array<value_type>(range<iterator>(*this+length, *this).deref());
+			else
+				return array<value_type>(range<iterator>(*this, *this+length).deref());
+		}
+
+		core::slice<range<iterator> > sub()
+		{
+			return range<iterator>(*this, root->end());
+		}
+
+		array<value_type> subcpy()
+		{
+			return range<iterator>(*this, root->end()).deref();
 		}
 
 		void alloc(int n = 1)
@@ -412,30 +431,11 @@ struct array
 			memcpy(i.ptr(), &temp, sizeof(value_type));
 		}
 
-		core::slice<range<iterator> > sub(int length)
+		iterator &operator=(iterator i)
 		{
-			if (length < 0)
-				return range<iterator>(*this+length, *this);
-			else
-				return range<iterator>(*this, *this+length);
-		}
-
-		array<value_type> subcpy(int length)
-		{
-			if (length < 0)
-				return array<value_type>(range<iterator>(*this+length, *this).deref());
-			else
-				return array<value_type>(range<iterator>(*this, *this+length).deref());
-		}
-
-		core::slice<range<iterator> > sub()
-		{
-			return range<iterator>(*this, root->end());
-		}
-
-		array<value_type> subcpy()
-		{
-			return range<iterator>(*this, root->end()).deref();
+			root = i.root;
+			index = i.index;
+			return *this;
 		}
 	};
 
@@ -561,13 +561,6 @@ struct array
 			return result;
 		}
 
-		const_iterator &operator=(const_iterator i)
-		{
-			root = i.root;
-			index = i.index;
-			return *this;
-		}
-
 		bool operator==(const_iterator i) const
 		{
 			return index == i.index;
@@ -596,18 +589,6 @@ struct array
 		bool operator >=(const_iterator i) const
 		{
 			return index >= i.index;
-		}
-
-		int operator-(const_iterator i) const
-		{
-			return index - i.index;
-		}
-
-		const_iterator &operator=(iterator i)
-		{
-			root = i.root;
-			index = i.index;
-			return *this;
 		}
 
 		bool operator==(iterator i) const
@@ -640,6 +621,11 @@ struct array
 			return index >= i.index;
 		}
 
+		int operator-(const_iterator i) const
+		{
+			return index - i.index;
+		}
+
 		int operator-(iterator i) const
 		{
 			return index - i.index;
@@ -669,6 +655,20 @@ struct array
 		array<value_type> subcpy()
 		{
 			return range<const_iterator>(*this, root->end()).deref();
+		}
+
+		const_iterator &operator=(const_iterator i)
+		{
+			root = i.root;
+			index = i.index;
+			return *this;
+		}
+
+		const_iterator &operator=(iterator i)
+		{
+			root = i.root;
+			index = i.index;
+			return *this;
 		}
 	};
 
@@ -785,104 +785,14 @@ struct array
 		count = 0;
 	}
 
+	// Utility
+
 	int size() const
 	{
 		return count;
 	}
 
-	iterator at(int i)
-	{
-		return iterator(this, (i < 0 ? i+count : i));
-	}
-
-	const_iterator at(int i) const
-	{
-		return const_iterator(this, (i < 0 ? i+count : i));
-	}
-
-	value_type &get(int i)
-	{
-		return data[i < 0 ? i+count : i];
-	}
-
-	const value_type &get(int i) const
-	{
-		return data[i < 0 ? i+count : i];
-	}
-
-	value_type *ptr(int i)
-	{
-		return data + (i < 0 ? i+count : i);
-	}
-
-	const value_type *ptr(int i) const
-	{
-		return data + (i < 0 ? i+count : i);
-	}
-
-	value_type &operator[](int i)
-	{
-		return data[i < 0 ? i+count : i];
-	}
-
-	const value_type &operator[](int i) const
-	{
-		return data[i < 0 ? i+count : i];
-	}
-
-	core::slice<array<value_type> > deref()
-	{
-		return *this;
-	}
-
-	template <class container>
-	array<typename container::iterator> sample(container &c)
-	{
-		array<typename container::iterator> result;
-		result.reserve(count);
-		for (int i = 0; i < count; i++)
-			result.push_back(c.at(data[i]));
-		return result;
-	}
-
-	template <class container>
-	array<typename container::const_iterator> sample(const container &c)
-	{
-		array<typename container::const_iterator> result;
-		result.reserve(count);
-		for (int i = 0; i < count; i++)
-			result.push_back(c.at(data[i]));
-		return result;
-	}
-
-	array<int> idx()
-	{
-		array<int> result;
-		result.reserve(count);
-		for (iterator i = begin(); i != end(); i++)
-			result.push_back(i->idx());
-		return result;
-	}
-
-	value_type &front()
-	{
-		return *data;
-	}
-
-	const value_type &front() const
-	{
-		return *data;
-	}
-
-	value_type &back()
-	{
-		return *(data + count-1);
-	}
-
-	const value_type &back() const
-	{
-		return *(data + count-1);
-	}
+	// Iterators
 
 	iterator begin()
 	{
@@ -922,6 +832,82 @@ struct array
 	const_iterator rend() const
 	{
 		return const_iterator(this, -1);
+	}
+
+	iterator at(int i)
+	{
+		return iterator(this, (i < 0 ? i+count : i));
+	}
+
+	const_iterator at(int i) const
+	{
+		return const_iterator(this, (i < 0 ? i+count : i));
+	}
+
+	// Accessors
+
+	value_type &front()
+	{
+		return *data;
+	}
+
+	const value_type &front() const
+	{
+		return *data;
+	}
+
+	value_type &back()
+	{
+		return *(data + count-1);
+	}
+
+	const value_type &back() const
+	{
+		return *(data + count-1);
+	}
+
+	value_type &get(int i)
+	{
+		return data[i < 0 ? i+count : i];
+	}
+
+	const value_type &get(int i) const
+	{
+		return data[i < 0 ? i+count : i];
+	}
+
+	value_type *ptr(int i)
+	{
+		return data + (i < 0 ? i+count : i);
+	}
+
+	const value_type *ptr(int i) const
+	{
+		return data + (i < 0 ? i+count : i);
+	}
+
+	value_type &operator[](int i)
+	{
+		return data[i < 0 ? i+count : i];
+	}
+
+	const value_type &operator[](int i) const
+	{
+		return data[i < 0 ? i+count : i];
+	}
+
+	core::slice<array<value_type> > deref()
+	{
+		return *this;
+	}
+
+	array<int> idx()
+	{
+		array<int> result;
+		result.reserve(count);
+		for (iterator i = begin(); i != end(); i++)
+			result.push_back(i->idx());
+		return result;
 	}
 
 	core::slice<range<iterator> > sub(int start, int end)
@@ -992,6 +978,26 @@ struct array
 	static core::slice<range<const_iterator> > sub(const_iterator start, const_iterator end)
 	{
 		return range<const_iterator>(start, end).deref();
+	}
+
+	template <class container>
+	array<typename container::iterator> sample(container &c)
+	{
+		array<typename container::iterator> result;
+		result.reserve(count);
+		for (int i = 0; i < count; i++)
+			result.push_back(c.at(data[i]));
+		return result;
+	}
+
+	template <class container>
+	array<typename container::const_iterator> sample(const container &c)
+	{
+		array<typename container::const_iterator> result;
+		result.reserve(count);
+		for (int i = 0; i < count; i++)
+			result.push_back(c.at(data[i]));
+		return result;
 	}
 
 	void alloc_back(unsigned int n = 1)
