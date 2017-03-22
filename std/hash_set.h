@@ -38,12 +38,6 @@ struct hash_set : list<pair<int, key_type> >
 		friend class const_iterator;
 		hash_set<key_type, hash_func> *root;
 		end_item *loc;
-	public:
-		iterator()
-		{
-			root = NULL;
-			loc = NULL;
-		}
 
 		iterator(hash_set<key_type, hash_func> *root, end_item *loc)
 		{
@@ -51,27 +45,13 @@ struct hash_set : list<pair<int, key_type> >
 			this->loc = loc;
 		}
 
-		iterator(hash_set<key_type, hash_func> *root, int n)
+	public:
+		typedef key_type type;
+
+		iterator()
 		{
-			this->root = root;
-			if (n > 0)
-			{
-				loc = root->left.next;
-				while (n > 0)
-				{
-					loc = loc->next;
-					n--;
-				}
-			}
-			else
-			{
-				loc = &root->right;
-				while (n < 0)
-				{
-					loc = loc->prev;
-					n++;
-				}
-			}
+			root = NULL;
+			loc = NULL;
 		}
 
 		iterator(const iterator &copy)
@@ -81,6 +61,11 @@ struct hash_set : list<pair<int, key_type> >
 		}
 
 		~iterator() {}
+
+		operator bool() const
+		{
+			return root != NULL && loc != &root->left && loc != &root->right;
+		}
 
 		key_type &operator*() const
 		{
@@ -101,9 +86,27 @@ struct hash_set : list<pair<int, key_type> >
 			return ((item*)loc)->value.second;
 		}
 
+		iterator &ref()
+		{
+			return *this;
+		}
+
+		int idx() const
+		{
+			int count = 0;
+			for (end_item *i = root->left.next; i != loc && i != &root->right; i = i->next)
+				count++;
+			return count;
+		}
+
+		int hash() const
+		{
+			return ((item*)loc)->value.first;
+		}
+
 		int bucket() const
 		{
-			return ((item*)loc)->value.first >> root->shift;
+			return hash() >> root->shift;
 		}
 
 		iterator &operator++(int)
@@ -160,19 +163,22 @@ struct hash_set : list<pair<int, key_type> >
 			return result;
 		}
 
-		iterator &operator=(iterator i)
-		{
-			root = i.root;
-			loc = i.loc;
-			return *this;
-		}
-
 		bool operator==(iterator i) const
 		{
 			return loc == i.loc;
 		}
 
 		bool operator!=(iterator i) const
+		{
+			return loc != i.loc;
+		}
+
+		bool operator==(const_iterator i) const
+		{
+			return loc == i.loc;
+		}
+
+		bool operator!=(const_iterator i) const
 		{
 			return loc != i.loc;
 		}
@@ -193,16 +199,6 @@ struct hash_set : list<pair<int, key_type> >
 			}
 
 			return count;
-		}
-
-		bool operator==(const_iterator i) const
-		{
-			return loc == i.loc;
-		}
-
-		bool operator!=(const_iterator i) const
-		{
-			return loc != i.loc;
 		}
 
 		int operator-(const_iterator i) const
@@ -262,6 +258,13 @@ struct hash_set : list<pair<int, key_type> >
 				loc->prev = start.loc;
 			}
 		}
+
+		iterator &operator=(iterator i)
+		{
+			root = i.root;
+			loc = i.loc;
+			return *this;
+		}
 	};
 
 	struct const_iterator
@@ -271,18 +274,6 @@ struct hash_set : list<pair<int, key_type> >
 		friend class iterator;
 		const hash_set<key_type, hash_func> *root;
 		const end_item *loc;
-	public:
-		const_iterator()
-		{
-			root = NULL;
-			loc = NULL;
-		}
-
-		const_iterator(const hash_set<key_type, hash_func> *l)
-		{
-			root = l;
-			loc = &l->left;
-		}
 
 		const_iterator(const hash_set<key_type, hash_func> *l, const end_item *n)
 		{
@@ -290,27 +281,13 @@ struct hash_set : list<pair<int, key_type> >
 			loc = n;
 		}
 
-		const_iterator(hash_set<key_type, hash_func> *l, int n)
+	public:
+		typedef key_type type;
+
+		const_iterator()
 		{
-			root = l;
-			if (n > 0)
-			{
-				loc = root->left.next;
-				while (n > 0)
-				{
-					loc = loc->next;
-					n--;
-				}
-			}
-			else
-			{
-				loc = &root->right;
-				while (n < 0)
-				{
-					loc = loc->prev;
-					n++;
-				}
-			}
+			root = NULL;
+			loc = NULL;
 		}
 
 		const_iterator(const iterator &i)
@@ -326,6 +303,11 @@ struct hash_set : list<pair<int, key_type> >
 		}
 
 		~const_iterator() {}
+
+		operator bool() const
+		{
+			return root != NULL && loc != &root->left && loc != &root->right;
+		}
 
 		key_type &operator*() const
 		{
@@ -347,9 +329,27 @@ struct hash_set : list<pair<int, key_type> >
 			return &((item*)loc)->value.second;
 		}
 
+		const_iterator &ref()
+		{
+			return *this;
+		}
+
+		int idx() const
+		{
+			int count = 0;
+			for (const end_item *i = root->left.next; i != loc && i != &root->right; i = i->next)
+				count++;
+			return count;
+		}
+
+		int hash() const
+		{
+			return ((item*)loc)->value.first;
+		}
+
 		int bucket() const
 		{
-			return ((item*)loc)->value.first >> root->shift;
+			return hash() >> root->shift;
 		}
 
 		const_iterator &operator++(int)
@@ -410,13 +410,6 @@ struct hash_set : list<pair<int, key_type> >
 			return result;
 		}
 
-		const_iterator &operator=(const_iterator i)
-		{
-			root = i.root;
-			loc = i.loc;
-			return *this;
-		}
-
 		bool operator==(const_iterator i) const
 		{
 			return root == i.root && loc == i.loc;
@@ -425,21 +418,6 @@ struct hash_set : list<pair<int, key_type> >
 		bool operator!=(const_iterator i) const
 		{
 			return root != i.root || loc != i.loc;
-		}
-
-		int operator-(const_iterator i) const
-		{
-			int count = 0;
-			for (const_iterator j = i; j.loc != loc && j.loc != &j.root->right; j++)
-				count++;
-			return count;
-		}
-
-		const_iterator &operator=(iterator i)
-		{
-			root = i.root;
-			loc = i.loc;
-			return *this;
 		}
 
 		bool operator==(iterator i) const
@@ -452,12 +430,34 @@ struct hash_set : list<pair<int, key_type> >
 			return root != i.root || loc != i.loc;
 		}
 
+		int operator-(const_iterator i) const
+		{
+			int count = 0;
+			for (const_iterator j = i; j.loc != loc && j.loc != &j.root->right; j++)
+				count++;
+			return count;
+		}
+
 		int operator-(iterator i) const
 		{
 			int count = 0;
 			for (const_iterator j = i; j.loc != loc && j.loc != &j.root->right; j++)
 				count++;
 			return count;
+		}
+
+		const_iterator &operator=(const_iterator i)
+		{
+			root = i.root;
+			loc = i.loc;
+			return *this;
+		}
+
+		const_iterator &operator=(iterator i)
+		{
+			root = i.root;
+			loc = i.loc;
+			return *this;
 		}
 	};
 
@@ -478,39 +478,9 @@ struct hash_set : list<pair<int, key_type> >
 	int shift;
 	int count;
 
-	iterator at(int i)
+	int size() const
 	{
-		return begin() + i;
-	}
-
-	const_iterator at(int i) const
-	{
-		return begin() + i;
-	}
-
-	key_type &get(int i) const
-	{
-		return ((item*)(begin() + i))->value.second;
-	}
-
-	key_type *ptr(int i) const
-	{
-		return (begin() + i).ptr();
-	}
-
-	key_type &operator[](int i) const
-	{
-		return ((item*)(begin() + i))->value.second;
-	}
-
-	key_type &front() const
-	{
-		return *begin();
-	}
-
-	key_type &back() const
-	{
-		return *rbegin();
+		return count;
 	}
 
 	iterator begin()
@@ -553,9 +523,39 @@ struct hash_set : list<pair<int, key_type> >
 		return const_iterator(this, &left);
 	}
 
-	int size() const
+	iterator at(int i)
 	{
-		return count;
+		return begin() + i;
+	}
+
+	const_iterator at(int i) const
+	{
+		return begin() + i;
+	}
+
+	key_type &front() const
+	{
+		return *begin();
+	}
+
+	key_type &back() const
+	{
+		return *rbegin();
+	}
+
+	key_type &get(int i) const
+	{
+		return ((item*)(begin() + i))->value.second;
+	}
+
+	key_type *ptr(int i) const
+	{
+		return (begin() + i).ptr();
+	}
+
+	key_type &operator[](int i) const
+	{
+		return ((item*)(begin() + i))->value.second;
 	}
 
 	iterator insert(const key_type &key)
