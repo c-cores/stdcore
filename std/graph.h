@@ -67,7 +67,6 @@ struct graph
 		graph<value_type> *root;
 		end_node *loc;
 	public:
-		typedef graph<value_type> container;
 		typedef value_type type;
 
 		iterator()
@@ -182,23 +181,6 @@ struct graph
 			return ((node*)loc)->prev;
 		}
 
-		iterator &operator=(const iterator &copy)
-		{
-			root = copy.root;
-			loc = copy.loc;
-			return *this;
-		}
-
-		int operator-(iterator i) const
-		{
-			return loc->index - i.loc->index;
-		}
-
-		int operator-(const_iterator i) const
-		{
-			return loc->index - i.loc->index;
-		}
-
 		bool operator==(iterator iter) const
 		{
 			return loc->index == iter.loc->index;
@@ -259,22 +241,14 @@ struct graph
 			return loc->index >= iter.loc->index;
 		}
 
-		value_type pop()
+		int operator-(iterator i) const
 		{
-			links n = next();
-			links p = prev();
-			for (link_iterator i = n.begin(); i != n.end(); i++)
-				remove(i->prev(), *this);
-			for (link_iterator i = p.begin(); i != p.end(); i++)
-				remove(i->next(), *this);
-			value_type result = get();
-			loc->left->right = loc->right;
-			loc->right->left = loc->left;
-			end_node *del = loc;
-			loc = loc->left;
-			delete del;
-			root->update_index(loc);
-			return result;
+			return loc->index - i.loc->index;
+		}
+
+		int operator-(const_iterator i) const
+		{
+			return loc->index - i.loc->index;
 		}
 
 		void drop()
@@ -291,6 +265,24 @@ struct graph
 			loc = loc->left;
 			delete del;
 			root->update_index(loc);
+		}
+
+		value_type pop()
+		{
+			links n = next();
+			links p = prev();
+			for (link_iterator i = n.begin(); i != n.end(); i++)
+				remove(i->prev(), *this);
+			for (link_iterator i = p.begin(); i != p.end(); i++)
+				remove(i->next(), *this);
+			value_type result = get();
+			loc->left->right = loc->right;
+			loc->right->left = loc->left;
+			end_node *del = loc;
+			loc = loc->left;
+			delete del;
+			root->update_index(loc);
+			return result;
 		}
 
 		iterator link(iterator n) const
@@ -335,6 +327,13 @@ struct graph
 		{
 			return rlink(root->insert(value));
 		}
+
+		iterator &operator=(const iterator &copy)
+		{
+			root = copy.root;
+			loc = copy.loc;
+			return *this;
+		}
 	};
 
 	struct const_iterator
@@ -345,7 +344,6 @@ struct graph
 		const graph<value_type> *root;
 		const end_node *loc;
 	public:
-		typedef graph<value_type> container;
 		typedef value_type type;
 
 		const_iterator()
@@ -391,7 +389,7 @@ struct graph
 			return ((node*)loc)->value;
 		}
 
-		int index() const
+		int idx() const
 		{
 			return loc->index;
 		}
