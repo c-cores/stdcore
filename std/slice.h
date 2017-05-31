@@ -557,17 +557,17 @@ struct slice : container
 			return *container::iterator::get();
 		}
 
-		const type *operator->()
+		type *operator->()
 		{
 			return &(*container::iterator::get());
 		}
 
-		const type *ptr()
+		type *ptr()
 		{
 			return &(*container::iterator::get());
 		}
 
-		type &get() const
+		type &get()
 		{
 			return *container::iterator::get();
 		}
@@ -628,12 +628,6 @@ struct slice : container
 			return container::iterator::operator-(n);
 		}
 
-		iterator &operator=(iterator i)
-		{
-			container::iterator::operator=(i);
-			return *this;
-		}
-
 		bool operator==(iterator i) const
 		{
 			return container::iterator::operator==(i);
@@ -644,11 +638,6 @@ struct slice : container
 			return container::iterator::operator!=(i);
 		}
 
-		int operator-(iterator i) const
-		{
-			return container::iterator::operator-(i);
-		}
-
 		bool operator==(const_iterator i) const
 		{
 			return container::iterator::operator==(i);
@@ -657,6 +646,11 @@ struct slice : container
 		bool operator!=(const_iterator i) const
 		{
 			return container::iterator::operator!=(i);
+		}
+
+		int operator-(iterator i) const
+		{
+			return container::iterator::operator-(i);
 		}
 
 		int operator-(const_iterator i) const
@@ -699,6 +693,12 @@ struct slice : container
 		{
 			ref().get().swap(i.ref().get());
 		}
+
+		iterator &operator=(iterator i)
+		{
+			container::iterator::operator=(i);
+			return *this;
+		}
 	};
 
 	struct const_iterator : container::const_iterator
@@ -726,17 +726,17 @@ struct slice : container
 			return *container::const_iterator::get();
 		}
 
-		const type *operator->()
+		type *operator->()
 		{
 			return &(*container::const_iterator::get());
 		}
 
-		const type *ptr()
+		type *ptr()
 		{
 			return &(*container::const_iterator::get());
 		}
 
-		type get() const
+		type &get()
 		{
 			return *container::const_iterator::get();
 		}
@@ -797,12 +797,6 @@ struct slice : container
 			return container::const_iterator::operator-(n);
 		}
 
-		const_iterator &operator=(const_iterator i)
-		{
-			container::const_iterator::operator=(i);
-			return *this;
-		}
-
 		bool operator==(iterator i) const
 		{
 			return container::const_iterator::operator==(i);
@@ -813,11 +807,6 @@ struct slice : container
 			return container::const_iterator::operator!=(i);
 		}
 
-		int operator-(iterator i) const
-		{
-			return container::const_iterator::operator-(i);
-		}
-
 		bool operator==(const_iterator i) const
 		{
 			return container::const_iterator::operator==(i);
@@ -826,6 +815,11 @@ struct slice : container
 		bool operator!=(const_iterator i) const
 		{
 			return container::const_iterator::operator!=(i);
+		}
+
+		int operator-(iterator i) const
+		{
+			return container::const_iterator::operator-(i);
 		}
 
 		int operator-(const_iterator i) const
@@ -858,6 +852,12 @@ struct slice : container
 		{
 			return container(range<const_iterator>(*this, root->end()));
 		}
+
+		const_iterator &operator=(const_iterator i)
+		{
+			container::const_iterator::operator=(i);
+			return *this;
+		}
 	};
 
 	slice() {}
@@ -868,51 +868,6 @@ struct slice : container
 	slice(const container2 &copy) : container(copy) {}
 
 	~slice() {}
-
-	iterator at(int i)
-	{
-		return iterator(container::at(i));
-	}
-
-	const_iterator at(int i) const
-	{
-		return const_iterator(container::at(i));
-	}
-
-	const type &get(int i) const
-	{
-		return container::get(i).get();
-	}
-
-	const type *ptr(int i) const
-	{
-		return container::get(i).ptr();
-	}
-
-	index_type &ref(int i)
-	{
-		return container::get(i);
-	}
-
-	index_type ref(int i) const
-	{
-		return container::get(i);
-	}
-
-	type &operator[](int i) const
-	{
-		return container::get(i).get();
-	}
-
-	type front() const
-	{
-		return container::front().get();
-	}
-
-	type back() const
-	{
-		return container::back().get();
-	}
 
 	iterator begin()
 	{
@@ -952,6 +907,76 @@ struct slice : container
 	const_iterator rend() const
 	{
 		return const_iterator(container::rend());
+	}
+
+	iterator at(int i)
+	{
+		return iterator(container::at(i));
+	}
+
+	const_iterator at(int i) const
+	{
+		return const_iterator(container::at(i));
+	}
+
+	type &front()
+	{
+		return container::front().get();
+	}
+
+	type &back()
+	{
+		return container::back().get();
+	}
+
+	const type front() const
+	{
+		return container::front().get();
+	}
+
+	const type back() const
+	{
+		return container::back().get();
+	}
+
+	type &get(int i)
+	{
+		return container::get(i).get();
+	}
+
+	type *ptr(int i)
+	{
+		return container::get(i).ptr();
+	}
+
+	const type &get(int i) const
+	{
+		return container::get(i).get();
+	}
+
+	const type *ptr(int i) const
+	{
+		return container::get(i).ptr();
+	}
+
+	index_type &ref(int i)
+	{
+		return container::get(i);
+	}
+
+	index_type ref(int i) const
+	{
+		return container::get(i);
+	}
+
+	type &operator[](int i)
+	{
+		return container::get(i).get();
+	}
+
+	const type &operator[](int i) const
+	{
+		return container::get(i).get();
 	}
 
 	container &ref()
