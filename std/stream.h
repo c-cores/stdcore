@@ -26,7 +26,7 @@ struct stream_flush
 	int line;
 };
 
-#define endl stream_flush("\n", __FILE__, __LINE__)
+#define endl ::core::stream_flush("\n", __FILE__, __LINE__)
 
 template <typename store_type>
 struct ostream
