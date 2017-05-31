@@ -73,9 +73,10 @@ array<char> file::read(const char *delimiter)
 {
 	array<char> result;
 	result.reserve(256);
-	while (!feof(ptr))
+	char c;
+	while ((c = fgetc(ptr)) != EOF)
 	{
-		result.push_back(fgetc(ptr));
+		result.push_back(c);
 		for (const char *i = delimiter; *i != '\0'; i++)
 			if (*i == result.back())
 				return result;
