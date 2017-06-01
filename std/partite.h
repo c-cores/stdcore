@@ -6,8 +6,37 @@
 namespace core
 {
 
-template <int n, class value_type>
-struct partite : graph<implier<int, value_type> >
+struct partite_base
+{
+	partite_base()
+	{
+		part = -1;
+	}
+	
+	~partite_base()
+	{
+	}
+
+	int part;
+};
+
+template <int p, class value_type>
+struct partite_node : partite_base
+{
+	partite_node()
+	{
+		part = p;
+	}
+	
+	~partite_node()
+	{
+	}
+
+	value_type value;
+};
+
+template <int n>
+struct partite : graph<partite_base*>
 {
 	partite()
 	{
@@ -17,32 +46,32 @@ struct partite : graph<implier<int, value_type> >
 
 	~partite()
 	{
+		for (iterator i = begin(); i != end(); i++)
+		{
+			delete *i;
+			*i = NULL;
+		}
 	}
 
 	end_node *parts[n+1];
 
-	iterator insert(const implier<int, value_type> &value)
+	iterator insert(const partite_base* &value)
 	{
-		if (value.key < 0 || value.key >= n)
+		if (value.part < 0 || value.part >= n)
 			return end();
 
 		node *result = new node(value);
-		result->left = parts[value.key+1]->left;
-		result->right = parts[value.key+1];
+		result->left = parts[value.part+1]->left;
+		result->right = parts[value.part+1];
 		result->left->right = result;
 		result->right->left = result;
-		result->index = parts[value.key+1]->index;
-		update_index(parts[value.key+1]);
+		result->index = parts[value.part+1]->index;
+		update_index(parts[value.part+1]);
 		
-		for (int i = value.key; i >= 0 && parts[i] == parts[value.key+1]; i--)
+		for (int i = value.part; i >= 0 && parts[i] == parts[value.part+1]; i--)
 			parts[i] = result;
 
 		return iterator(this, result);
-	}
-
-	iterator insert(int part, const value_type &value)
-	{
-		return insert(implier<int, value_type>(part, value));
 	}
 
 	iterator begin(int part)
