@@ -288,7 +288,8 @@ struct graph
 		iterator link(iterator n) const
 		{
 			lower_bound(next(), n).push(n);
-			lower_bound(n.prev(), n).push(*this);
+			if (n)
+				lower_bound(n.prev(), n).push(*this);
 			return n;
 		}
 
@@ -302,7 +303,8 @@ struct graph
 		void unlink(iterator n) const
 		{
 			remove(next(), n);
-			remove(n.prev(), *this);
+			if (n)
+				remove(n.prev(), *this);
 		}
 
 		iterator push(const value_type &value) const
@@ -313,14 +315,16 @@ struct graph
 		iterator rlink(iterator n) const
 		{
 			lower_bound(prev(), n).push(n);
-			lower_bound(n.next(), n).push(*this);
+			if (n)
+				lower_bound(n.next(), n).push(*this);
 			return n;
 		}
 
 		void runlink(iterator n) const
 		{
 			remove(prev(), n);
-			remove(n.next(), *this);
+			if (n)
+				remove(n.next(), *this);
 		}
 
 		iterator rpush(const value_type &value) const
