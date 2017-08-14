@@ -35,28 +35,33 @@ struct hash_map : hash_set<implier<key_type, value_type>, hash_func>
 
 	~hash_map() {}
 
-	value_type &operator[](const key_type &key)
+	value_type &operator[](key_type key)
 	{
-		iterator result = find(key);
+		iterator result = at(key);
 		return result->value;
 	}
 
-	iterator insert(const key_type &key, const value_type &value)
+	iterator at(key_type key, value_type value = value_type())
+	{
+		return super::at(implier<key_type, value_type>(key, value));
+	}
+
+	iterator insert(key_type key, value_type value)
 	{
 		return super::insert(implier<key_type, value_type>(key, value));
 	}
 
-	iterator find(const key_type &key)
+	iterator find(key_type key)
 	{
 		return super::find(implier<key_type, value_type>(key, value_type()));
 	}
 
-	const_iterator find(const key_type &key) const
+	const_iterator find(key_type key) const
 	{
 		return super::find(implier<key_type, value_type>(key, value_type()));
 	}
 
-	bool contains(const key_type &key) const
+	bool contains(key_type key) const
 	{
 		return find(key) != end();
 	}

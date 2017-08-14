@@ -558,7 +558,53 @@ struct hash_set : list<pair<int, key_type> >
 		return ((item*)(begin() + i))->value.second;
 	}
 
-	iterator insert(const key_type &key)
+	iterator at(key_type key)
+	{
+		bits h;
+		hash_data(h, key);
+
+		uint32_t hash = hash_func((const char*)h.data, h.size(), salt);
+		int bucket = (int)(hash >> shift);
+
+		typename super::iterator pos = super::end();
+		pair<int, key_type> search(hash, key);
+		if (buckets[bucket] != super::end())
+			pos = lower_bound(super::sub(buckets[bucket], buckets[bucket+1]), search);
+
+		if (pos == super::end() || *pos != search)
+		{
+			pos.push(search);
+			typename super::iterator result = pos-1;
+
+			for (int i = bucket; i >= 0 && buckets[i] == pos; i--)
+				buckets[i] = result;
+
+			count++;
+
+			if (count > buckets.size()-1)
+			{
+				shift--;
+
+				int old_size = buckets.size()-1;
+				buckets.append_back(fill<typename super::iterator>(buckets.size()-1, super::end()));
+				for (int i = old_size-1; i > 0; i--)
+					buckets[i*2] = buckets[i];
+				for (int i = 0; i < buckets.size()-1; i+=2)
+				{
+					int boundary = (i+1) << shift;
+					typename super::iterator j = buckets[i];
+					while (j != buckets[i+2] && j->first < boundary)
+						j++;
+					buckets[i+1] = j;
+				}
+			}
+			return iterator(this, super::get_item(result));
+		}
+		else
+			return iterator(this, super::get_item(pos));
+	}
+
+	iterator insert(key_type key)
 	{
 		bits h;
 		hash_data(h, key);
@@ -600,7 +646,7 @@ struct hash_set : list<pair<int, key_type> >
 		return iterator(this, super::get_item(result));
 	}
 
-	iterator find(const key_type &key)
+	iterator find(key_type key)
 	{
 		bits h;
 		hash_data(h, key);
@@ -621,7 +667,7 @@ struct hash_set : list<pair<int, key_type> >
 			return end();
 	}
 
-	const_iterator find(const key_type &key) const
+	const_iterator find(key_type key) const
 	{
 		bits h;
 		hash_data(h, key);
@@ -642,7 +688,7 @@ struct hash_set : list<pair<int, key_type> >
 			return end();
 	}
 
-	int count_all(const key_type &key)
+	int count_all(key_type key)
 	{
 		int result = 0;
 		iterator start = find(key);
@@ -655,7 +701,7 @@ struct hash_set : list<pair<int, key_type> >
 		return result;
 	}
 
-	bool contains(const key_type &key)
+	bool contains(key_type key)
 	{
 		return find(key) != end();
 	}
