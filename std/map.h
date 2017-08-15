@@ -36,6 +36,14 @@ struct map : list<implier<ktype, vtype> >
 	using list<implier<ktype, vtype> >::rend;
 	using list<implier<ktype, vtype> >::sub;
 
+	iterator insert(implier<ktype, vtype> entry)
+	{
+		iterator pos = lower_bound(*this, entry);
+		pos.push(entry);
+		return (pos-1);
+	}
+
+
 	iterator insert(ktype key, vtype value)
 	{
 		iterator pos = lower_bound(*this, key);
