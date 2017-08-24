@@ -117,16 +117,18 @@ struct graph
 			return loc->index;
 		}
 
-		iterator &operator++(int)
+		iterator operator++(int)
 		{
+			iterator result = *this;
 			loc = loc->right;
-			return *this;
+			return result;
 		}
 
-		iterator &operator--(int)
+		iterator operator--(int)
 		{
+			iterator result = *this;
 			loc = loc->left;
-			return *this;
+			return result;
 		}
 
 		iterator &operator++()
@@ -398,16 +400,18 @@ struct graph
 			return loc->index;
 		}
 
-		const_iterator &operator++(int)
+		const_iterator operator++(int)
 		{
+			const_iterator result = *this;
 			loc = loc->right;
-			return *this;
+			return result;
 		}
 
-		const_iterator &operator--(int)
+		const_iterator operator--(int)
 		{
+			const_iterator result = *this;
 			loc = loc->left;
-			return *this;
+			return result;
 		}
 
 		const_iterator &operator++()

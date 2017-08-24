@@ -86,16 +86,18 @@ struct fill
 			return index;
 		}
 
-		const_iterator &operator++(int)
+		const_iterator operator++(int)
 		{
+			const_iterator result = *this;
 			index++;
-			return *this;
+			return result;
 		}
 
-		const_iterator &operator--(int)
+		const_iterator operator--(int)
 		{
+			const_iterator result = *this;
 			index--;
-			return *this;
+			return result;
 		}
 
 		const_iterator &operator++()

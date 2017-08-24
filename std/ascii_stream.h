@@ -24,6 +24,15 @@ struct ascii_stream
 		count = 0;
 	}
 
+	ascii_stream(string filename, const char *end = "\n", const char *msg = NULL, bool debug = false)
+	{
+		ptr = fopen(filename.c_str(), "w");
+		this->msg = msg;
+		this->debug = debug;
+		this->end = end;
+		count = 0;
+	}
+
 	ascii_stream(const char *filename, const char *end = "\n", const char *msg = NULL, bool debug = false)
 	{
 		ptr = fopen(filename, "w");

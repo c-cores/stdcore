@@ -17,7 +17,7 @@ TEST(hash_set, increment)
 	{
 		int value = rand()%101 - 50;
 		counts[value+50]++;
-		h.insert(value);
+		h.insert_duplicate(value);
 		EXPECT_EQ(h.size(), i+1);
 		EXPECT_EQ(h.buckets.size(), max(17, (1 << log2i(h.size()))+1));
 		for (int j = 0; j < 101; j++)
@@ -52,7 +52,7 @@ TEST(hash_set, decrement)
 	{
 		int value = rand()%101 - 50;
 		counts[value+50]++;
-		h.insert(value);
+		h.insert_duplicate(value);
 		EXPECT_EQ(h.size(), i+1);
 		EXPECT_EQ(h.buckets.size(), max(17, (1 << log2i(h.size()))+1));
 		for (int j = 0; j < 101; j++)
@@ -87,7 +87,7 @@ TEST(hash_set, at)
 	{
 		int value = rand()%101 - 50;
 		counts[value+50]++;
-		h.insert(value);
+		h.insert_duplicate(value);
 		EXPECT_EQ(h.size(), i+1);
 		EXPECT_EQ(h.buckets.size(), max(17, (1 << log2i(h.size()))+1));
 		for (int j = 0; j < 101; j++)
@@ -116,7 +116,7 @@ TEST(hash_set, drop_forward)
 	{
 		int value = rand()%101 - 50;
 		counts[value+50]++;
-		h.insert(value);
+		h.insert_duplicate(value);
 		EXPECT_EQ(h.size(), i+1);
 		EXPECT_EQ(h.buckets.size(), max(17, (1 << log2i(h.size()))+1));
 		for (int j = 0; j < 101; j++)
@@ -150,7 +150,7 @@ TEST(hash_set, drop_backward)
 	{
 		int value = rand()%101 - 50;
 		counts[value+50]++;
-		h.insert(value);
+		h.insert_duplicate(value);
 		EXPECT_EQ(h.size(), i+1);
 		EXPECT_EQ(h.buckets.size(), max(17, (1 << log2i(h.size()))+1));
 		for (int j = 0; j < 101; j++)

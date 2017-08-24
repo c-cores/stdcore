@@ -109,16 +109,18 @@ struct hash_set : list<pair<int, key_type> >
 			return hash() >> root->shift;
 		}
 
-		iterator &operator++(int)
+		iterator operator++(int)
 		{
+			iterator result = *this;
 			loc = loc->next;
-			return *this;
+			return result;
 		}
 
-		iterator &operator--(int)
+		iterator operator--(int)
 		{
+			iterator result = *this;
 			loc = loc->prev;
-			return *this;
+			return result;
 		}
 
 		iterator &operator++()
@@ -352,16 +354,18 @@ struct hash_set : list<pair<int, key_type> >
 			return hash() >> root->shift;
 		}
 
-		const_iterator &operator++(int)
+		const_iterator operator++(int)
 		{
+			const_iterator result = *this;
 			loc = loc->next;
-			return *this;
+			return result;
 		}
 
-		const_iterator &operator--(int)
+		const_iterator operator--(int)
 		{
+			const_iterator result = *this;
 			loc = loc->prev;
-			return *this;
+			return result;
 		}
 
 		const_iterator &operator++()
@@ -558,20 +562,66 @@ struct hash_set : list<pair<int, key_type> >
 		return ((item*)(begin() + i))->value.second;
 	}
 
-	iterator at(key_type key)
+	void rebucket()
+	{
+		shift--;
+
+		int old_size = buckets.size()-1;
+		buckets.append_back(fill<typename super::iterator>(buckets.size()-1, super::end()));
+		for (int i = old_size-1; i > 0; i--)
+			buckets[i*2] = buckets[i];
+		for (int i = 0; i < buckets.size()-1; i+=2)
+		{
+			int boundary = (i+1) << shift;
+			typename super::iterator j = buckets[i];
+			while (j != buckets[i+2] && j->first < boundary)
+				j++;
+			buckets[i+1] = j;
+		}
+	}
+
+	uint32_t hash_it(key_type key) const
 	{
 		bits h;
 		hash_data(h, key);
+		return hash_func((const char*)h.data, h.size(), salt);
+	}
 
-		uint32_t hash = hash_func((const char*)h.data, h.size(), salt);
+	typename super::iterator position(key_type key)
+	{
+		uint32_t hash = hash_it(key);
 		int bucket = (int)(hash >> shift);
 
-		typename super::iterator pos = super::end();
-		pair<int, key_type> search(hash, key);
 		if (buckets[bucket] != super::end())
-			pos = lower_bound(super::sub(buckets[bucket], buckets[bucket+1]), search);
+			return lower_bound(buckets[bucket], buckets[bucket+1], pair<int, key_type>(hash, key));
+		else
+			return super::end();
+	}
 
-		if (pos == super::end() || *pos != search)
+	typename super::const_iterator position(key_type key) const
+	{
+		uint32_t hash = hash_it(key);
+		int bucket = (int)(hash >> shift);
+
+		if (buckets[bucket] != super::end())
+			return lower_bound(buckets[bucket], buckets[bucket+1], pair<int, key_type>(hash, key));
+		else
+			return super::end();
+	}
+
+	iterator insert(key_type key)
+	{
+		uint32_t hash = hash_it(key);
+		int bucket = (int)(hash >> shift);
+		
+		pair<int, key_type> search(hash, key);
+		typename super::iterator pos;
+		if (buckets[bucket] != super::end())
+			pos = lower_bound(buckets[bucket], buckets[bucket+1], search);
+		else
+			pos = super::end();
+
+		if (pos == super::end() || pos->second != key)
 		{
 			pos.push(search);
 			typename super::iterator result = pos-1;
@@ -580,42 +630,25 @@ struct hash_set : list<pair<int, key_type> >
 				buckets[i] = result;
 
 			count++;
-
 			if (count > buckets.size()-1)
-			{
-				shift--;
-
-				int old_size = buckets.size()-1;
-				buckets.append_back(fill<typename super::iterator>(buckets.size()-1, super::end()));
-				for (int i = old_size-1; i > 0; i--)
-					buckets[i*2] = buckets[i];
-				for (int i = 0; i < buckets.size()-1; i+=2)
-				{
-					int boundary = (i+1) << shift;
-					typename super::iterator j = buckets[i];
-					while (j != buckets[i+2] && j->first < boundary)
-						j++;
-					buckets[i+1] = j;
-				}
-			}
+				rebucket();
 			return iterator(this, super::get_item(result));
 		}
 		else
 			return iterator(this, super::get_item(pos));
 	}
 
-	iterator insert(key_type key)
+	iterator insert_duplicate(key_type key)
 	{
-		bits h;
-		hash_data(h, key);
-
-		uint32_t hash = hash_func((const char*)h.data, h.size(), salt);
+		uint32_t hash = hash_it(key);
 		int bucket = (int)(hash >> shift);
-
-		typename super::iterator pos = super::end();
+		
 		pair<int, key_type> search(hash, key);
+		typename super::iterator pos;
 		if (buckets[bucket] != super::end())
-			pos = lower_bound(super::sub(buckets[bucket], buckets[bucket+1]), search);
+			pos = lower_bound(buckets[bucket], buckets[bucket+1], search);
+		else
+			pos = super::end();
 
 		pos.push(search);
 		typename super::iterator result = pos-1;
@@ -624,68 +657,27 @@ struct hash_set : list<pair<int, key_type> >
 			buckets[i] = result;
 
 		count++;
-
 		if (count > buckets.size()-1)
-		{
-			shift--;
-
-			int old_size = buckets.size()-1;
-			buckets.append_back(fill<typename super::iterator>(buckets.size()-1, super::end()));
-			for (int i = old_size-1; i > 0; i--)
-				buckets[i*2] = buckets[i];
-			for (int i = 0; i < buckets.size()-1; i+=2)
-			{
-				int boundary = (i+1) << shift;
-				typename super::iterator j = buckets[i];
-				while (j != buckets[i+2] && j->first < boundary)
-					j++;
-				buckets[i+1] = j;
-			}
-		}
-
+			rebucket();
 		return iterator(this, super::get_item(result));
 	}
 
 	iterator find(key_type key)
 	{
-		bits h;
-		hash_data(h, key);
-
-		uint32_t hash = hash_func((const char*)h.data, h.size(), salt);
-		int bucket = (int)(hash >> shift);
-
-		if (buckets[bucket] != super::end())
-		{
-			pair<int, key_type> search(hash, key);
-			typename super::iterator pos = lower_bound(super::sub(buckets[bucket], buckets[bucket+1]), search);
-			if (*pos != search)
-				return end();
-			else
-				return iterator(this, super::get_item(pos));
-		}
-		else
+		typename super::iterator pos = position(key);
+		if (pos == super::end() || pos->second != key)
 			return end();
+		else
+			return iterator(this, super::get_item(pos));
 	}
 
 	const_iterator find(key_type key) const
 	{
-		bits h;
-		hash_data(h, key);
-
-		uint32_t hash = hash_func((const char*)h.data, h.size(), salt);
-		int bucket = (int)(hash >> shift);
-
-		if (buckets[bucket] != super::end())
-		{
-			pair<int, key_type> search(hash, key);
-			typename super::iterator pos = lower_bound(super::sub(buckets[bucket], buckets[bucket+1]), search);
-			if (*pos != search)
-				return end();
-			else
-				return const_iterator(this, super::get_item(pos));
-		}
-		else
+		typename super::const_iterator pos = position(key);
+		if (pos == super::end() || pos->second != key)
 			return end();
+		else
+			return const_iterator(this, super::get_item(pos));
 	}
 
 	int count_all(key_type key)
@@ -701,9 +693,10 @@ struct hash_set : list<pair<int, key_type> >
 		return result;
 	}
 
-	bool contains(key_type key)
+	bool contains(key_type key) const
 	{
-		return find(key) != end();
+		typename super::const_iterator pos = position(key);
+		return (pos != super::end() && pos->second == key);
 	}
 };
 

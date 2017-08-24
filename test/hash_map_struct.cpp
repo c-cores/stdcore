@@ -32,7 +32,7 @@ TEST(hash_map, insert)
 		int value = rand()%101 - 50;
 		int value2 = value+1;
 		counts[value+50]++;
-		h.insert(value, value2);
+		h.insert_duplicate(value, value2);
 		EXPECT_EQ(h.size(), i+1);
 		EXPECT_EQ(h.buckets.size(), max(17, (1 << log2i(h.size()))+1));
 		for (int j = 0; j < 101; j++)
@@ -54,7 +54,7 @@ TEST(hash_map, find)
 		int value = rand()%101 - 50;
 		int value2 = value+1;
 		counts[value+50]++;
-		h.insert(value, value2);
+		h.insert_duplicate(value, value2);
 		EXPECT_EQ(h.size(), i+1);
 		EXPECT_EQ(h.buckets.size(), max(17, (1 << log2i(h.size()))+1));
 		for (int j = 0; j < 101; j++)
@@ -92,7 +92,7 @@ TEST(hash_map, contains)
 		int value = rand()%101 - 50;
 		int value2 = value+1;
 		counts[value+50]++;
-		h.insert(value, value2);
+		h.insert_duplicate(value, value2);
 		EXPECT_EQ(h.size(), i+1);
 		EXPECT_EQ(h.buckets.size(), max(17, (1 << log2i(h.size()))+1));
 		for (int j = 0; j < 101; j++)

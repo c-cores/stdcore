@@ -96,16 +96,18 @@ struct array
 			return index;
 		}
 
-		iterator &operator++(int)
+		iterator operator++(int)
 		{
+			iterator result = *this;
 			index++;
-			return *this;
+			return result;
 		}
 
-		iterator &operator--(int)
+		iterator operator--(int)
 		{
+			iterator result = *this;
 			index--;
-			return *this;
+			return result;
 		}
 
 		iterator &operator++()
@@ -509,16 +511,18 @@ struct array
 			return index;
 		}
 
-		const_iterator &operator++(int)
+		const_iterator operator++(int)
 		{
+			const_iterator result = *this;
 			index++;
-			return *this;
+			return result;
 		}
 
-		const_iterator &operator--(int)
+		const_iterator operator--(int)
 		{
+			const_iterator result = *this;
 			index--;
-			return *this;
+			return result;
 		}
 
 		const_iterator &operator++()

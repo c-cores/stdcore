@@ -36,6 +36,8 @@ void ascii_stream::flush(const char *path, int line)
 		fwrite(store.data, 1, store.size(), ptr);
 		fputs(end, ptr);
 	}
+	else
+		fputs(end, ptr);
 
 	if (ptr != NULL)
 		fflush(ptr);

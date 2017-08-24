@@ -12,6 +12,10 @@ string::string(const char *cstr) : array<char>(wrapstr(cstr))
 {
 }
 
+string::string(const char *cstr, int n) : array<char>(wrapstr(cstr, n))
+{
+}
+
 string::string(char cstr) : array<char>(cstr)
 {
 }
@@ -52,6 +56,65 @@ string &string::operator+=(const string &str)
 {
 	array<char>::append_back(str);
 	return *this;
+}
+
+string string::escaped()
+{
+	string result;
+	result.reserve(size());
+	for (iterator i = begin(); i != end(); i++)
+	{
+		char c = *i;
+		switch (c)
+		{
+		case '\?': result.append_back(wrapstr("\\?")); break;
+		case '\\': result.append_back(wrapstr("\\\\")); break;
+		case '\a': result.append_back(wrapstr("\\a")); break;
+		case '\b': result.append_back(wrapstr("\\b")); break;
+		case '\f': result.append_back(wrapstr("\\f")); break;
+		case '\n': result.append_back(wrapstr("\\n")); break;
+		case '\r': result.append_back(wrapstr("\\r")); break;
+		case '\t': result.append_back(wrapstr("\\t")); break;
+		case '\v': result.append_back(wrapstr("\\v")); break;
+		case '\0': result.append_back(wrapstr("\\0")); break;
+		default: result.push_back(c); break;
+		}
+	}
+	return result;
+}
+
+string string::unescaped()
+{
+	string result;
+	result.reserve(size());
+	bool escaped = false;
+	for (iterator i = begin(); i != end(); i++)
+	{
+		char c = *i;
+		if (escaped)
+		{
+			switch (c)
+			{
+			case '?': result.push_back('?'); break;
+			case '\\': result.push_back('\\'); break;
+			case 'a': result.push_back('\a'); break;
+			case 'b': result.push_back('\b'); break;
+			case 'f': result.push_back('\f'); break;
+			case 'n': result.push_back('\n'); break;
+			case 'r': result.push_back('\r'); break;
+			case 't': result.push_back('\t'); break;
+			case 'v': result.push_back('\v'); break;
+			case '0': result.push_back('\0'); break;
+			default: result.push_back(c); break;
+			}
+			escaped = false;
+		}
+		else if (c == '\\')
+			escaped = true;
+		else
+			result.push_back(c);
+	}
+	return result;
 }
 
 char *string::c_str()

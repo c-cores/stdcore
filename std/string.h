@@ -24,6 +24,7 @@ struct string : array<char>
 	string(const string &str);
 	
 	string(const char *str);
+	string(const char *str, int n);
 	string(char str);
 
 	~string();
@@ -37,6 +38,9 @@ struct string : array<char>
 	string &operator+=(const char *str);
 	string &operator+=(char *str);
 	string &operator+=(const string &str);
+
+	string escaped();
+	string unescaped();
 
 	char *c_str();
 };

@@ -90,16 +90,18 @@ struct range
 			return value - root->start;
 		}
 
-		const_iterator &operator++(int)
+		const_iterator operator++(int)
 		{
+			const_iterator result = *this;
 			value++;
-			return *this;
+			return result;
 		}
 
-		const_iterator &operator--(int)
+		const_iterator operator--(int)
 		{
+			const_iterator result = *this;
 			value--;
-			return *this;
+			return result;
 		}
 
 		const_iterator &operator++()
@@ -582,16 +584,18 @@ struct slice : container
 			return *this;
 		}
 
-		iterator &operator++(int)
+		iterator operator++(int)
 		{
-			container::iterator::operator++(1);
-			return *this;
+			iterator result = *this;
+			container::iterator::operator++();
+			return result;
 		}
 
-		iterator &operator--(int)
+		iterator operator--(int)
 		{
-			container::iterator::operator--(1);
-			return *this;
+			iterator result = *this;
+			container::iterator::operator--();
+			return result;
 		}
 
 		iterator &operator++()
@@ -751,16 +755,18 @@ struct slice : container
 			return *this;
 		}
 
-		const_iterator &operator++(int)
+		const_iterator operator++(int)
 		{
-			container::const_iterator::operator++(1);
-			return *this;
+			const_iterator result = *this;
+			container::const_iterator::operator++();
+			return result;
 		}
 
-		const_iterator &operator--(int)
+		const_iterator operator--(int)
 		{
-			container::const_iterator::operator--(1);
-			return *this;
+			const_iterator result = *this;
+			container::const_iterator::operator--();
+			return result;
 		}
 
 		const_iterator &operator++()

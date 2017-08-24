@@ -90,16 +90,18 @@ struct sparse_range
 			return (value - root->start)/root->step;
 		}
 
-		const_iterator &operator++(int)
+		const_iterator operator++(int)
 		{
+			const_iterator result = *this;
 			value += root->step;
-			return *this;
+			return result;
 		}
 
-		const_iterator &operator--(int)
+		const_iterator operator--(int)
 		{
+			const_iterator result = *this;
 			value -= root->step;
-			return *this;
+			return result;
 		}
 
 		const_iterator &operator++()

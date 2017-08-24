@@ -133,16 +133,18 @@ struct list
 			return count;
 		}
 
-		iterator &operator++(int)
+		iterator operator++(int)
 		{
+			iterator result = *this;
 			loc = loc->next;
-			return *this;
+			return result;
 		}
 
-		iterator &operator--(int)
+		iterator operator--(int)
 		{
+			iterator result = *this;
 			loc = loc->prev;
-			return *this;
+			return result;
 		}
 
 		iterator &operator++()
@@ -537,16 +539,18 @@ struct list
 			return count;
 		}
 
-		const_iterator &operator++(int)
+		const_iterator operator++(int)
 		{
+			const_iterator result = *this;
 			loc = loc->next;
-			return *this;
+			return result;
 		}
 
-		const_iterator &operator--(int)
+		const_iterator operator--(int)
 		{
+			const_iterator result = *this;
 			loc = loc->prev;
-			return *this;
+			return result;
 		}
 
 		const_iterator &operator++()

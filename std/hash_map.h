@@ -26,7 +26,6 @@ struct hash_map : hash_set<implier<key_type, value_type>, hash_func>
 	using super::rbegin;
 	using super::rend;
 	using super::insert;
-	using super::find;
 	using super::contains;
 	
 	hash_map()
@@ -51,6 +50,11 @@ struct hash_map : hash_set<implier<key_type, value_type>, hash_func>
 		return super::insert(implier<key_type, value_type>(key, value));
 	}
 
+	iterator insert_duplicate(key_type key, value_type value)
+	{
+		return super::insert_duplicate(implier<key_type, value_type>(key, value));
+	}
+
 	iterator find(key_type key)
 	{
 		return super::find(implier<key_type, value_type>(key, value_type()));
@@ -63,7 +67,7 @@ struct hash_map : hash_set<implier<key_type, value_type>, hash_func>
 
 	bool contains(key_type key) const
 	{
-		return find(key) != end();
+		return contains(implier<key_type, value_type>(key, value_type()));
 	}
 };
 

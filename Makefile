@@ -6,8 +6,9 @@ OBJECTS		 := $(SOURCES:%.cpp=%.o)
 TEST_OBJECTS := $(TESTS:.cpp=.o)
 DEPS         := $(OBJECTS:.o=.d)
 TEST_DEPS    := $(TEST_OBJECTS:.o=.d)
-GTEST_I      := -I$(GOOGLE_TEST_PATH)/include -I.
-GTEST_L      := -L$(GOOGLE_TEST_PATH)/make -L.
+GTEST        := ../googletest
+GTEST_I      := -I$(GTEST)/include -I.
+GTEST_L      := -L$(GTEST) -L.
 TARGET		 = libstdcore.a
 TEST_TARGET  = test_stdcore
 
@@ -30,11 +31,14 @@ std/%.o: std/%.cpp
 	$(CXX) $(CXXFLAGS) -MM -MF $(patsubst %.o,%.d,$@) -MT $@ -c $<
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-$(TEST_TARGET): $(TEST_OBJECTS) $(GOOGLE_TEST_PATH)/make/gtest_main.o
-	$(CXX) $(CXXFLAGS) $(GTEST_L) $^ -pthread -lstdcore -l:gtest.a -o $(TEST_TARGET)
+$(TEST_TARGET): $(TEST_OBJECTS) test/gtest_main.o
+	$(CXX) $(CXXFLAGS) $(GTEST_L) $^ -pthread -lstdcore -lgtest -o $(TEST_TARGET)
 
 test/%.o: test/%.cpp
 	$(CXX) $(CXXFLAGS) $(GTEST_I) -MM -MF $(patsubst %.o,%.d,$@) -MT $@ -c $<
+	$(CXX) $(CXXFLAGS) $(GTEST_I) $< -c -o $@
+
+test/gtest_main.o: $(GTEST)/src/gtest_main.cc
 	$(CXX) $(CXXFLAGS) $(GTEST_I) $< -c -o $@
 	
 clean:
