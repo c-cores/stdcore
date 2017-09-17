@@ -4,7 +4,6 @@
 #include <std/array.h>
 #include <std/list.h>
 #include <std/fill.h>
-#include <std/ascii_stream.h>
 
 using namespace core;
 
@@ -123,45 +122,6 @@ TEST(search, find_last)
 	EXPECT_EQ(find_last(z, 0).idx(), z.rend().idx());
 	EXPECT_EQ(find_last(z, 1).idx(), z.rend().idx());
 	EXPECT_EQ(find_last(z, 9).idx(), z.rend().idx());
-}
-
-TEST(search, find_all)
-{
-	array<int> x = array<int>::values(10, 2, 8, 5, 3, 5, 7, 4, 2, 8, 5);
-	EXPECT_EQ(find_all(x, 2).idx(), array<int>::values(2, 0, 7));
-	EXPECT_EQ(find_all(x, 8).idx(), array<int>::values(2, 1, 8));
-	EXPECT_EQ(find_all(x, 5).idx(), array<int>::values(3, 2, 4, 9));
-	EXPECT_EQ(find_all(x, 3).idx(), array<int>::values(1, 3));
-	EXPECT_EQ(find_all(x, 7).idx(), array<int>::values(1, 5));
-	EXPECT_EQ(find_all(x, 4).idx(), array<int>::values(1, 6));
-
-	EXPECT_EQ(find_all(x, 0).idx(), array<int>());
-	EXPECT_EQ(find_all(x, 1).idx(), array<int>());
-	EXPECT_EQ(find_all(x, 9).idx(), array<int>());
-
-	slice<range<array<int>::iterator> > y = x.sub();
-	EXPECT_EQ(find_all(y, 2).idx(), array<int>::values(2, 0, 7));
-	EXPECT_EQ(find_all(y, 8).idx(), array<int>::values(2, 1, 8));
-	EXPECT_EQ(find_all(y, 5).idx(), array<int>::values(3, 2, 4, 9));
-	EXPECT_EQ(find_all(y, 3).idx(), array<int>::values(1, 3));
-	EXPECT_EQ(find_all(y, 7).idx(), array<int>::values(1, 5));
-	EXPECT_EQ(find_all(y, 4).idx(), array<int>::values(1, 6));
-
-	EXPECT_EQ(find_all(y, 0).idx(), array<int>());
-	EXPECT_EQ(find_all(y, 1).idx(), array<int>());
-	EXPECT_EQ(find_all(y, 9).idx(), array<int>());
-
-	const array<int> &z = x;
-	EXPECT_EQ(find_all(z, 2).idx(), array<int>::values(2, 0, 7));
-	EXPECT_EQ(find_all(z, 8).idx(), array<int>::values(2, 1, 8));
-	EXPECT_EQ(find_all(z, 5).idx(), array<int>::values(3, 2, 4, 9));
-	EXPECT_EQ(find_all(z, 3).idx(), array<int>::values(1, 3));
-	EXPECT_EQ(find_all(z, 7).idx(), array<int>::values(1, 5));
-	EXPECT_EQ(find_all(z, 4).idx(), array<int>::values(1, 6));
-
-	EXPECT_EQ(find_all(z, 0).idx(), array<int>());
-	EXPECT_EQ(find_all(z, 1).idx(), array<int>());
-	EXPECT_EQ(find_all(z, 9).idx(), array<int>());
 }
 
 TEST(search, count_all)
@@ -320,48 +280,6 @@ TEST(search, find_last_of)
 	EXPECT_EQ(find_last_of(z, array<int>::values(3, -1, 6, 9)).idx(), z.rend().idx());
 }
 
-TEST(search, find_all_of)
-{
-	array<int> x = array<int>::values(10, 2, 8, 5, 3, 5, 7, 4, 2, 8, 5);
-	EXPECT_EQ(find_all_of(x, range<int>(2, 5)).idx(), array<int>::values(4, 0, 3, 6, 7));
-	EXPECT_EQ(find_all_of(x, range<int>(7, 10)).idx(), array<int>::values(3, 1, 5, 8));
-	EXPECT_EQ(find_all_of(x, range<int>(6, 8)).idx(), array<int>::values(1, 5));
-	EXPECT_EQ(find_all_of(x, array<int>::values(3, 4, 3, 1)).idx(), array<int>::values(2, 3, 6));
-	EXPECT_EQ(find_all_of(x, array<int>::values(3, 7, 4, 7)).idx(), array<int>::values(2, 5, 6));
-	EXPECT_EQ(find_all_of(x, array<int>::values(3, 2, 8, 5)).idx(), array<int>::values(7, 0, 1, 2, 4, 7, 8, 9));
-
-	EXPECT_EQ(find_all_of(x, array<int>()).idx(), array<int>());
-	EXPECT_EQ(find_all_of(x, array<int>::values(3, 0, 1, 9)).idx(), array<int>());
-	EXPECT_EQ(find_all_of(x, array<int>::values(3, 10, 11, 12)).idx(), array<int>());
-	EXPECT_EQ(find_all_of(x, array<int>::values(3, -1, 6, 9)).idx(), array<int>());
-
-	slice<range<array<int>::iterator> > y = x.sub();
-	EXPECT_EQ(find_all_of(y, range<int>(2, 5)).idx(), array<int>::values(4, 0, 3, 6, 7));
-	EXPECT_EQ(find_all_of(y, range<int>(7, 10)).idx(), array<int>::values(3, 1, 5, 8));
-	EXPECT_EQ(find_all_of(y, range<int>(6, 8)).idx(), array<int>::values(1, 5));
-	EXPECT_EQ(find_all_of(y, array<int>::values(3, 4, 3, 1)).idx(), array<int>::values(2, 3, 6));
-	EXPECT_EQ(find_all_of(y, array<int>::values(3, 7, 4, 7)).idx(), array<int>::values(2, 5, 6));
-	EXPECT_EQ(find_all_of(y, array<int>::values(3, 2, 8, 5)).idx(), array<int>::values(7, 0, 1, 2, 4, 7, 8, 9));
-
-	EXPECT_EQ(find_all_of(y, array<int>()).idx(), array<int>());
-	EXPECT_EQ(find_all_of(y, array<int>::values(3, 0, 1, 9)).idx(), array<int>());
-	EXPECT_EQ(find_all_of(y, array<int>::values(3, 10, 11, 12)).idx(), array<int>());
-	EXPECT_EQ(find_all_of(y, array<int>::values(3, -1, 6, 9)).idx(), array<int>());
-
-	const array<int> &z = x;
-	EXPECT_EQ(find_all_of(z, range<int>(2, 5)).idx(), array<int>::values(4, 0, 3, 6, 7));
-	EXPECT_EQ(find_all_of(z, range<int>(7, 10)).idx(), array<int>::values(3, 1, 5, 8));
-	EXPECT_EQ(find_all_of(z, range<int>(6, 8)).idx(), array<int>::values(1, 5));
-	EXPECT_EQ(find_all_of(z, array<int>::values(3, 4, 3, 1)).idx(), array<int>::values(2, 3, 6));
-	EXPECT_EQ(find_all_of(z, array<int>::values(3, 7, 4, 7)).idx(), array<int>::values(2, 5, 6));
-	EXPECT_EQ(find_all_of(z, array<int>::values(3, 2, 8, 5)).idx(), array<int>::values(7, 0, 1, 2, 4, 7, 8, 9));
-
-	EXPECT_EQ(find_all_of(z, array<int>()).idx(), array<int>());
-	EXPECT_EQ(find_all_of(z, array<int>::values(3, 0, 1, 9)).idx(), array<int>());
-	EXPECT_EQ(find_all_of(z, array<int>::values(3, 10, 11, 12)).idx(), array<int>());
-	EXPECT_EQ(find_all_of(z, array<int>::values(3, -1, 6, 9)).idx(), array<int>());
-}
-
 TEST(search, count_all_of)
 {
 	array<int> x = array<int>::values(10, 2, 8, 5, 3, 5, 7, 4, 2, 8, 5);
@@ -480,45 +398,6 @@ TEST(search, find_last_pattern)
 	EXPECT_EQ(find_last_pattern(z, array<int>()).idx(), z.rbegin().idx());
 	EXPECT_EQ(find_last_pattern(z, array<int>::values(1, 1)).idx(), z.rend().idx());
 	EXPECT_EQ(find_last_pattern(z, array<int>::values(3, 8, 5, 4)).idx(), z.rend().idx());
-}
-
-TEST(search, find_all_pattern)
-{
-	array<int> x = array<int>::values(10, 2, 8, 5, 3, 5, 7, 4, 2, 8, 5);
-	EXPECT_EQ(find_all_pattern(x, array<int>::values(3, 2, 8, 5)).idx(), array<int>::values(2, 0, 7));
-	EXPECT_EQ(find_all_pattern(x, array<int>::values(2, 8, 5)).idx(), array<int>::values(2, 1, 8));
-	EXPECT_EQ(find_all_pattern(x, array<int>::values(1, 5)).idx(), array<int>::values(3, 2, 4, 9));
-	EXPECT_EQ(find_all_pattern(x, array<int>::values(3, 3, 5, 7)).idx(), array<int>::values(1, 3));
-	EXPECT_EQ(find_all_pattern(x, array<int>::values(3, 5, 7, 4)).idx(), array<int>::values(1, 4));
-	EXPECT_EQ(find_all_pattern(x, array<int>::values(4, 4, 2, 8, 5)).idx(), array<int>::values(1, 6));
-
-	EXPECT_EQ(find_all_pattern(x, array<int>()).idx(), range<int>(0, 10));
-	EXPECT_EQ(find_all_pattern(x, array<int>::values(1, 1)).idx(), array<int>());
-	EXPECT_EQ(find_all_pattern(x, array<int>::values(3, 8, 5, 4)).idx(), array<int>());
-
-	slice<range<array<int>::iterator> > y = x.sub();
-	EXPECT_EQ(find_all_pattern(y, array<int>::values(3, 2, 8, 5)).idx(), array<int>::values(2, 0, 7));
-	EXPECT_EQ(find_all_pattern(y, array<int>::values(2, 8, 5)).idx(), array<int>::values(2, 1, 8));
-	EXPECT_EQ(find_all_pattern(y, array<int>::values(1, 5)).idx(), array<int>::values(3, 2, 4, 9));
-	EXPECT_EQ(find_all_pattern(y, array<int>::values(3, 3, 5, 7)).idx(), array<int>::values(1, 3));
-	EXPECT_EQ(find_all_pattern(y, array<int>::values(3, 5, 7, 4)).idx(), array<int>::values(1, 4));
-	EXPECT_EQ(find_all_pattern(y, array<int>::values(4, 4, 2, 8, 5)).idx(), array<int>::values(1, 6));
-
-	EXPECT_EQ(find_all_pattern(y, array<int>()).idx(), range<int>(0, 10));
-	EXPECT_EQ(find_all_pattern(y, array<int>::values(1, 1)).idx(), array<int>());
-	EXPECT_EQ(find_all_pattern(y, array<int>::values(3, 8, 5, 4)).idx(), array<int>());
-
-	const array<int> &z = x;
-	EXPECT_EQ(find_all_pattern(z, array<int>::values(3, 2, 8, 5)).idx(), array<int>::values(2, 0, 7));
-	EXPECT_EQ(find_all_pattern(z, array<int>::values(2, 8, 5)).idx(), array<int>::values(2, 1, 8));
-	EXPECT_EQ(find_all_pattern(z, array<int>::values(1, 5)).idx(), array<int>::values(3, 2, 4, 9));
-	EXPECT_EQ(find_all_pattern(z, array<int>::values(3, 3, 5, 7)).idx(), array<int>::values(1, 3));
-	EXPECT_EQ(find_all_pattern(z, array<int>::values(3, 5, 7, 4)).idx(), array<int>::values(1, 4));
-	EXPECT_EQ(find_all_pattern(z, array<int>::values(4, 4, 2, 8, 5)).idx(), array<int>::values(1, 6));
-
-	EXPECT_EQ(find_all_pattern(z, array<int>()).idx(), range<int>(0, 10));
-	EXPECT_EQ(find_all_pattern(z, array<int>::values(1, 1)).idx(), array<int>());
-	EXPECT_EQ(find_all_pattern(z, array<int>::values(3, 8, 5, 4)).idx(), array<int>());
 }
 
 TEST(search, count_all_pattern)

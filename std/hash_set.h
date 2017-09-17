@@ -10,13 +10,13 @@
 #include <std/array.h>
 #include <std/list.h>
 #include <std/bits.h>
-#include <std/fill.h>
 #include <std/pair.h>
 #include <std/search.h>
-#include <std/ascii_stream.h>
 
 namespace core
 {
+
+uint32_t murmur3_32(const char *key, int len, uint32_t seed);
 
 template <class key_type, uint32_t (*hash_func)(const char *,int,uint32_t) = murmur3_32>
 struct hash_set : list<pair<int, key_type> >
@@ -467,7 +467,7 @@ struct hash_set : list<pair<int, key_type> >
 
 	hash_set()
 	{
-		buckets.append_back(fill<typename super::iterator>(17, super::begin()));
+		buckets.resize(17, super::begin());
 		shift = 28;
 		salt = rand();
 		count = 0;
@@ -567,7 +567,7 @@ struct hash_set : list<pair<int, key_type> >
 		shift--;
 
 		int old_size = buckets.size()-1;
-		buckets.append_back(fill<typename super::iterator>(buckets.size()-1, super::end()));
+		buckets.resize(old_size*2+1, super::end());
 		for (int i = old_size-1; i > 0; i--)
 			buckets[i*2] = buckets[i];
 		for (int i = 0; i < buckets.size()-1; i+=2)

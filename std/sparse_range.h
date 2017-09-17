@@ -8,7 +8,7 @@
 #pragma once
 
 #include <memory.h>
-#include <std/slice.h>
+#include <std/container.h>
 
 namespace core
 {

@@ -7,8 +7,7 @@
 
 #pragma once
 
-#include <std/slice.h>
-#include <std/math.h>
+#include <std/container.h>
 
 #include <memory.h>
 #include <stdio.h>
@@ -25,6 +24,33 @@ namespace core
 template <class value_type>
 struct array
 {
+private:
+	void rescale(uint64_t value)
+	{
+		static const uint64_t t[6] = {
+			0xFFFFFFFF00000000ull,
+			0x00000000FFFF0000ull,
+			0x000000000000FF00ull,
+			0x00000000000000F0ull,
+			0x000000000000000Cull,
+			0x0000000000000002ull
+		};
+
+		int y = (((value & (value - 1)) == 0) ? 0 : 1);
+		int j = 32;
+		int i;
+
+		for (i = 0; i < 6; i++) {
+			int k = (((value & t[i]) == 0) ? 0 : j);
+			y += k;
+			value >>= k;
+			j >>= 1;
+		}
+
+		capacity = (1 << (y+1));
+	}
+
+public:
 	typedef value_type type;
 	struct const_iterator;
 
@@ -259,7 +285,7 @@ struct array
 				memmove(root->data+index+n, root->data+index, (root->count-index)*sizeof(value_type));
 			else if (root->count+n > root->capacity)
 			{
-				root->capacity = (1 << (log2i(root->count + n)+1));
+				root->rescale(root->count + n);
 				value_type *newdata = (value_type*)malloc(sizeof(value_type)*root->capacity);
 
 				if (root->data != NULL)
@@ -290,7 +316,9 @@ struct array
 				n = -n;
 			}
 
-			n = min(index + n, root->count) - index;
+			if (root->count < index + n)
+				n = root->count - index;
+			
 			for (value_type *i = root->data+index; i < root->data+index+n; i++)
 				i->~value_type();
 			memmove(root->data+index, root->data+index+n, (root->count-index-n)*sizeof(value_type));
@@ -314,7 +342,9 @@ struct array
 				n = -n;
 			}
 
-			n = min(index + n, root->count) - index;
+			if (root->count < index + n)
+				n = root->count - index;
+
 			result.reserve(n);
 			memcpy(result.data, root->data+index, n*sizeof(value_type));
 			result.count = n;
@@ -688,7 +718,7 @@ struct array
 	array(const container &a)
 	{
 		count = a.size();
-		capacity = (1 << (log2i(count)+1));
+		rescale(count);
 		data = (value_type*)malloc(sizeof(value_type)*capacity);
 		value_type *ptr = data;
 		for (typename container::const_iterator i = a.begin(); i; i++, ptr++)
@@ -708,7 +738,7 @@ struct array
 	array(typename container::const_iterator left, typename container::const_iterator right)
 	{
 		count = right - left;
-		capacity = (1 << (log2i(count)+1));
+		rescale(count);
 		data = (value_type*)malloc(sizeof(value_type)*capacity);
 		value_type *ptr = data;
 		for (typename container::const_iterator i = left; i != right; i++, ptr++)
@@ -718,7 +748,7 @@ struct array
 	array(const_iterator left, const_iterator right)
 	{
 		count = right - left;
-		capacity = (1 << (log2i(count)+1));
+		rescale(count);
 		data = (value_type*)malloc(sizeof(value_type)*capacity);
 		value_type *ptr = data;
 		for (const_iterator i = left; i != right; i++, ptr++)
@@ -730,7 +760,7 @@ struct array
 	array(typename container::iterator left, typename container::iterator right)
 	{
 		count = right - left;
-		capacity = (1 << (log2i(count)+1));
+		rescale(count);
 		data = (value_type*)malloc(sizeof(value_type)*capacity);
 		value_type *ptr = data;
 		for (typename container::iterator i = left; i != right; i++, ptr++)
@@ -740,7 +770,7 @@ struct array
 	array(iterator left, iterator right)
 	{
 		count = right - left;
-		capacity = (1 << (log2i(count)+1));
+		rescale(count);
 		data = (value_type*)malloc(sizeof(value_type)*capacity);
 		value_type *ptr = data;
 		for (iterator i = left; i != right; i++, ptr++)
@@ -761,7 +791,7 @@ struct array
 	static array<value_type> values(int n, ...)
 	{
 		array<value_type> result;
-		result.capacity = (1 << (log2i(n)+1));
+		result.rescale(n);
 		result.data = (value_type*)malloc(sizeof(value_type)*result.capacity);
 
 		va_list args;
@@ -1257,7 +1287,7 @@ struct array
 	{
 		if (n > capacity)
 		{
-			capacity = (1 << (log2i(n)+1));
+			rescale(n);
 			value_type *newdata = (value_type*)malloc(sizeof(value_type)*capacity);
 
 			if (data != NULL)
@@ -1314,7 +1344,7 @@ struct array
 			if (data != NULL)
 				free(data);
 
-			capacity = (1 << (log2i(count)+1));
+			rescale(count);
 			data = (value_type*)malloc(sizeof(value_type)*capacity);
 		}
 
@@ -1341,7 +1371,7 @@ struct array
 			if (data != NULL)
 				free(data);
 
-			capacity = (1 << (log2i(count)+1));
+			rescale(count);
 			data = (value_type*)malloc(sizeof(value_type)*capacity);
 		}
 

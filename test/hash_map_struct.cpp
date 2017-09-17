@@ -2,7 +2,7 @@
 
 #include <std/hash_map.h>
 #include <std/search.h>
-#include <std/math.h>
+#include <std/fill.h>
 
 using namespace core;
 
@@ -25,7 +25,7 @@ TEST(hash_map, insert)
 	hash_map<int, int> h;
 	array<int> counts(fill<int>(101, 0));
 	EXPECT_EQ(h.size(), 0);
-	EXPECT_EQ(h.buckets.size(), max(17, (1 << log2i(h.size()))+1));
+	EXPECT_EQ(h.buckets.size(), 17);
 
 	for (int i = 0; i < 1000; i++)
 	{
@@ -34,7 +34,7 @@ TEST(hash_map, insert)
 		counts[value+50]++;
 		h.insert_duplicate(value, value2);
 		EXPECT_EQ(h.size(), i+1);
-		EXPECT_EQ(h.buckets.size(), max(17, (1 << log2i(h.size()))+1));
+		EXPECT_GE(h.buckets.size(), h.size());
 		for (int j = 0; j < 101; j++)
 			EXPECT_EQ(count_all(h, j-50), counts[j]);
 	}
@@ -47,7 +47,7 @@ TEST(hash_map, find)
 	hash_map<int, int> h;
 	array<int> counts(fill<int>(101, 0));
 	EXPECT_EQ(h.size(), 0);
-	EXPECT_EQ(h.buckets.size(), max(17, (1 << log2i(h.size()))+1));
+	EXPECT_EQ(h.buckets.size(), 17);
 
 	for (int i = 0; i < 100; i++)
 	{
@@ -56,7 +56,7 @@ TEST(hash_map, find)
 		counts[value+50]++;
 		h.insert_duplicate(value, value2);
 		EXPECT_EQ(h.size(), i+1);
-		EXPECT_EQ(h.buckets.size(), max(17, (1 << log2i(h.size()))+1));
+		EXPECT_GE(h.buckets.size(), h.size());
 		for (int j = 0; j < 101; j++)
 			EXPECT_EQ(count_all(h, j-50), counts[j]);
 	}
@@ -85,7 +85,7 @@ TEST(hash_map, contains)
 	hash_map<int, int> h;
 	array<int> counts(fill<int>(101, 0));
 	EXPECT_EQ(h.size(), 0);
-	EXPECT_EQ(h.buckets.size(), max(17, (1 << log2i(h.size()))+1));
+	EXPECT_EQ(h.buckets.size(), 17);
 
 	for (int i = 0; i < 100; i++)
 	{
@@ -94,7 +94,7 @@ TEST(hash_map, contains)
 		counts[value+50]++;
 		h.insert_duplicate(value, value2);
 		EXPECT_EQ(h.size(), i+1);
-		EXPECT_EQ(h.buckets.size(), max(17, (1 << log2i(h.size()))+1));
+		EXPECT_GE(h.buckets.size(), h.size());
 		for (int j = 0; j < 101; j++)
 			EXPECT_EQ(count_all(h, j-50), counts[j]);
 	}

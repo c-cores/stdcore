@@ -1,7 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <std/ascii_stream.h>
-#include <std/slice.h>
+#include <std/container.h>
 #include <std/compare.h>
 
 using namespace core;

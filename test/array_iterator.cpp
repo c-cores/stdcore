@@ -2,7 +2,6 @@
 
 #include <std/array.h>
 #include <std/fill.h>
-#include <std/ascii_stream.h>
 #include <std/compare.h>
 
 using namespace core;

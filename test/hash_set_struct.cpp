@@ -2,7 +2,7 @@
 
 #include <std/hash_set.h>
 #include <std/search.h>
-#include <std/math.h>
+#include <std/fill.h>
 
 using namespace core;
 
@@ -25,7 +25,7 @@ TEST(hash_set, insert)
 	hash_set<int> h;
 	array<int> counts(fill<int>(101, 0));
 	EXPECT_EQ(h.size(), 0);
-	EXPECT_EQ(h.buckets.size(), max(17, (1 << log2i(h.size()))+1));
+	EXPECT_EQ(h.buckets.size(), 17);
 
 	for (int i = 0; i < 1000; i++)
 	{
@@ -33,7 +33,7 @@ TEST(hash_set, insert)
 		counts[value+50]++;
 		h.insert_duplicate(value);
 		EXPECT_EQ(h.size(), i+1);
-		EXPECT_EQ(h.buckets.size(), max(17, (1 << log2i(h.size()))+1));
+		EXPECT_GE(h.buckets.size(), h.size());
 		for (int j = 0; j < 101; j++)
 			EXPECT_EQ(count_all(h, j-50), counts[j]);
 	}
@@ -46,7 +46,7 @@ TEST(hash_set, find)
 	hash_set<int> h;
 	array<int> counts(fill<int>(101, 0));
 	EXPECT_EQ(h.size(), 0);
-	EXPECT_EQ(h.buckets.size(), max(17, (1 << log2i(h.size()))+1));
+	EXPECT_EQ(h.buckets.size(), 17);
 
 	for (int i = 0; i < 100; i++)
 	{
@@ -54,7 +54,7 @@ TEST(hash_set, find)
 		counts[value+50]++;
 		h.insert_duplicate(value);
 		EXPECT_EQ(h.size(), i+1);
-		EXPECT_EQ(h.buckets.size(), max(17, (1 << log2i(h.size()))+1));
+		EXPECT_GE(h.buckets.size(), h.size());
 		for (int j = 0; j < 101; j++)
 			EXPECT_EQ(count_all(h, j-50), counts[j]);
 	}
@@ -80,7 +80,7 @@ TEST(hash_set, count_all)
 	hash_set<int> h;
 	array<int> counts(fill<int>(101, 0));
 	EXPECT_EQ(h.size(), 0);
-	EXPECT_EQ(h.buckets.size(), max(17, (1 << log2i(h.size()))+1));
+	EXPECT_EQ(h.buckets.size(), 17);
 
 	for (int i = 0; i < 100; i++)
 	{
@@ -88,7 +88,7 @@ TEST(hash_set, count_all)
 		counts[value+50]++;
 		h.insert_duplicate(value);
 		EXPECT_EQ(h.size(), i+1);
-		EXPECT_EQ(h.buckets.size(), max(17, (1 << log2i(h.size()))+1));
+		EXPECT_GE(h.buckets.size(), h.size());
 		for (int j = 0; j < 101; j++)
 			EXPECT_EQ(count_all(h, j-50), counts[j]);
 	}
@@ -104,7 +104,7 @@ TEST(hash_set, contains)
 	hash_set<int> h;
 	array<int> counts(fill<int>(101, 0));
 	EXPECT_EQ(h.size(), 0);
-	EXPECT_EQ(h.buckets.size(), max(17, (1 << log2i(h.size()))+1));
+	EXPECT_EQ(h.buckets.size(), 17);
 
 	for (int i = 0; i < 100; i++)
 	{
@@ -112,7 +112,7 @@ TEST(hash_set, contains)
 		counts[value+50]++;
 		h.insert_duplicate(value);
 		EXPECT_EQ(h.size(), i+1);
-		EXPECT_EQ(h.buckets.size(), max(17, (1 << log2i(h.size()))+1));
+		EXPECT_GE(h.buckets.size(), h.size());
 		for (int j = 0; j < 101; j++)
 			EXPECT_EQ(count_all(h, j-50), counts[j]);
 	}

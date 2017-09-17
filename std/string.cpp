@@ -1,5 +1,5 @@
+#include <math.h>
 #include <std/string.h>
-#include <std/fill.h>
 
 namespace core
 {
@@ -713,7 +713,7 @@ int edit_distance(const string &s1, const string &s2)
 	array<int> col;
 	array<int> prev_col;
 
-	col.append_back(fill<int>(s2.size()+1, 0));
+	col.resize(s2.size()+1, 0);
 	prev_col.reserve(s2.size()+1);
 	for (int i = 0; i < s2.size()+1; i++)
 		prev_col.push_back_unsafe(i);
@@ -723,7 +723,18 @@ int edit_distance(const string &s1, const string &s2)
 		col[0] = i+1;
 
 		for (int j = 0; j < s2.size(); j++)
-			col[j+1] = min(min(prev_col[1 + j] + 1, col[j] + 1), prev_col[j] + (s1[i] == s2[j] ? 0 : 1));
+		{
+			int j_1 = j+1;
+			int v0 = col[j] + 1,
+					v1 = prev_col[j_1] + 1,
+					v2 = prev_col[j] + (s1[i] != s2[j]);
+
+			col[j_1] = v0;
+			if (v1 < col[j_1])
+				col[j_1] = v1;
+			if (v2 < col[j_1])
+				col[j_1] = v2;
+		}
 
 		col.swap(prev_col);
 	}

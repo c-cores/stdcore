@@ -12,6 +12,11 @@
 namespace core
 {
 
+struct container
+{
+	
+};
+
 template <class container>
 struct slice;
 

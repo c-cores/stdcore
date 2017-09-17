@@ -1,6 +1,5 @@
 #include <gtest/gtest.h>
 
-#include <std/ascii_stream.h>
 #include <std/sparse_range.h>
 #include <std/compare.h>
 

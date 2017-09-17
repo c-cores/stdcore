@@ -1,7 +1,6 @@
 #pragma once
 
 #include <std/graph.h>
-#include <std/implier.h>
 
 namespace core
 {

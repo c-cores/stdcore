@@ -3,7 +3,6 @@
 #include <std/array.h>
 #include <std/list.h>
 #include <std/fill.h>
-#include <std/ascii_stream.h>
 #include <std/sparse_range.h>
 
 using namespace core;

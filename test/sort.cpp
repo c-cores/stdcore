@@ -4,7 +4,6 @@
 #include <std/array.h>
 #include <std/list.h>
 #include <std/fill.h>
-#include <std/ascii_stream.h>
 
 using namespace core;
 

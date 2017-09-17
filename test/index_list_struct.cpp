@@ -2,7 +2,6 @@
 
 #include <std/index_list.h>
 #include <std/fill.h>
-#include <std/ascii_stream.h>
 #include <std/sparse_range.h>
 #include <std/compare.h>
 

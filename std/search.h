@@ -7,9 +7,6 @@
 
 #pragma once
 
-#include <std/slice.h>
-#include <std/array.h>
-
 namespace core
 {
 
@@ -57,28 +54,6 @@ typename container::const_iterator find_last(const container &c, const element &
 			return i;
 
 	return c.rend();
-}
-
-template <typename container, typename element>
-array<typename container::iterator> find_all(container &c, const element &t)
-{
-	array<typename container::iterator> results;
-	for (typename container::iterator i = c.begin(); i != c.end(); i++)
-		if (*i == t)
-			results.push_back(i);
-
-	return results;
-}
-
-template <typename container, typename element>
-array<typename container::const_iterator> find_all(const container &c, const element &t)
-{
-	array<typename container::const_iterator> results;
-	for (typename container::const_iterator i = c.begin(); i != c.end(); i++)
-		if (*i == t)
-			results.push_back(i);
-
-	return results;
 }
 
 template <typename container, typename element>
@@ -136,17 +111,6 @@ typename container1::const_iterator find_last_of(const container1 &c1, const con
 	return c1.rend();
 }
 
-template <typename container, typename container2>
-array<typename container::iterator> find_all_of(container &c, const container2 &c2)
-{
-	array<typename container::iterator> results;
-	for (typename container::iterator i = c.begin(); i != c.end(); i++)
-		if (contains(c2, *i))
-			results.push_back(i);
-
-	return results;
-}
-
 template <typename container1, typename container2>
 bool contains_all_of(const container1 &c1, const container2 &c2)
 {
@@ -155,17 +119,6 @@ bool contains_all_of(const container1 &c1, const container2 &c2)
 			return false;
 
 	return true;
-}
-
-template <typename container, typename container2>
-array<typename container::const_iterator> find_all_of(const container &c, const container2 &c2)
-{
-	array<typename container::const_iterator> results;
-	for (typename container::const_iterator i = c.begin(); i != c.end(); i++)
-		if (contains(c2, *i))
-			results.push_back(i);
-
-	return results;
 }
 
 template <typename container, typename container2>
@@ -253,52 +206,6 @@ typename container::const_iterator find_last_pattern(const container &c, const c
 	}
 
 	return c.rend();
-}
-
-template <typename container, typename container2>
-array<typename container::iterator> find_all_pattern(container &c, const container2 &t)
-{
-	array<typename container::iterator> result;
-	for (typename container::iterator i = c.begin(); i != c.end(); i++)
-	{
-		bool found = true;
-		typename container::iterator k = i;
-		for (typename container2::const_iterator j = t.begin(); j != t.end() && found; j++,k++)
-		{
-			if (k == c.end())
-				return result;
-			else
-				found = (*k == *j);
-		}
-
-		if (found)
-			result.push_back(i);
-	}
-
-	return result;
-}
-
-template <typename container, typename container2>
-array<typename container::const_iterator> find_all_pattern(const container &c, const container2 &t)
-{
-	array<typename container::const_iterator> result;
-	for (typename container::const_iterator i = c.begin(); i != c.end(); i++)
-	{
-		bool found = true;
-		typename container::const_iterator k = i;
-		for (typename container2::const_iterator j = t.begin(); j != t.end() && found; j++,k++)
-		{
-			if (k == c.end())
-				return result;
-			else
-				found = (*k == *j);
-		}
-
-		if (found)
-			result.push_back(i);
-	}
-
-	return result;
 }
 
 template <typename container, typename container2>
