@@ -2,7 +2,6 @@
 
 #include <std/array.h>
 #include <std/fill.h>
-#include <std/compare.h>
 
 using namespace core;
 
@@ -226,7 +225,7 @@ TEST(array_iterator, compare)
 
 TEST(array_iterator, index)
 {
-	array<int> x = array<int>::values(8, 5, 2, 3, 5, 6, 2, 1, 7);
+	array<int> x = array_t<int>(8, 5, 2, 3, 5, 6, 2, 1, 7);
 
 	EXPECT_EQ(5, *x.at(0));
 	EXPECT_EQ(3, *x.at(2));
@@ -341,7 +340,7 @@ TEST(array_iterator, drop)
 	EXPECT_EQ(5, x.count);
 	EXPECT_GE(x.capacity, x.count);
 	EXPECT_NE((int*)NULL, x.data);
-	EXPECT_EQ(x, array<int>::values(5, 3, 4, 7, 8, 9));
+	EXPECT_EQ(x, array_t<int>(5, 3, 4, 7, 8, 9));
 	EXPECT_EQ(i.idx(), 2);
 
 	i = x.at(2);
@@ -349,7 +348,7 @@ TEST(array_iterator, drop)
 	EXPECT_EQ(3, x.count);
 	EXPECT_GE(x.capacity, x.count);
 	EXPECT_NE((int*)NULL, x.data);
-	EXPECT_EQ(x, array<int>::values(3, 3, 4, 9));
+	EXPECT_EQ(x, array_t<int>(3, 3, 4, 9));
 	EXPECT_EQ(i.idx(), 2);
 
 	i = x.at(2);
@@ -357,7 +356,7 @@ TEST(array_iterator, drop)
 	EXPECT_EQ(2, x.count);
 	EXPECT_GE(x.capacity, x.count);
 	EXPECT_NE((int*)NULL, x.data);
-	EXPECT_EQ(x, array<int>::values(2, 3, 4));
+	EXPECT_EQ(x, array_t<int>(2, 3, 4));
 	EXPECT_EQ(i.idx(), 2);
 }
 
@@ -396,7 +395,7 @@ TEST(array_iterator, pop)
 	EXPECT_EQ(5, x.count);
 	EXPECT_GE(x.capacity, x.count);
 	EXPECT_NE((int*)NULL, x.data);
-	EXPECT_EQ(x, array<int>::values(5, 3, 4, 7, 8, 9));
+	EXPECT_EQ(x, array_t<int>(5, 3, 4, 7, 8, 9));
 
 	EXPECT_EQ(2, y.count);
 	EXPECT_GE(y.capacity, 2);
@@ -409,12 +408,12 @@ TEST(array_iterator, pop)
 	EXPECT_EQ(3, x.count);
 	EXPECT_GE(x.capacity, x.count);
 	EXPECT_NE((int*)NULL, x.data);
-	EXPECT_EQ(x, array<int>::values(3, 3, 4, 9));
+	EXPECT_EQ(x, array_t<int>(3, 3, 4, 9));
 
 	EXPECT_EQ(2, y.count);
 	EXPECT_GE(y.capacity, 2);
 	EXPECT_NE((int*)NULL, y.data);
-	EXPECT_EQ(y, array<int>::values(2, 7, 8));
+	EXPECT_EQ(y, array_t<int>(2, 7, 8));
 	EXPECT_EQ(i.idx(), 2);
 
 	i = x.at(2);

@@ -1,7 +1,6 @@
 #include <gtest/gtest.h>
 
 #include <std/fill.h>
-#include <std/compare.h>
 
 using namespace core;
 

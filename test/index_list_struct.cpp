@@ -3,7 +3,6 @@
 #include <std/index_list.h>
 #include <std/fill.h>
 #include <std/sparse_range.h>
-#include <std/compare.h>
 
 using namespace core;
 
@@ -19,8 +18,8 @@ TEST(index_list_struct, base_constructor)
 
 TEST(index_list_struct, copy_constructor)
 {
-	index_list<int> x(index_list<int>::values(5, 1, 9, 7, 2, 5));
-	EXPECT_EQ(x, index_list<int>::values(5, 1, 9, 7, 2, 5));
+	index_list<int> x(index_list_t<int>(5, 1, 9, 7, 2, 5));
+	EXPECT_EQ(x, index_list_t<int>(5, 1, 9, 7, 2, 5));
 }
 
 TEST(index_list_struct, fill_constructor)
@@ -56,7 +55,7 @@ TEST(index_list_struct, sparse_range_constructor)
 
 TEST(index_list_struct, value_constructor)
 {
-	index_list<int> x = index_list<int>::values(5, 1, 3, 5, 7, 9);
+	index_list<int> x = index_list_t<int>(5, 1, 3, 5, 7, 9);
 	EXPECT_EQ(5, x.size());
 	for (int i = 0; i < x.size(); i++)
 		EXPECT_EQ(x[i], i*2+1);
@@ -64,7 +63,7 @@ TEST(index_list_struct, value_constructor)
 
 TEST(index_list_struct, index)
 {
-	index_list<int> x = index_list<int>::values(8, 5, 2, 3, 5, 6, 2, 1, 7);
+	index_list<int> x = index_list_t<int>(8, 5, 2, 3, 5, 6, 2, 1, 7);
 	EXPECT_EQ(8, x.size());
 
 	EXPECT_EQ(5, *x.at(0));
@@ -96,9 +95,9 @@ TEST(index_list_struct, index)
 
 TEST(index_list_struct, sub)
 {
-	index_list<int> x = index_list<int>::values(8, 5, 2, 3, 5, 6, 2, 1, 7);
-	index_list<int> y = index_list<int>::values(4, 3, 5, 6, 2);
-	index_list<int> z = index_list<int>::values(4, 6, 2, 1, 7);
+	index_list<int> x = index_list_t<int>(8, 5, 2, 3, 5, 6, 2, 1, 7);
+	index_list<int> y = index_list_t<int>(4, 3, 5, 6, 2);
+	index_list<int> z = index_list_t<int>(4, 6, 2, 1, 7);
 
 	// positive start and end
 	EXPECT_EQ(y, x.sub(2, 6));
@@ -330,7 +329,7 @@ TEST(index_list_struct, replace_container)
 {
 	index_list<int> x = sparse_range<int>(0, 10);
 	EXPECT_EQ(x, sparse_range<int>(0, 10));
-	index_list<int> y = index_list<int>::values(5, 2, 5, 3, 7, 2);
+	index_list<int> y = index_list_t<int>(5, 2, 5, 3, 7, 2);
 
 	x.replace(0, 3, y);
 	EXPECT_EQ(x, index_list<int>()

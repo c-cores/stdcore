@@ -3,7 +3,6 @@
 #include <std/array.h>
 #include <std/pair.h>
 #include <std/implier.h>
-#include <std/container.h>
 
 namespace core
 {

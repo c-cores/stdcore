@@ -9,180 +9,185 @@
 
 #include <std/container.h>
 
-#include <memory.h>
-
 namespace core
 {
 
-template <class value_type>
-struct fill
+template <typename value_type>
+struct fill;
+
+template <typename value_type>
+struct fill_const_iterator
 {
+protected:
+	friend class fill<value_type>;
+
+	const fill<value_type> *root;
+	int index;
+
+	fill_const_iterator<value_type>(const fill<value_type> *root, int index)
+	{
+		this->root = root;
+		this->index = index;
+	}
+public:
 	typedef value_type type;
 
-	struct const_iterator
+	fill_const_iterator<value_type>()
 	{
-	protected:
-		friend class fill<value_type>;
+		this->root = NULL;
+		this->index = 0;
+	}
 
-		const fill<value_type> *root;
-		int index;
+	~fill_const_iterator<value_type>()
+	{
 
-		const_iterator(const fill<value_type> *root, int index)
-		{
-			this->root = root;
-			this->index = index;
-		}
-	public:
-		typedef value_type type;
+	}
 
-		const_iterator()
-		{
-			this->root = NULL;
-			this->index = 0;
-		}
+	operator bool() const
+	{
+		return root != NULL && index >= 0 && index < root->count;
+	}
 
-		~const_iterator()
-		{
+	value_type operator*()
+	{
+		return root->value;
+	}
 
-		}
+	const value_type *operator->() const
+	{
+		return &root->value;
+	}
 
-		operator bool() const
-		{
-			return root != NULL && index >= 0 && index < root->count;
-		}
+	const value_type *ptr() const
+	{
+		return &root->value;
+	}
 
-		value_type operator*()
-		{
-			return root->value;
-		}
+	value_type get()
+	{
+		return root->value;
+	}
 
-		const value_type *operator->() const
-		{
-			return &root->value;
-		}
+	fill_const_iterator<value_type> &ref()
+	{
+		return *this;
+	}
 
-		const value_type *ptr() const
-		{
-			return &root->value;
-		}
+	const fill_const_iterator<value_type> &ref() const
+	{
+		return *this;
+	}
 
-		value_type get()
-		{
-			return root->value;
-		}
+	int idx() const
+	{
+		return index;
+	}
 
-		const_iterator &ref()
-		{
-			return *this;
-		}
+	fill_const_iterator<value_type> operator++(int)
+	{
+		fill_const_iterator<value_type> result = *this;
+		index++;
+		return result;
+	}
 
-		const const_iterator &ref() const
-		{
-			return *this;
-		}
+	fill_const_iterator<value_type> operator--(int)
+	{
+		fill_const_iterator<value_type> result = *this;
+		index--;
+		return result;
+	}
 
-		int idx() const
-		{
-			return index;
-		}
+	fill_const_iterator<value_type> &operator++()
+	{
+		index++;
+		return *this;
+	}
 
-		const_iterator operator++(int)
-		{
-			const_iterator result = *this;
-			index++;
-			return result;
-		}
+	fill_const_iterator<value_type> &operator--()
+	{
+		index--;
+		return *this;
+	}
 
-		const_iterator operator--(int)
-		{
-			const_iterator result = *this;
-			index--;
-			return result;
-		}
+	fill_const_iterator<value_type> &operator+=(int n)
+	{
+		index += n;
+		return *this;
+	}
 
-		const_iterator &operator++()
-		{
-			index++;
-			return *this;
-		}
+	fill_const_iterator<value_type> &operator-=(int n)
+	{
+		index -= n;
+		return *this;
+	}
 
-		const_iterator &operator--()
-		{
-			index--;
-			return *this;
-		}
+	fill_const_iterator<value_type> operator+(int n) const
+	{
+		fill_const_iterator<value_type> result;
+		result.root = root;
+		result.index = index + n;
+		return result;
+	}
 
-		const_iterator &operator+=(int n)
-		{
-			index += n;
-			return *this;
-		}
+	fill_const_iterator<value_type> operator-(int n) const
+	{
+		fill_const_iterator<value_type> result;
+		result.root = root;
+		result.index = index - n;
+		return result;
+	}
 
-		const_iterator &operator-=(int n)
-		{
-			index -= n;
-			return *this;
-		}
+	bool operator==(fill_const_iterator<value_type> i) const
+	{
+		return index == i.index;
+	}
 
-		const_iterator operator+(int n) const
-		{
-			const_iterator result;
-			result.root = root;
-			result.index = index + n;
-			return result;
-		}
+	bool operator!=(fill_const_iterator<value_type> i) const
+	{
+		return index != i.index;
+	}
 
-		const_iterator operator-(int n) const
-		{
-			const_iterator result;
-			result.root = root;
-			result.index = index - n;
-			return result;
-		}
+	int operator-(fill_const_iterator<value_type> i) const
+	{
+		return index - i.index;
+	}
 
-		bool operator==(const_iterator i) const
-		{
-			return index == i.index;
-		}
+	fill<value_type> sub(int length) const
+	{
+		if (length < 0)
+			return fill<value_type>(-length < index ? -length : index, root->value);
+		else
+			return fill<value_type>(length < root->count - index ? length : root->count - index, root->value);
+	}
 
-		bool operator!=(const_iterator i) const
-		{
-			return index != i.index;
-		}
+	fill<value_type> subcpy(int length) const
+	{
+		if (length < 0)
+			return fill<value_type>(-length < index ? -length : index, root->value);
+		else
+			return fill<value_type>(length < root->count - index ? length : root->count - index, root->value);
+	}
 
-		int operator-(const_iterator i) const
-		{
-			return index - i.index;
-		}
+	fill<value_type> sub() const
+	{
+		return fill<value_type>(root->count - index, root->value);
+	}
 
-		core::slice<range<const_iterator> > sub(int length)
-		{
-			if (length < 0)
-				return range<const_iterator>(*this+length, *this);
-			else
-				return range<const_iterator>(*this, *this+length);
-		}
+	fill<value_type> subcpy() const
+	{
+		return fill<value_type>(root->count - index, root->value);
+	}
+};
 
-		fill<value_type> subcpy(int length)
-		{
-			if (length < 0)
-				return fill<value_type>(-length, root->value);
-			else
-				return fill<value_type>(length, root->value);
-		}
-
-		core::slice<range<const_iterator> > sub()
-		{
-			return range<const_iterator>(*this, root->end());
-		}
-
-		fill<value_type> subcpy()
-		{
-			return fill<value_type>(root->count - index, root->value);
-		}
-	};
-
-	typedef const_iterator iterator;
+template <class value_type>
+struct fill : container<value_type, fill_const_iterator<value_type>, fill_const_iterator<value_type> >
+{
+	friend class fill_const_iterator<value_type>;
+	
+	typedef container<value_type, fill_const_iterator<value_type>, fill_const_iterator<value_type> > super;
+	using typename super::iterator;
+	using typename super::const_iterator;
+	using typename super::type;
 
 	int count;
 	value_type value;
@@ -264,81 +269,40 @@ struct fill
 	}
 
 	// Slicing
-
-	core::slice<fill<value_type> > deref()
-	{
-		return *this;
-	}
-
-	core::slice<range<iterator> > sub(int start, int end)
-	{
-		return range<iterator>(at(start), at(end));
-	}
-
-	fill<value_type> subcpy(int start, int end)
+	fill<value_type> sub(int start, int end) const
 	{
 		start = start < 0 ? count + start : start;
 		end = end < 0 ? count + end : end;
 		return fill<value_type>(end-start, value);
 	}
 
-	core::slice<range<iterator> > sub(int start)
-	{
-		return range<iterator>(at(start), this->end());
-	}
-
-	fill<value_type> subcpy(int start)
+	fill<value_type> sub(int start) const
 	{
 		start = start < 0 ? count + start : start;
 		return fill<value_type>(count-start, value);
 	}
 
-	core::slice<range<iterator> > sub()
+	fill<value_type> sub() const
 	{
-		return range<iterator>(begin(), end());
-	}
-
-	fill<value_type> subcpy()
-	{
-		return *this;
-	}
-
-	core::slice<range<const_iterator> > sub(int start, int end) const
-	{
-		return range<const_iterator>(at(start), at(end));
+		return fill<value_type>(count, value);
 	}
 
 	fill<value_type> subcpy(int start, int end) const
 	{
 		start = start < 0 ? count + start : start;
 		end = end < 0 ? count + end : end;
-		return fill<value_type>(value, end-start);
-	}
-
-	core::slice<range<const_iterator> > sub(int start) const
-	{
-		return range<const_iterator>(at(start), this->end());
+		return fill<value_type>(end-start, value);
 	}
 
 	fill<value_type> subcpy(int start) const
 	{
 		start = start < 0 ? count + start : start;
-		return fill<value_type>(value, count-start);
-	}
-
-	core::slice<range<const_iterator> > sub() const
-	{
-		return range<const_iterator>(begin(), end());
+		return fill<value_type>(count-start, value);
 	}
 
 	fill<value_type> subcpy() const
 	{
-		return fill<value_type>(value, count);
-	}
-
-	static core::slice<range<const_iterator> > sub(const_iterator start, const_iterator end)
-	{
-		return range<const_iterator>(start, end).deref();
+		return fill<value_type>(count, value);
 	}
 
 	template <class container>
@@ -418,76 +382,10 @@ bool operator>=(fill<value_type1> s1, fill<value_type2> s2)
 		   (s1.count >= s2.count)));
 }
 
-template <class value_type1, class container2>
-bool operator==(fill<value_type1> s1, core::slice<container2> s2)
+template <typename value_type>
+fill<value_type> fill_t(int count, value_type value)
 {
-	return (compare(s1, s2) == 0);
-}
-
-template <class value_type1, class container2>
-bool operator!=(fill<value_type1> s1, core::slice<container2> s2)
-{
-	return (compare(s1, s2) != 0);
-}
-
-template <class value_type1, class container2>
-bool operator<(fill<value_type1> s1, core::slice<container2> s2)
-{
-	return (compare(s1, s2) < 0);
-}
-
-template <class value_type1, class container2>
-bool operator>(fill<value_type1> s1, core::slice<container2> s2)
-{
-	return (compare(s1, s2) > 0);
-}
-
-template <class value_type1, class container2>
-bool operator<=(fill<value_type1> s1, core::slice<container2> s2)
-{
-	return (compare(s1, s2) <= 0);
-}
-
-template <class value_type1, class container2>
-bool operator>=(fill<value_type1> s1, core::slice<container2> s2)
-{
-	return (compare(s1, s2) >= 0);
-}
-
-template <class container1, class value_type2>
-bool operator==(core::slice<container1> s1, fill<value_type2> s2)
-{
-	return (compare(s1, s2) == 0);
-}
-
-template <class container1, class value_type2>
-bool operator!=(core::slice<container1> s1, fill<value_type2> s2)
-{
-	return (compare(s1, s2) != 0);
-}
-
-template <class container1, class value_type2>
-bool operator<(core::slice<container1> s1, fill<value_type2> s2)
-{
-	return (compare(s1, s2) < 0);
-}
-
-template <class container1, class value_type2>
-bool operator>(core::slice<container1> s1, fill<value_type2> s2)
-{
-	return (compare(s1, s2) > 0);
-}
-
-template <class container1, class value_type2>
-bool operator<=(core::slice<container1> s1, fill<value_type2> s2)
-{
-	return (compare(s1, s2) <= 0);
-}
-
-template <class container1, class value_type2>
-bool operator>=(core::slice<container1> s1, fill<value_type2> s2)
-{
-	return (compare(s1, s2) >= 0);
+	return fill<value_type>(count, value);
 }
 
 }

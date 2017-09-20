@@ -1,7 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <std/container.h>
-#include <std/compare.h>
+#include <std/range.h>
 
 using namespace core;
 

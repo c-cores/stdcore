@@ -3,7 +3,6 @@
 #include <std/array.h>
 #include <std/fill.h>
 #include <std/sparse_range.h>
-#include <std/compare.h>
 
 using namespace core;
 
@@ -17,8 +16,8 @@ TEST(array_struct, base_constructor)
 
 TEST(array_struct, copy_constructor)
 {
-	array<int> x(array<int>::values(5, 1, 9, 7, 2, 5));
-	EXPECT_EQ(x, array<int>::values(5, 1, 9, 7, 2, 5));
+	array<int> x(array_t<int>(5, 1, 9, 7, 2, 5));
+	EXPECT_EQ(x, array_t<int>(5, 1, 9, 7, 2, 5));
 }
 
 TEST(array_struct, fill_constructor)
@@ -54,7 +53,7 @@ TEST(array_struct, sparse_range_constructor)
 
 TEST(array_struct, value_constructor)
 {
-	array<int> x = array<int>::values(5, 1, 3, 5, 7, 9);
+	array<int> x = array_t<int>(5, 1, 3, 5, 7, 9);
 	EXPECT_EQ(5, x.count);
 	for (int i = 0; i < x.count; i++)
 		EXPECT_EQ(x[i], i*2+1);
@@ -62,7 +61,7 @@ TEST(array_struct, value_constructor)
 
 TEST(array_struct, index)
 {
-	array<int> x = array<int>::values(8, 5, 2, 3, 5, 6, 2, 1, 7);
+	array<int> x = array_t<int>(8, 5, 2, 3, 5, 6, 2, 1, 7);
 
 	EXPECT_EQ(8, x.size());
 
@@ -95,9 +94,9 @@ TEST(array_struct, index)
 
 TEST(array_struct, sub)
 {
-	array<int> x = array<int>::values(8, 5, 2, 3, 5, 6, 2, 1, 7);
-	array<int> y = array<int>::values(4, 3, 5, 6, 2);
-	array<int> z = array<int>::values(4, 6, 2, 1, 7);
+	array<int> x = array_t<int>(8, 5, 2, 3, 5, 6, 2, 1, 7);
+	array<int> y = array_t<int>(4, 3, 5, 6, 2);
+	array<int> z = array_t<int>(4, 6, 2, 1, 7);
 
 	// positive start and end
 	EXPECT_EQ(y, x.sub(2, 6));
@@ -397,7 +396,7 @@ TEST(array_struct, replace_container)
 {
 	array<int> x = sparse_range<int>(0, 10);
 	EXPECT_EQ(x, sparse_range<int>(0, 10));
-	array<int> y = array<int>::values(5, 2, 5, 3, 7, 2);
+	array<int> y = array_t<int>(5, 2, 5, 3, 7, 2);
 
 	x.replace(0, 3, y);
 	EXPECT_EQ(x, array<int>() +

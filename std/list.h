@@ -7,9 +7,9 @@
 
 #pragma once
 
-#include <std/container.h>
+#include <std/range.h>
+#include <std/slice.h>
 
-#include <memory.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -17,702 +17,705 @@
 namespace core
 {
 
-template <class value_type>
-struct list
+struct list_end_item
 {
+	list_end_item()
+	{
+		next = this;
+		prev = this;
+	}
+
+	virtual ~list_end_item()
+	{
+	}
+
+	list_end_item *next;
+	list_end_item *prev;
+};
+
+template <typename value_type>
+struct list_item : list_end_item
+{
+	list_item()
+	{
+	}
+
+	list_item(const value_type &value)
+	{
+		this->value = value;
+	}
+
+	~list_item()
+	{
+	}
+
+	value_type value;
+};
+
+template <typename value_type>
+struct list;
+
+template <typename value_type>
+struct list_const_iterator;
+
+template <typename value_type>
+struct list_iterator
+{
+	friend class list<value_type>;
+	friend class list_const_iterator<value_type>;
+	typedef value_type type;
+	
+	list<value_type> *root;
+	list_end_item *loc;
+
+	list_iterator(list<value_type> *root, list_end_item *loc)
+	{
+		this->root = root;
+		this->loc = loc;
+	}
+	
+	list_iterator()
+	{
+		root = NULL;
+		loc = NULL;
+	}
+
+	list_iterator(const list_iterator<value_type> &copy)
+	{
+		root = copy.root;
+		loc = copy.loc;
+	}
+
+	~list_iterator() {}
+
+	operator bool() const
+	{
+		return root != NULL && loc != &root->left && loc != &root->right;
+	}
+
+	value_type &operator*() const
+	{
+		return ((list_item<value_type>*)loc)->value;
+	}
+	value_type *operator->() const
+	{
+		return &((list_item<value_type>*)loc)->value;
+	}
+
+	value_type *ptr() const
+	{
+		return &((list_item<value_type>*)loc)->value;
+	}
+
+	value_type &get() const
+	{
+		return ((list_item<value_type>*)loc)->value;
+	}
+
+	int idx() const
+	{
+		int count = 0;
+		for (list_end_item *i = root->left.next; i != loc && i != &root->right; i = i->next)
+			count++;
+		return count;
+	}
+
+	list_iterator<value_type> operator++(int)
+	{
+		list_iterator<value_type> result = *this;
+		loc = loc->next;
+		return result;
+	}
+
+	list_iterator<value_type> operator--(int)
+	{
+		list_iterator<value_type> result = *this;
+		loc = loc->prev;
+		return result;
+	}
+
+	list_iterator<value_type> &operator++()
+	{
+		loc = loc->next;
+		return *this;
+	}
+
+	list_iterator<value_type> &operator--()
+	{
+		loc = loc->prev;
+		return *this;
+	}
+
+	list_iterator<value_type> &operator+=(int n)
+	{
+		while (n > 0 && loc != &root->right)
+		{
+			loc = loc->next;
+			n--;
+		}
+
+		while (n < 0 && loc != &root->left)
+		{
+			loc = loc->prev;
+			n++;
+		}
+
+		return *this;
+	}
+
+	list_iterator<value_type> &operator-=(int n)
+	{
+		while (n < 0 && loc != &root->right)
+		{
+			loc = loc->next;
+			n++;
+		}
+
+		while (n > 0 && loc != &root->left)
+		{
+			loc = loc->prev;
+			n--;
+		}
+
+		return *this;
+	}
+
+	list_iterator<value_type> operator+(int n) const
+	{
+		list_iterator<value_type> result(*this);
+		result += n;
+		return result;
+	}
+
+	list_iterator<value_type> operator-(int n) const
+	{
+		list_iterator<value_type> result(*this);
+		result -= n;
+		return result;
+	}
+
+	bool operator==(list_iterator<value_type> i) const
+	{
+		return loc == i.loc;
+	}
+
+	bool operator!=(list_iterator<value_type> i) const
+	{
+		return loc != i.loc;
+	}
+
+	int operator-(list_iterator<value_type> i) const
+	{
+		int c0 = 0, c1 = 0;
+		list_iterator<value_type> j = i;
+		while (i.loc != loc && j.loc != loc)
+		{
+			j.loc = j.loc->next;
+			c1++;
+			i.loc = i.loc->prev;
+			c0--;
+		}
+
+		if (i.loc == loc)
+			return c0;
+		else if (j.loc == loc)
+			return c1;
+		else
+			return c1 - c0;
+	}
+
+	bool operator==(list_const_iterator<value_type> i) const
+	{
+		return loc == i.loc;
+	}
+
+	bool operator!=(list_const_iterator<value_type> i) const
+	{
+		return loc != i.loc;
+	}
+
+	int operator-(list_const_iterator<value_type> i) const
+	{
+		int c0 = 0, c1 = 0;
+		list_const_iterator<value_type> j = i;
+		while (i.loc != loc && j.loc != loc)
+		{
+			j.loc = j.loc->next;
+			c1++;
+			i.loc = i.loc->prev;
+			c0--;
+		}
+
+		if (i.loc == loc)
+			return c0;
+		else if (j.loc == loc)
+			return c1;
+		else
+			return c1 - c0;
+	}
+
+	core::slice<range<list_iterator<value_type> > > sub(int length) const
+	{
+		if (length < 0)
+			return range<list_iterator<value_type> >(*this+length, *this);
+		else
+			return range<list_iterator<value_type> >(*this, *this+length);
+	}
+
+	list<value_type> subcpy(int length) const
+	{
+		if (length < 0)
+			return list<value_type>(*this+length, *this);
+		else
+			return list<value_type>(*this, *this+length);
+	}
+
+	core::slice<range<list_iterator<value_type> > > sub() const
+	{
+		return range<list_iterator<value_type> >(*this, root->end());
+	}
+
+	list<value_type> subcpy() const
+	{
+		return list<value_type>(*this, root->end());
+	}
+
+	void drop(int n = 1)
+	{
+		if (n > 0)
+		{
+			list_end_item* start = loc->prev;
+			
+			for (int i = 0; i < n && loc != &root->right; i++)
+			{
+				list_end_item *temp = loc->next;
+				delete loc;
+				loc = temp;
+			}
+				
+			start->next = loc;
+			loc->prev = start;
+		}
+		else if (n < 0)
+		{
+			list_end_item *start = loc->prev;
+			
+			for (int i = 0; i > n && start != &root->left; i--)
+			{
+				list_end_item *temp = start->prev;
+				delete start;
+				start = temp;
+			}
+			
+			start->next = loc;
+			loc->prev = start;
+		}
+	}
+
+	list<value_type> pop(int n = 1)
+	{
+		list<value_type> result;
+		list_end_item *start = loc;
+		for (int i = 0; i < n && loc != &root->right; i++)
+			loc = loc->next;
+		for (int i = 0; i > n && start != &root->left && start != root->left.next; i--)
+			start = start->prev;
+
+		if (start != loc)
+		{
+			result.left.next = start;
+			result.right.prev = loc->prev;
+			start->prev->next = loc;
+			loc->prev = start->prev;
+			result.left.next->prev = &result.left;
+			result.right.prev->next = &result.right;
+		}
+
+		return result;
+	}
+
+	void push(value_type v) const
+	{
+		list_end_item *start = loc->prev;
+		start->next = new list_item<value_type>(v);
+		start->next->prev = start;
+		start = start->next;
+		start->next = loc;
+		loc->prev = start;
+	}
+
+	template <class container>
+	void append(const container &c) const
+	{
+		list_end_item *start = loc->prev;
+		for (typename container::const_iterator i = c.begin(); i != c.end(); i++)
+		{
+			start->next = new list_item<value_type>(*i);
+			start->next->prev = start;
+			start = start->next;
+		}
+
+		start->next = loc;
+		loc->prev = start;
+	}
+
+	void replace(int n, value_type v)
+	{
+		if (n < 0)
+		{
+			*this += n;
+			n = -n;
+		}
+
+		if (loc == &root->right)
+		{
+			push(v);
+			loc = loc->next;
+		}
+		else
+		{
+			((list_item<value_type>*)loc)->value = v;
+			loc = loc->next;
+			drop(n-1);
+		}
+	}
+	
+	template <class container>
+	void replace(int n, const container &c)
+	{
+		if (n < 0)
+		{
+			*this += n;
+			n = -n;
+		}
+
+		typename container::const_iterator j = c.begin();
+		while (n > 0 && j && loc != &root->right)
+		{
+			((list_item<value_type>*)loc)->value = *j;
+			loc = loc->next;
+			n--;
+			j++;
+		}
+
+		if (j)
+			append(j.sub());
+		else if (n > 0)
+			drop(n);
+	}
+
+	template <class iterator_type>
+	void swap(iterator_type i) const
+	{
+		value_type temp;
+		memcpy(&temp, &((list_item<value_type>*)loc)->value, sizeof(value_type));
+		memcpy(&((list_item<value_type>*)loc)->value, &((list_item<value_type>*)i.loc)->value, sizeof(value_type));
+		memcpy(&((list_item<value_type>*)i.loc)->value, &temp, sizeof(value_type));
+	}
+
+	void swap(list_iterator<value_type> &i)
+	{
+		list_end_item *next1 = loc->next;
+		list_end_item *prev1 = loc->prev;
+		list_end_item *next2 = i.loc->next;
+		list_end_item *prev2 = i.loc->prev;
+		next1->prev = i.loc;
+		prev1->next = i.loc;
+		next2->prev = loc;
+		prev2->next = loc;
+		loc->next = next2;
+		loc->prev = prev2;
+		i.loc->next = next1;
+		i.loc->prev = prev1;
+
+		next1 = loc;
+		loc = i.loc;
+		i.loc = next1;
+	}
+
+	list_iterator<value_type> &operator=(list_iterator<value_type> i)
+	{
+		root = i.root;
+		loc = i.loc;
+		return *this;
+	}
+};
+
+template <typename value_type>
+struct list_const_iterator
+{
+protected:
+	friend class list<value_type>;
+	friend class list_iterator<value_type>;
+	const list<value_type> *root;
+	const list_end_item *loc;
+
+	list_const_iterator(const list<value_type> *l, const list_end_item *n)
+	{
+		root = l;
+		loc = n;
+	}
+public:
 	typedef value_type type;
 
-	struct end_item
+	list_const_iterator()
 	{
-		end_item()
-		{
-			next = this;
-			prev = this;
-		}
-	
-		virtual ~end_item()
-		{
-		}
-	
-		end_item *next;
-		end_item *prev;
-	};
+		root = NULL;
+		loc = NULL;
+	}
 
-	struct item : end_item
+	list_const_iterator(const list<value_type> *l)
 	{
-		item()
+		root = l;
+		loc = &l->left;
+	}
+
+	list_const_iterator(const list_iterator<value_type> &i)
+	{
+		root = i.root;
+		loc = i.loc;
+	}
+
+	list_const_iterator(const list_const_iterator<value_type> &i)
+	{
+		root = i.root;
+		loc = i.loc;
+	}
+
+	~list_const_iterator() {}
+
+	operator bool() const
+	{
+		return root != NULL && loc != &root->left && loc != &root->right;
+	}
+
+	const value_type &operator*() const
+	{
+		return ((list_item<value_type>*)loc)->value;
+	}
+
+	const value_type *operator->() const
+	{
+		return &((list_item<value_type>*)loc)->value;
+	}
+
+	const value_type &get() const
+	{
+		return ((list_item<value_type>*)loc)->value;
+	}
+
+	const value_type *ptr() const
+	{
+		return &((list_item<value_type>*)loc)->value;
+	}
+
+	list_const_iterator<value_type> &ref()
+	{
+		return *this;
+	}
+
+	const list_const_iterator<value_type> &ref() const
+	{
+		return *this;
+	}
+
+	int idx() const
+	{
+		int count = 0;
+		for (list_end_item *i = root->left.next; i != loc && i != &root->right; i = i->next)
+			count++;
+		return count;
+	}
+
+	list_const_iterator<value_type> operator++(int)
+	{
+		list_const_iterator<value_type> result = *this;
+		loc = loc->next;
+		return result;
+	}
+
+	list_const_iterator<value_type> operator--(int)
+	{
+		list_const_iterator<value_type> result = *this;
+		loc = loc->prev;
+		return result;
+	}
+
+	list_const_iterator<value_type> &operator++()
+	{
+		loc = loc->next;
+		return *this;
+	}
+
+	list_const_iterator<value_type> &operator--()
+	{
+		loc = loc->prev;
+		return *this;
+	}
+
+	list_const_iterator<value_type> &operator+=(int n)
+	{
+		while (n > 0 && loc != &root->right)
 		{
+			loc = loc->next;
+			n--;
 		}
 
-		item(const value_type &value)
+		while (n < 0 && loc != &root->left)
 		{
-			this->value = value;
+			loc = loc->prev;
+			n++;
 		}
 
-		~item()
+		return *this;
+	}
+
+	list_const_iterator<value_type> &operator-=(int n)
+	{
+		while (n < 0 && loc != &root->right)
 		{
+			loc = loc->next;
+			n++;
 		}
 
-		value_type value;
-	};
+		while (n > 0 && loc != &root->left)
+		{
+			loc = loc->prev;
+			n--;
+		}
+
+		return *this;
+	}
+
+	list_const_iterator<value_type> operator+(int n) const
+	{
+		list_const_iterator<value_type> result(*this);
+		result += n;
+		return result;
+	}
+
+	list_const_iterator<value_type> operator-(int n) const
+	{
+		list_const_iterator<value_type> result(*this);
+		result -= n;
+		return result;
+	}
+
+	bool operator==(list_const_iterator<value_type> i) const
+	{
+		return root == i.root && loc == i.loc;
+	}
+
+	bool operator!=(list_const_iterator<value_type> i) const
+	{
+		return root != i.root || loc != i.loc;
+	}
+
+	bool operator==(list_iterator<value_type> i) const
+	{
+		return root == i.root && loc == i.loc;
+	}
+
+	bool operator!=(list_iterator<value_type> i) const
+	{
+		return root != i.root || loc != i.loc;
+	}
+
+	int operator-(list_const_iterator<value_type> i) const
+	{
+		int c0 = 0, c1 = 0;
+		list_const_iterator<value_type> j = i;
+		while (i.loc != loc && j.loc != loc)
+		{
+			j.loc = j.loc->next;
+			c1++;
+			i.loc = i.loc->prev;
+			c0--;
+		}
+
+		if (i.loc == loc)
+			return c0;
+		else if (j.loc == loc)
+			return c1;
+		else
+			return c1 - c0;
+	}
+
+	int operator-(list_iterator<value_type> i) const
+	{
+		int c0 = 0, c1 = 0;
+		list_const_iterator<value_type> j = i;
+		while (i.loc != loc && j.loc != loc)
+		{
+			j.loc = j.loc->next;
+			c1++;
+			i.loc = i.loc->prev;
+			c0--;
+		}
+
+		if (i.loc == loc)
+			return c0;
+		else if (j.loc == loc)
+			return c1;
+		else
+			return c1 - c0;
+	}
+
+	core::slice<range<list_const_iterator<value_type> > > sub(int length) const
+	{
+		if (length < 0)
+			return range<list_const_iterator<value_type> >(*this+length, *this);
+		else
+			return range<list_const_iterator<value_type> >(*this, *this+length);
+	}
+
+	list<value_type> subcpy(int length) const
+	{
+		if (length < 0)
+			return list<value_type>(*this+length, *this);
+		else
+			return list<value_type>(*this, *this+length);
+	}
+
+	core::slice<range<list_const_iterator<value_type> > > sub() const
+	{
+		return range<list_const_iterator<value_type> >(*this, root->end());
+	}
+
+	list<value_type> subcpy() const
+	{
+		return list<value_type>(*this, root->end());
+	}
+
+	list_const_iterator<value_type> &operator=(list_const_iterator<value_type> i)
+	{
+		root = i.root;
+		loc = i.loc;
+		return *this;
+	}
+
+	list_const_iterator<value_type> &operator=(list_iterator<value_type> i)
+	{
+		root = i.root;
+		loc = i.loc;
+		return *this;
+	}
+};
+
+template <class value_type>
+struct list : container<value_type, list_iterator<value_type>, list_const_iterator<value_type> >
+{
+	typedef container<value_type, list_iterator<value_type>, list_const_iterator<value_type> > super;
+
+	using typename super::type;
+	using typename super::iterator;
+	using typename super::const_iterator;
+
+	typedef list_end_item end_item;
+	typedef list_item<value_type> item;
 
 	end_item left;
 	end_item right;
-
-	struct const_iterator;
-
-	struct iterator
-	{
-	protected:
-		friend class list<value_type>;
-		friend class const_iterator;
-		list<value_type> *root;
-		end_item *loc;
-
-		iterator(list<value_type> *root, end_item *loc)
-		{
-			this->root = root;
-			this->loc = loc;
-		}
-	public:
-		typedef value_type type;
-
-		iterator()
-		{
-			root = NULL;
-			loc = NULL;
-		}
-
-		iterator(const iterator &copy)
-		{
-			root = copy.root;
-			loc = copy.loc;
-		}
-
-		~iterator() {}
-
-		operator bool() const
-		{
-			return root != NULL && loc != &root->left && loc != &root->right;
-		}
-
-		value_type &operator*() const
-		{
-			return ((item*)loc)->value;
-		}
-		value_type *operator->() const
-		{
-			return &((item*)loc)->value;
-		}
-
-		value_type *ptr() const
-		{
-			return &((item*)loc)->value;
-		}
-
-		value_type &get() const
-		{
-			return ((item*)loc)->value;
-		}
-
-		iterator &ref()
-		{
-			return *this;
-		}
-
-		const iterator &ref() const
-		{
-			return *this;
-		}
-
-		int idx() const
-		{
-			int count = 0;
-			for (end_item *i = root->left.next; i != loc && i != &root->right; i = i->next)
-				count++;
-			return count;
-		}
-
-		iterator operator++(int)
-		{
-			iterator result = *this;
-			loc = loc->next;
-			return result;
-		}
-
-		iterator operator--(int)
-		{
-			iterator result = *this;
-			loc = loc->prev;
-			return result;
-		}
-
-		iterator &operator++()
-		{
-			loc = loc->next;
-			return *this;
-		}
-
-		iterator &operator--()
-		{
-			loc = loc->prev;
-			return *this;
-		}
-
-		iterator &operator+=(int n)
-		{
-			while (n > 0 && loc != &root->right)
-			{
-				loc = loc->next;
-				n--;
-			}
-
-			while (n < 0 && loc != &root->left)
-			{
-				loc = loc->prev;
-				n++;
-			}
-
-			return *this;
-		}
-
-		iterator &operator-=(int n)
-		{
-			while (n < 0 && loc != &root->right)
-			{
-				loc = loc->next;
-				n++;
-			}
-
-			while (n > 0 && loc != &root->left)
-			{
-				loc = loc->prev;
-				n--;
-			}
-
-			return *this;
-		}
-
-		iterator operator+(int n) const
-		{
-			iterator result(*this);
-			result += n;
-			return result;
-		}
-
-		iterator operator-(int n) const
-		{
-			iterator result(*this);
-			result -= n;
-			return result;
-		}
-
-		bool operator==(iterator i) const
-		{
-			return loc == i.loc;
-		}
-
-		bool operator!=(iterator i) const
-		{
-			return loc != i.loc;
-		}
-
-		int operator-(iterator i) const
-		{
-			int c0 = 0, c1 = 0;
-			iterator j = i;
-			while (i.loc != loc && j.loc != loc)
-			{
-				j.loc = j.loc->next;
-				c1++;
-				i.loc = i.loc->prev;
-				c0--;
-			}
-
-			if (i.loc == loc)
-				return c0;
-			else if (j.loc == loc)
-				return c1;
-			else
-				return c1 - c0;
-		}
-
-		bool operator==(const_iterator i) const
-		{
-			return loc == i.loc;
-		}
-
-		bool operator!=(const_iterator i) const
-		{
-			return loc != i.loc;
-		}
-
-		int operator-(const_iterator i) const
-		{
-			int c0 = 0, c1 = 0;
-			const_iterator j = i;
-			while (i.loc != loc && j.loc != loc)
-			{
-				j.loc = j.loc->next;
-				c1++;
-				i.loc = i.loc->prev;
-				c0--;
-			}
-
-			if (i.loc == loc)
-				return c0;
-			else if (j.loc == loc)
-				return c1;
-			else
-				return c1 - c0;
-		}
-
-		core::slice<range<iterator> > sub(int length) const
-		{
-			if (length < 0)
-				return range<iterator>(*this+length, *this);
-			else
-				return range<iterator>(*this, *this+length);
-		}
-
-		list<value_type> subcpy(int length) const
-		{
-			if (length < 0)
-				return range<iterator>(*this+length, *this).deref();
-			else
-				return range<iterator>(*this, *this+length).deref();
-		}
-
-		core::slice<range<iterator> > sub() const
-		{
-			return range<iterator>(*this, root->end());
-		}
-
-		list<value_type> subcpy() const
-		{
-			return range<iterator>(*this, root->end()).deref();
-		}
-
-		void drop(int n = 1)
-		{
-			if (n > 0)
-			{
-				end_item* start = loc->prev;
-				
-				for (int i = 0; i < n && loc != &root->right; i++)
-				{
-					end_item *temp = loc->next;
-					delete loc;
-					loc = temp;
-				}
-					
-				start->next = loc;
-				loc->prev = start;
-			}
-			else if (n < 0)
-			{
-				end_item *start = loc->prev;
-				
-				for (int i = 0; i > n && start != &root->left; i--)
-				{
-					end_item *temp = start->prev;
-					delete start;
-					start = temp;
-				}
-				
-				start->next = loc;
-				loc->prev = start;
-			}
-		}
-
-		list<value_type> pop(int n = 1)
-		{
-			list<value_type> result;
-			end_item *start = loc;
-			for (int i = 0; i < n && loc != &root->right; i++)
-				loc = loc->next;
-			for (int i = 0; i > n && start != &root->left && start != root->left.next; i--)
-				start = start->prev;
-
-			if (start != loc)
-			{
-				result.left.next = start;
-				result.right.prev = loc->prev;
-				start->prev->next = loc;
-				loc->prev = start->prev;
-				result.left.next->prev = &result.left;
-				result.right.prev->next = &result.right;
-			}
-
-			return result;
-		}
-
-		void push(value_type v) const
-		{
-			end_item *start = loc->prev;
-			start->next = new item(v);
-			start->next->prev = start;
-			start = start->next;
-			start->next = loc;
-			loc->prev = start;
-		}
-
-		template <class container>
-		void append(const container &c) const
-		{
-			end_item *start = loc->prev;
-			for (typename container::const_iterator i = c.begin(); i != c.end(); i++)
-			{
-				start->next = new item(*i);
-				start->next->prev = start;
-				start = start->next;
-			}
-
-			start->next = loc;
-			loc->prev = start;
-		}
-
-		void replace(int n, value_type v)
-		{
-			if (n < 0)
-			{
-				*this += n;
-				n = -n;
-			}
-
-			if (loc == &root->right)
-			{
-				push(v);
-				loc = loc->next;
-			}
-			else
-			{
-				((item*)loc)->value = v;
-				loc = loc->next;
-				drop(n-1);
-			}
-		}
-		
-		template <class container>
-		void replace(int n, const container &c)
-		{
-			if (n < 0)
-			{
-				*this += n;
-				n = -n;
-			}
-
-			typename container::const_iterator j = c.begin();
-			while (n > 0 && j && loc != &root->right)
-			{
-				((item*)loc)->value = *j;
-				loc = loc->next;
-				n--;
-				j++;
-			}
-
-			if (j)
-				append(j.sub());
-			else if (n > 0)
-				drop(n);
-		}
-
-		template <class iterator_type>
-		void swap(iterator_type i) const
-		{
-			value_type temp;
-			memcpy(&temp, &((item*)loc)->value, sizeof(value_type));
-			memcpy(&((item*)loc)->value, &((item*)i.loc)->value, sizeof(value_type));
-			memcpy(&((item*)i.loc)->value, &temp, sizeof(value_type));
-		}
-
-		void swap(iterator &i)
-		{
-			end_item *next1 = loc->next;
-			end_item *prev1 = loc->prev;
-			end_item *next2 = i.loc->next;
-			end_item *prev2 = i.loc->prev;
-			next1->prev = i.loc;
-			prev1->next = i.loc;
-			next2->prev = loc;
-			prev2->next = loc;
-			loc->next = next2;
-			loc->prev = prev2;
-			i.loc->next = next1;
-			i.loc->prev = prev1;
-
-			next1 = loc;
-			loc = i.loc;
-			i.loc = next1;
-		}
-
-		iterator &operator=(iterator i)
-		{
-			root = i.root;
-			loc = i.loc;
-			return *this;
-		}
-	};
-
-	struct const_iterator
-	{
-	protected:
-		friend class list<value_type>;
-		friend class iterator;
-		const list<value_type> *root;
-		const end_item *loc;
-
-		const_iterator(const list<value_type> *l, const end_item *n)
-		{
-			root = l;
-			loc = n;
-		}
-	public:
-		typedef value_type type;
-
-		const_iterator()
-		{
-			root = NULL;
-			loc = NULL;
-		}
-
-		const_iterator(const list<value_type> *l)
-		{
-			root = l;
-			loc = &l->left;
-		}
-
-		const_iterator(const iterator &i)
-		{
-			root = i.root;
-			loc = i.loc;
-		}
-
-		const_iterator(const const_iterator &i)
-		{
-			root = i.root;
-			loc = i.loc;
-		}
-
-		~const_iterator() {}
-
-		operator bool() const
-		{
-			return root != NULL && loc != &root->left && loc != &root->right;
-		}
-
-		const value_type &operator*() const
-		{
-			return ((item*)loc)->value;
-		}
-
-		const value_type *operator->() const
-		{
-			return &((item*)loc)->value;
-		}
-
-		const value_type &get() const
-		{
-			return ((item*)loc)->value;
-		}
-
-		const value_type *ptr() const
-		{
-			return &((item*)loc)->value;
-		}
-
-		const_iterator &ref()
-		{
-			return *this;
-		}
-
-		const const_iterator &ref() const
-		{
-			return *this;
-		}
-
-		int idx() const
-		{
-			int count = 0;
-			for (end_item *i = root->left.next; i != loc && i != &root->right; i = i->next)
-				count++;
-			return count;
-		}
-
-		const_iterator operator++(int)
-		{
-			const_iterator result = *this;
-			loc = loc->next;
-			return result;
-		}
-
-		const_iterator operator--(int)
-		{
-			const_iterator result = *this;
-			loc = loc->prev;
-			return result;
-		}
-
-		const_iterator &operator++()
-		{
-			loc = loc->next;
-			return *this;
-		}
-
-		const_iterator &operator--()
-		{
-			loc = loc->prev;
-			return *this;
-		}
-
-		const_iterator &operator+=(int n)
-		{
-			while (n > 0 && loc != &root->right)
-			{
-				loc = loc->next;
-				n--;
-			}
-
-			while (n < 0 && loc != &root->left)
-			{
-				loc = loc->prev;
-				n++;
-			}
-
-			return *this;
-		}
-
-		const_iterator &operator-=(int n)
-		{
-			while (n < 0 && loc != &root->right)
-			{
-				loc = loc->next;
-				n++;
-			}
-
-			while (n > 0 && loc != &root->left)
-			{
-				loc = loc->prev;
-				n--;
-			}
-
-			return *this;
-		}
-
-		const_iterator operator+(int n) const
-		{
-			const_iterator result(*this);
-			result += n;
-			return result;
-		}
-
-		const_iterator operator-(int n) const
-		{
-			const_iterator result(*this);
-			result -= n;
-			return result;
-		}
-
-		bool operator==(const_iterator i) const
-		{
-			return root == i.root && loc == i.loc;
-		}
-
-		bool operator!=(const_iterator i) const
-		{
-			return root != i.root || loc != i.loc;
-		}
-
-		bool operator==(iterator i) const
-		{
-			return root == i.root && loc == i.loc;
-		}
-
-		bool operator!=(iterator i) const
-		{
-			return root != i.root || loc != i.loc;
-		}
-
-		int operator-(const_iterator i) const
-		{
-			int c0 = 0, c1 = 0;
-			const_iterator j = i;
-			while (i.loc != loc && j.loc != loc)
-			{
-				j.loc = j.loc->next;
-				c1++;
-				i.loc = i.loc->prev;
-				c0--;
-			}
-
-			if (i.loc == loc)
-				return c0;
-			else if (j.loc == loc)
-				return c1;
-			else
-				return c1 - c0;
-		}
-
-		int operator-(iterator i) const
-		{
-			int c0 = 0, c1 = 0;
-			const_iterator j = i;
-			while (i.loc != loc && j.loc != loc)
-			{
-				j.loc = j.loc->next;
-				c1++;
-				i.loc = i.loc->prev;
-				c0--;
-			}
-
-			if (i.loc == loc)
-				return c0;
-			else if (j.loc == loc)
-				return c1;
-			else
-				return c1 - c0;
-		}
-
-		core::slice<range<const_iterator> > sub(int length) const
-		{
-			if (length < 0)
-				return range<const_iterator>(*this+length, *this);
-			else
-				return range<const_iterator>(*this, *this+length);
-		}
-
-		list<value_type> subcpy(int length) const
-		{
-			if (length < 0)
-				return range<const_iterator>(*this+length, *this).deref();
-			else
-				return range<const_iterator>(*this, *this+length).deref();
-		}
-
-		core::slice<range<const_iterator> > sub() const
-		{
-			return range<const_iterator>(*this, root->end());
-		}
-
-		list<value_type> subcpy() const
-		{
-			return range<const_iterator>(*this, root->end()).deref();
-		}
-
-		const_iterator &operator=(const_iterator i)
-		{
-			root = i.root;
-			loc = i.loc;
-			return *this;
-		}
-
-		const_iterator &operator=(iterator i)
-		{
-			root = i.root;
-			loc = i.loc;
-			return *this;
-		}
-	};
 
 	list()
 	{
@@ -778,18 +781,6 @@ struct list
 		this->right.prev = &this->left;
 		for (typename container::const_iterator i = left; i != right; i++)
 			end().push(*i);
-	}
-
-	static list<value_type> values(int n, ...)
-	{
-		list<value_type> result;
-		va_list args;
-		va_start(args, n);
-		for (int i = 0; i < n; i++)
-			result.push_back(va_arg(args, value_type));
-		va_end(args);
-
-		return result;
 	}
 
 	virtual ~list()
@@ -902,11 +893,6 @@ struct list
 		return i < 0 ? (end()+i).get() : (begin()+i).get();
 	}
 
-	core::slice<list<value_type> > deref()
-	{
-		return *this;
-	}
-
 	list<int> idx()
 	{
 		list<int> result;
@@ -922,7 +908,7 @@ struct list
 
 	list<value_type> subcpy(int start, int end)
 	{
-		return range<iterator>(at(start), at(end)).deref();
+		return list<value_type>(at(start), at(end));
 	}
 
 	core::slice<range<iterator> > sub(int start)
@@ -932,7 +918,7 @@ struct list
 
 	list<value_type> subcpy(int start)
 	{
-		return range<iterator>(at(start), this->end()).deref();
+		return list<value_type>(at(start), this->end());
 	}
 
 	core::slice<range<iterator> > sub()
@@ -942,7 +928,7 @@ struct list
 
 	list<value_type> subcpy()
 	{
-		return range<iterator>(begin(), end()).deref();
+		return *this;
 	}
 
 	core::slice<range<const_iterator> > sub(int start, int end) const
@@ -952,7 +938,7 @@ struct list
 
 	list<value_type> subcpy(int start, int end) const
 	{
-		return range<const_iterator>(at(start), at(end)).deref();
+		return list<value_type>(at(start), at(end));
 	}
 
 	core::slice<range<const_iterator> > sub(int start) const
@@ -962,7 +948,7 @@ struct list
 
 	list<value_type> subcpy(int start) const
 	{
-		return range<const_iterator>(at(start), this->end()).deref();
+		return list<value_type>(at(start), this->end());
 	}
 
 	core::slice<range<const_iterator> > sub() const
@@ -972,17 +958,7 @@ struct list
 
 	list<value_type> subcpy() const
 	{
-		return range<const_iterator>(begin(), end()).deref();
-	}
-
-	static core::slice<range<iterator> > sub(iterator start, iterator end)
-	{
-		return range<iterator>(start, end).deref();
-	}
-
-	static core::slice<range<const_iterator> > sub(const_iterator start, const_iterator end)
-	{
-		return range<const_iterator>(start, end).deref();
+		return list<value_type>(begin(), end());
 	}
 
 	template <class container>
@@ -1225,17 +1201,6 @@ struct list
 		append_back(c);
 		return *this;
 	}
-
-protected:
-	end_item* get_item(iterator i) const
-	{
-		return i.loc;
-	}
-
-	end_item* get_item(const_iterator i) const
-	{
-		return i.loc;
-	}
 };
 
 template <class value_type>
@@ -1266,186 +1231,17 @@ list<value_type> operator+(list<value_type> os, const container &c)
 	return os;
 }
 
-template<class value_type>
-bool operator==(list<value_type> a0, list<value_type> a1)
+template <typename value_type>
+list<value_type> list_t(int n, ...)
 {
-	return equal_to(a0, a1);
-}
+	list<value_type> result;
+	va_list args;
+	va_start(args, n);
+	for (int i = 0; i < n; i++)
+		result.push_back(va_arg(args, value_type));
+	va_end(args);
 
-template<class value_type>
-bool operator!=(list<value_type> a0, list<value_type> a1)
-{
-	return !equal_to(a0, a1);
-}
-
-template<class value_type>
-bool operator<(list<value_type> a0, list<value_type> a1)
-{
-	return less_than(a0, a1);
-}
-
-template<class value_type>
-bool operator>(list<value_type> a0, list<value_type> a1)
-{
-	return greater_than(a0, a1);
-}
-
-template<class value_type>
-bool operator<=(list<value_type> a0, list<value_type> a1)
-{
-	return !greater_than(a0, a1);
-}
-
-template<class value_type>
-bool operator>=(list<value_type> a0, list<value_type> a1)
-{
-	return !less_than(a0, a1);
-}
-
-template<class value_type, class container>
-bool operator==(list<value_type> a0, slice<container> a1)
-{
-	return equal_to(a0, a1);
-}
-
-template<class value_type, class container>
-bool operator!=(list<value_type> a0, slice<container> a1)
-{
-	return !equal_to(a0, a1);
-}
-
-template<class value_type, class container>
-bool operator<(list<value_type> a0, slice<container> a1)
-{
-	return less_than(a0, a1);
-}
-
-template<class value_type, class container>
-bool operator>(list<value_type> a0, slice<container> a1)
-{
-	return greater_than(a0, a1);
-}
-
-template<class value_type, class container>
-bool operator<=(list<value_type> a0, slice<container> a1)
-{
-	return !greater_than(a0, a1);
-}
-
-template<class value_type, class container>
-bool operator>=(list<value_type> a0, slice<container> a1)
-{
-	return !less_than(a0, a1);
-}
-
-
-template<class container, class value_type>
-bool operator==(slice<container> a0, list<value_type> a1)
-{
-	return equal_to(a0, a1);
-}
-
-template<class container, class value_type>
-bool operator!=(slice<container> a0, list<value_type> a1)
-{
-	return !equal_to(a0, a1);
-}
-
-template<class container, class value_type>
-bool operator<(slice<container> a0, list<value_type> a1)
-{
-	return less_than(a0, a1);
-}
-
-template<class container, class value_type>
-bool operator>(slice<container> a0, list<value_type> a1)
-{
-	return greater_than(a0, a1);
-}
-
-template<class container, class value_type>
-bool operator<=(slice<container> a0, list<value_type> a1)
-{
-	return !greater_than(a0, a1);
-}
-
-template<class container, class value_type>
-bool operator>=(slice<container> a0, list<value_type> a1)
-{
-	return !less_than(a0, a1);
-}
-
-template<class value_type>
-bool operator==(list<value_type> a0, range<value_type> a1)
-{
-	return equal_to(a0, a1);
-}
-
-template<class value_type>
-bool operator!=(list<value_type> a0, range<value_type> a1)
-{
-	return !equal_to(a0, a1);
-}
-
-template<class value_type>
-bool operator<(list<value_type> a0, range<value_type> a1)
-{
-	return less_than(a0, a1);
-}
-
-template<class value_type>
-bool operator>(list<value_type> a0, range<value_type> a1)
-{
-	return greater_than(a0, a1);
-}
-
-template<class value_type>
-bool operator<=(list<value_type> a0, range<value_type> a1)
-{
-	return !greater_than(a0, a1);
-}
-
-template<class value_type>
-bool operator>=(list<value_type> a0, range<value_type> a1)
-{
-	return !less_than(a0, a1);
-}
-
-
-template<class value_type>
-bool operator==(range<value_type> a0, list<value_type> a1)
-{
-	return equal_to(a0, a1);
-}
-
-template<class value_type>
-bool operator!=(range<value_type> a0, list<value_type> a1)
-{
-	return !equal_to(a0, a1);
-}
-
-template<class value_type>
-bool operator<(range<value_type> a0, list<value_type> a1)
-{
-	return less_than(a0, a1);
-}
-
-template<class value_type>
-bool operator>(range<value_type> a0, list<value_type> a1)
-{
-	return greater_than(a0, a1);
-}
-
-template<class value_type>
-bool operator<=(range<value_type> a0, list<value_type> a1)
-{
-	return !greater_than(a0, a1);
-}
-
-template<class value_type>
-bool operator>=(range<value_type> a0, list<value_type> a1)
-{
-	return !less_than(a0, a1);
+	return result;
 }
 
 }

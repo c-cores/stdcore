@@ -3,7 +3,6 @@
 #include <std/list.h>
 #include <std/fill.h>
 #include <std/sparse_range.h>
-#include <std/compare.h>
 
 using namespace core;
 
@@ -22,7 +21,7 @@ TEST(list_iterator, iterate)
 
 TEST(list_iterator, index)
 {
-	list<int> x = list<int>::values(8, 5, 2, 3, 5, 6, 2, 1, 7);
+	list<int> x = list_t<int>(8, 5, 2, 3, 5, 6, 2, 1, 7);
 
 	EXPECT_EQ(5, *x.at(0));
 	EXPECT_EQ(3, *x.at(2));
@@ -89,19 +88,19 @@ TEST(list_iterator, drop)
 	i = x.at(4);
 	i.drop(-2);
 	EXPECT_EQ(5, x.size());
-	EXPECT_EQ(x, list<int>::values(5, 3, 4, 7, 8, 9));
+	EXPECT_EQ(x, list_t<int>(5, 3, 4, 7, 8, 9));
 	EXPECT_EQ(i.idx(), 2);
 
 	i = x.at(2);
 	i.drop(2);
 	EXPECT_EQ(3, x.size());
-	EXPECT_EQ(x, list<int>::values(3, 3, 4, 9));
+	EXPECT_EQ(x, list_t<int>(3, 3, 4, 9));
 	EXPECT_EQ(i.idx(), 2);
 
 	i = x.at(2);
 	i.drop(1);
 	EXPECT_EQ(2, x.size());
-	EXPECT_EQ(x, list<int>::values(2, 3, 4));
+	EXPECT_EQ(x, list_t<int>(2, 3, 4));
 	EXPECT_EQ(i.idx(), 2);
 }
 
@@ -130,7 +129,7 @@ TEST(list_iterator, pop)
 	i = x.at(4);
 	y = i.pop(-2);
 	EXPECT_EQ(5, x.size());
-	EXPECT_EQ(x, list<int>::values(5, 3, 4, 7, 8, 9));
+	EXPECT_EQ(x, list_t<int>(5, 3, 4, 7, 8, 9));
 
 	EXPECT_EQ(2, y.size());
 	EXPECT_EQ(y, range<int>(5, 7));
@@ -139,10 +138,10 @@ TEST(list_iterator, pop)
 	i = x.at(2);
 	y = i.pop(2);
 	EXPECT_EQ(3, x.size());
-	EXPECT_EQ(x, list<int>::values(3, 3, 4, 9));
+	EXPECT_EQ(x, list_t<int>(3, 3, 4, 9));
 
 	EXPECT_EQ(2, y.size());
-	EXPECT_EQ(y, list<int>::values(2, 7, 8));
+	EXPECT_EQ(y, list_t<int>(2, 7, 8));
 	EXPECT_EQ(i.idx(), 2);
 
 	i = x.at(2);

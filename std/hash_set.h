@@ -18,456 +18,391 @@ namespace core
 
 uint32_t murmur3_32(const char *key, int len, uint32_t seed);
 
+template <class key_type, uint32_t (*hash_func)(const char *,int,uint32_t)>
+struct hash_set;
+
+template <class key_type, uint32_t (*hash_func)(const char *,int,uint32_t)>
+struct hash_set_const_iterator;
+
 template <class key_type, uint32_t (*hash_func)(const char *,int,uint32_t) = murmur3_32>
-struct hash_set : list<pair<int, key_type> >
+struct hash_set_iterator
 {
-	typedef list<pair<int, key_type> > super;
+protected:
+	friend class hash_set<key_type, hash_func>;
+	friend class hash_set_const_iterator<key_type, hash_func>;
+	hash_set<key_type, hash_func> *root;
+	typename list<pair<int, key_type> >::iterator ref;
+
+	hash_set_iterator(hash_set<key_type, hash_func> *root, typename list<pair<int, key_type> >::iterator ref)
+	{
+		this->root = root;
+		this->ref = ref;
+	}
+
+public:
 	typedef key_type type;
-	using super::left;
-	using super::right;
-	using typename super::end_item;
-	using typename super::item;
 
-	struct iterator;
-	struct const_iterator;
-
-	struct iterator
+	hash_set_iterator()
 	{
-	protected:
-		friend class hash_set<key_type, hash_func>;
-		friend class const_iterator;
-		hash_set<key_type, hash_func> *root;
-		end_item *loc;
+		root = NULL;
+	}
 
-		iterator(hash_set<key_type, hash_func> *root, end_item *loc)
-		{
-			this->root = root;
-			this->loc = loc;
-		}
-
-	public:
-		typedef key_type type;
-
-		iterator()
-		{
-			root = NULL;
-			loc = NULL;
-		}
-
-		iterator(const iterator &copy)
-		{
-			root = copy.root;
-			loc = copy.loc;
-		}
-
-		~iterator() {}
-
-		operator bool() const
-		{
-			return root != NULL && loc != &root->left && loc != &root->right;
-		}
-
-		key_type &operator*() const
-		{
-			return ((item*)loc)->value.second;
-		}
-		key_type *operator->() const
-		{
-			return &((item*)loc)->value.second;
-		}
-
-		key_type *ptr() const
-		{
-			return &((item*)loc)->value.second;
-		}
-
-		key_type &get() const
-		{
-			return ((item*)loc)->value.second;
-		}
-
-		iterator &ref()
-		{
-			return *this;
-		}
-
-		int idx() const
-		{
-			int count = 0;
-			for (end_item *i = root->left.next; i != loc && i != &root->right; i = i->next)
-				count++;
-			return count;
-		}
-
-		int hash() const
-		{
-			return ((item*)loc)->value.first;
-		}
-
-		int bucket() const
-		{
-			return hash() >> root->shift;
-		}
-
-		iterator operator++(int)
-		{
-			iterator result = *this;
-			loc = loc->next;
-			return result;
-		}
-
-		iterator operator--(int)
-		{
-			iterator result = *this;
-			loc = loc->prev;
-			return result;
-		}
-
-		iterator &operator++()
-		{
-			loc = loc->next;
-			return *this;
-		}
-
-		iterator &operator--()
-		{
-			loc = loc->prev;
-			return *this;
-		}
-
-		iterator &operator+=(int n)
-		{
-			for (int i = 0; i < n && loc != &root->right; i++)
-				loc = loc->next;
-
-			return *this;
-		}
-
-		iterator &operator-=(int n)
-		{
-			for (int i = 0; i < n && loc != &root->left; i++)
-				loc = loc->prev;
-
-			return *this;
-		}
-
-		iterator operator+(int n) const
-		{
-			iterator result(*this);
-			result += n;
-			return result;
-		}
-
-		iterator operator-(int n) const
-		{
-			iterator result(*this);
-			result -= n;
-			return result;
-		}
-
-		bool operator==(iterator i) const
-		{
-			return loc == i.loc;
-		}
-
-		bool operator!=(iterator i) const
-		{
-			return loc != i.loc;
-		}
-
-		bool operator==(const_iterator i) const
-		{
-			return loc == i.loc;
-		}
-
-		bool operator!=(const_iterator i) const
-		{
-			return loc != i.loc;
-		}
-
-		int operator-(iterator i) const
-		{
-			int count = 0;
-			while (i.loc != loc && i.loc != &i.root->right)
-			{
-				count++;
-				i.loc = i.loc->next;
-			}
-
-			while (i.loc != loc && i.loc != &i.root->left)
-			{
-				count--;
-				i.loc = i.loc->prev;
-			}
-
-			return count;
-		}
-
-		int operator-(const_iterator i) const
-		{
-			int count = 0;
-			while (i.loc != loc && i.loc != &i.root->right)
-			{
-				count++;
-				i.loc = i.loc->next;
-			}
-
-			while (i.loc != loc && i.loc != &i.root->left)
-			{
-				count--;
-				i.loc = i.loc->prev;
-			}
-
-			return count;
-		}
-
-		void drop(int n = 1)
-		{
-			if (n > 0)
-			{
-				end_item* start = loc->prev;
-				
-				for (int i = 0; i < n && loc != &root->right; i++)
-				{
-					for (int b = bucket(); b >= 0 && root->buckets[b].ptr() == &(((item*)loc)->value); b--)
-						root->buckets[b]++;
-
-					end_item *temp = loc->next;
-					delete loc;
-					loc = temp;
-					root->count--;
-				}
-					
-				start->next = loc;
-				loc->prev = start;
-			}
-			else if (n < 0)
-			{
-				iterator start = *this-1;
-				
-				for (int i = 0; i > n && start.loc != &root->left; i--)
-				{
-					for (int b = start.bucket(); b < root->buckets.size() && root->buckets[b].ptr() == &(((item*)start.loc)->value); b++)
-						root->buckets[b]--;
-
-					end_item *temp = start.loc->prev;
-					delete start.loc;
-					start.loc = temp;
-					root->count--;
-				}
-				
-				start.loc->next = loc;
-				loc->prev = start.loc;
-			}
-		}
-
-		iterator &operator=(iterator i)
-		{
-			root = i.root;
-			loc = i.loc;
-			return *this;
-		}
-	};
-
-	struct const_iterator
+	hash_set_iterator(const hash_set_iterator<key_type, hash_func> &copy)
 	{
-	protected:
-		friend class hash_set<key_type, hash_func>;
-		friend class iterator;
-		const hash_set<key_type, hash_func> *root;
-		const end_item *loc;
+		root = copy.root;
+		ref = copy.ref;
+	}
 
-		const_iterator(const hash_set<key_type, hash_func> *l, const end_item *n)
+	~hash_set_iterator() {}
+
+	operator bool() const
+	{
+		return root != NULL && ref;
+	}
+
+	key_type &operator*() const
+	{
+		return ref->second;
+	}
+	key_type *operator->() const
+	{
+		return &ref->second;
+	}
+
+	key_type *ptr() const
+	{
+		return &ref->second;
+	}
+
+	key_type &get() const
+	{
+		return ref->second;
+	}
+
+	int idx() const
+	{
+		return ref.idx();
+	}
+
+	int hash() const
+	{
+		return ref->first;
+	}
+
+	int bucket() const
+	{
+		return hash() >> root->shift;
+	}
+
+	hash_set_iterator<key_type, hash_func> operator++(int)
+	{
+		return hash_set_iterator<key_type, hash_func>(root, ref++);
+	}
+
+	hash_set_iterator<key_type, hash_func> operator--(int)
+	{
+		return hash_set_iterator<key_type, hash_func>(root, ref--);
+	}
+
+	hash_set_iterator<key_type, hash_func> &operator++()
+	{
+		++ref;
+		return *this;
+	}
+
+	hash_set_iterator<key_type, hash_func> &operator--()
+	{
+		--ref;
+		return *this;
+	}
+
+	hash_set_iterator<key_type, hash_func> &operator+=(int n)
+	{
+		ref += n;
+		return *this;
+	}
+
+	hash_set_iterator<key_type, hash_func> &operator-=(int n)
+	{
+		ref -= n;
+		return *this;
+	}
+
+	hash_set_iterator<key_type, hash_func> operator+(int n) const
+	{
+		return hash_set_iterator<key_type, hash_func>(root, ref+n);
+	}
+
+	hash_set_iterator<key_type, hash_func> operator-(int n) const
+	{
+		return hash_set_iterator<key_type, hash_func>(root, ref-n);
+	}
+
+	bool operator==(hash_set_iterator<key_type, hash_func> i) const
+	{
+		return ref == i.ref;
+	}
+
+	bool operator!=(hash_set_iterator<key_type, hash_func> i) const
+	{
+		return ref != i.ref;
+	}
+
+	bool operator==(hash_set_const_iterator<key_type, hash_func> i) const
+	{
+		return ref == i.ref;
+	}
+
+	bool operator!=(hash_set_const_iterator<key_type, hash_func> i) const
+	{
+		return ref != i.ref;
+	}
+
+	int operator-(hash_set_iterator<key_type, hash_func> i) const
+	{
+		return ref - i.ref;
+	}
+
+	int operator-(hash_set_const_iterator<key_type, hash_func> i) const
+	{
+		return ref - i.ref;
+	}
+
+	void drop(int n = 1)
+	{
+		if (n > 0)
 		{
-			root = l;
-			loc = n;
+			list_end_item *start = ref.loc->prev;
+			
+			for (int i = 0; i < n && ref.loc != &root->items.right; i++)
+			{
+				for (int b = bucket(); b >= 0 && root->buckets[b] == ref; b--)
+					root->buckets[b]++;
+
+				list_end_item *temp = ref.loc->next;
+				delete ref.loc;
+				ref.loc = temp;
+				root->count--;
+			}
+				
+			start->next = ref.loc;
+			ref.loc->prev = start;
 		}
-
-	public:
-		typedef key_type type;
-
-		const_iterator()
+		else if (n < 0)
 		{
-			root = NULL;
-			loc = NULL;
+			list_end_item *start = ref.loc->prev;
+			
+			for (int i = 0; i > n && start != &root->items.left; i--)
+			{
+				for (int b = (((list_item<pair<int, key_type> >*)start)->value.first >> root->shift); b < root->buckets.size() && root->buckets[b] == ref; b++)
+					root->buckets[b]--;
+
+				list_end_item *temp = start->prev;
+				delete start;
+				start = temp;
+				root->count--;
+			}
+			
+			start->next = ref.loc;
+			ref.loc->prev = start;
 		}
+	}
 
-		const_iterator(const iterator &i)
-		{
-			root = i.root;
-			loc = i.loc;
-		}
+	hash_set_iterator<key_type, hash_func> &operator=(hash_set_iterator<key_type, hash_func> i)
+	{
+		root = i.root;
+		ref = i.ref;
+		return *this;
+	}
+};
 
-		const_iterator(const const_iterator &i)
-		{
-			root = i.root;
-			loc = i.loc;
-		}
+template <class key_type, uint32_t (*hash_func)(const char *,int,uint32_t) = murmur3_32>
+struct hash_set_const_iterator
+{
+	friend class hash_set<key_type, hash_func>;
+	friend class hash_set_iterator<key_type, hash_func>;
+	typedef key_type type;
 
-		~const_iterator() {}
+	const hash_set<key_type, hash_func> *root;
+	typename list<pair<int, key_type> >::const_iterator ref;
 
-		operator bool() const
-		{
-			return root != NULL && loc != &root->left && loc != &root->right;
-		}
+	hash_set_const_iterator(const hash_set<key_type, hash_func> *root, typename list<pair<int, key_type> >::const_iterator ref)
+	{
+		this->root = root;
+		this->ref = ref;
+	}
 
-		key_type &operator*() const
-		{
-			return ((item*)loc)->value.second;
-		}
+	hash_set_const_iterator()
+	{
+		root = NULL;
+	}
 
-		key_type *operator->() const
-		{
-			return &((item*)loc)->value.second;
-		}
+	hash_set_const_iterator(const hash_set_iterator<key_type, hash_func> &i)
+	{
+		root = i.root;
+		ref = i.ref;
+	}
 
-		key_type &get() const
-		{
-			return ((item*)loc)->value.second;
-		}
+	hash_set_const_iterator(const hash_set_const_iterator<key_type, hash_func> &i)
+	{
+		root = i.root;
+		ref = i.ref;
+	}
 
-		key_type *ptr() const
-		{
-			return &((item*)loc)->value.second;
-		}
+	~hash_set_const_iterator() {}
 
-		const_iterator &ref()
-		{
-			return *this;
-		}
+	operator bool() const
+	{
+		return root != NULL && ref;
+	}
 
-		int idx() const
-		{
-			int count = 0;
-			for (const end_item *i = root->left.next; i != loc && i != &root->right; i = i->next)
-				count++;
-			return count;
-		}
+	const key_type &operator*() const
+	{
+		return ref->second;
+	}
 
-		int hash() const
-		{
-			return ((item*)loc)->value.first;
-		}
+	const key_type *operator->() const
+	{
+		return &ref->second;
+	}
 
-		int bucket() const
-		{
-			return hash() >> root->shift;
-		}
+	const key_type &get() const
+	{
+		return ref->second;
+	}
 
-		const_iterator operator++(int)
-		{
-			const_iterator result = *this;
-			loc = loc->next;
-			return result;
-		}
+	const key_type *ptr() const
+	{
+		return &ref->second;
+	}
 
-		const_iterator operator--(int)
-		{
-			const_iterator result = *this;
-			loc = loc->prev;
-			return result;
-		}
+	int idx() const
+	{
+		return ref.idx();
+	}
 
-		const_iterator &operator++()
-		{
-			loc = loc->next;
-			return *this;
-		}
+	int hash() const
+	{
+		return ref->first;
+	}
 
-		const_iterator &operator--()
-		{
-			loc = loc->prev;
-			return *this;
-		}
+	int bucket() const
+	{
+		return hash() >> root->shift;
+	}
 
-		const_iterator &operator+=(int n)
-		{
-			for (int i = 0; i < n; i++)
-				(*this)++;
+	hash_set_const_iterator<key_type, hash_func> operator++(int)
+	{
+		return hash_set_const_iterator<key_type, hash_func>(root, ref++);
+	}
 
-			return *this;
-		}
+	hash_set_const_iterator<key_type, hash_func> operator--(int)
+	{
+		return hash_set_const_iterator<key_type, hash_func>(root, ref--);
+	}
 
-		const_iterator &operator-=(int n)
-		{
-			for (int i = 0; i < n; i++)
-				(*this)--;
+	hash_set_const_iterator<key_type, hash_func> &operator++()
+	{
+		++ref;
+		return *this;
+	}
 
-			return *this;
-		}
+	hash_set_const_iterator<key_type, hash_func> &operator--()
+	{
+		--ref;
+		return *this;
+	}
 
-		const_iterator operator+(int n) const
-		{
-			const_iterator result(*this);
-			for (int i = 0; i < n; i++)
-				result++;
+	hash_set_const_iterator<key_type, hash_func> &operator+=(int n)
+	{
+		ref += n;
+		return *this;
+	}
 
-			return result;
-		}
+	hash_set_const_iterator<key_type, hash_func> &operator-=(int n)
+	{
+		ref -= n;
+		return *this;
+	}
 
-		const_iterator operator-(int n) const
-		{
-			const_iterator result(*this);
-			for (int i = 0; i < n; i++)
-				result--;
+	hash_set_const_iterator<key_type, hash_func> operator+(int n) const
+	{
+		return hash_set_const_iterator<key_type, hash_func>(root, ref + n);
+	}
 
-			return result;
-		}
+	hash_set_const_iterator<key_type, hash_func> operator-(int n) const
+	{
+		return hash_set_const_iterator<key_type, hash_func>(root, ref - n);
+	}
 
-		bool operator==(const_iterator i) const
-		{
-			return root == i.root && loc == i.loc;
-		}
+	bool operator==(hash_set_const_iterator<key_type, hash_func> i) const
+	{
+		return ref == i.ref;
+	}
 
-		bool operator!=(const_iterator i) const
-		{
-			return root != i.root || loc != i.loc;
-		}
+	bool operator!=(hash_set_const_iterator<key_type, hash_func> i) const
+	{
+		return ref != i.ref;
+	}
 
-		bool operator==(iterator i) const
-		{
-			return root == i.root && loc == i.loc;
-		}
+	bool operator==(hash_set_iterator<key_type, hash_func> i) const
+	{
+		return ref == i.ref;
+	}
 
-		bool operator!=(iterator i) const
-		{
-			return root != i.root || loc != i.loc;
-		}
+	bool operator!=(hash_set_iterator<key_type, hash_func> i) const
+	{
+		return ref != i.ref;
+	}
 
-		int operator-(const_iterator i) const
-		{
-			int count = 0;
-			for (const_iterator j = i; j.loc != loc && j.loc != &j.root->right; j++)
-				count++;
-			return count;
-		}
+	int operator-(hash_set_const_iterator<key_type, hash_func> i) const
+	{
+		return ref - i.ref;
+	}
 
-		int operator-(iterator i) const
-		{
-			int count = 0;
-			for (const_iterator j = i; j.loc != loc && j.loc != &j.root->right; j++)
-				count++;
-			return count;
-		}
+	int operator-(hash_set_iterator<key_type, hash_func> i) const
+	{
+		return ref - i.ref;
+	}
 
-		const_iterator &operator=(const_iterator i)
-		{
-			root = i.root;
-			loc = i.loc;
-			return *this;
-		}
+	hash_set_const_iterator<key_type, hash_func> &operator=(hash_set_const_iterator<key_type, hash_func> i)
+	{
+		root = i.root;
+		ref = i.ref;
+		return *this;
+	}
 
-		const_iterator &operator=(iterator i)
-		{
-			root = i.root;
-			loc = i.loc;
-			return *this;
-		}
-	};
+	hash_set_const_iterator<key_type, hash_func> &operator=(hash_set_iterator<key_type, hash_func> i)
+	{
+		root = i.root;
+		ref = i.ref;
+		return *this;
+	}
+};
+
+template <class key_type, uint32_t (*hash_func)(const char *,int,uint32_t) = murmur3_32>
+struct hash_set : container<key_type, hash_set_iterator<key_type, hash_func>, hash_set_const_iterator<key_type, hash_func> >
+{
+	friend class hash_set_iterator<key_type, hash_func>;
+	friend class hash_set_const_iterator<key_type, hash_func>;
+
+	typedef container<key_type, hash_set_iterator<key_type, hash_func>, hash_set_const_iterator<key_type, hash_func> > super;
+	using typename super::type;
+	using typename super::iterator;
+	using typename super::const_iterator;
+
+	typedef typename list<pair<int, key_type> >::iterator item_iterator;
+	typedef typename list<pair<int, key_type> >::const_iterator item_const_iterator;
+
+	list<pair<int, key_type> > items;
+	array<item_iterator> buckets;
+	uint32_t salt;
+	int shift;
+	int count;
 
 	hash_set()
 	{
-		buckets.resize(17, super::begin());
+		buckets.resize(17, items.begin());
 		shift = 28;
 		salt = rand();
 		count = 0;
@@ -477,11 +412,6 @@ struct hash_set : list<pair<int, key_type> >
 	{
 	}
 
-	array<typename super::iterator> buckets;
-	uint32_t salt;
-	int shift;
-	int count;
-
 	int size() const
 	{
 		return count;
@@ -489,42 +419,42 @@ struct hash_set : list<pair<int, key_type> >
 
 	iterator begin()
 	{
-		return iterator(this, left.next);
+		return iterator(this, items.begin());
 	}
 
 	iterator end()
 	{
-		return iterator(this, &right);
+		return iterator(this, items.end());
 	}
 
 	iterator rbegin()
 	{
-		return iterator(this, right.prev);
+		return iterator(this, items.rbegin());
 	}
 
 	iterator rend()
 	{
-		return iterator(this, &left);
+		return iterator(this, items.rend());
 	}
 
 	const_iterator begin() const
 	{
-		return const_iterator(this, left.next);
+		return const_iterator(this, items.begin());
 	}
 
 	const_iterator end() const
 	{
-		return const_iterator(this, &right);
+		return const_iterator(this, items.end());
 	}
 
 	const_iterator rbegin() const
 	{
-		return const_iterator(this, right.prev);
+		return const_iterator(this, items.rbegin());
 	}
 
 	const_iterator rend() const
 	{
-		return const_iterator(this, &left);
+		return const_iterator(this, items.rend());
 	}
 
 	iterator at(int i)
@@ -549,17 +479,17 @@ struct hash_set : list<pair<int, key_type> >
 
 	key_type &get(int i) const
 	{
-		return ((item*)(begin() + i))->value.second;
+		return items.get(i).second;
 	}
 
 	key_type *ptr(int i) const
 	{
-		return (begin() + i).ptr();
+		return &items.get(i).second;
 	}
 
 	key_type &operator[](int i) const
 	{
-		return ((item*)(begin() + i))->value.second;
+		return items.get(i).second;
 	}
 
 	void rebucket()
@@ -567,13 +497,13 @@ struct hash_set : list<pair<int, key_type> >
 		shift--;
 
 		int old_size = buckets.size()-1;
-		buckets.resize(old_size*2+1, super::end());
+		buckets.resize(old_size*2+1, items.end());
 		for (int i = old_size-1; i > 0; i--)
 			buckets[i*2] = buckets[i];
 		for (int i = 0; i < buckets.size()-1; i+=2)
 		{
 			int boundary = (i+1) << shift;
-			typename super::iterator j = buckets[i];
+			item_iterator j = buckets[i];
 			while (j != buckets[i+2] && j->first < boundary)
 				j++;
 			buckets[i+1] = j;
@@ -587,26 +517,26 @@ struct hash_set : list<pair<int, key_type> >
 		return hash_func((const char*)h.data, h.size(), salt);
 	}
 
-	typename super::iterator position(key_type key)
+	item_iterator position(key_type key)
 	{
 		uint32_t hash = hash_it(key);
 		int bucket = (int)(hash >> shift);
 
-		if (buckets[bucket] != super::end())
+		if (buckets[bucket] != items.end())
 			return lower_bound(buckets[bucket], buckets[bucket+1], pair<int, key_type>(hash, key));
 		else
-			return super::end();
+			return items.end();
 	}
 
-	typename super::const_iterator position(key_type key) const
+	item_const_iterator position(key_type key) const
 	{
 		uint32_t hash = hash_it(key);
 		int bucket = (int)(hash >> shift);
 
-		if (buckets[bucket] != super::end())
+		if (buckets[bucket] != items.end())
 			return lower_bound(buckets[bucket], buckets[bucket+1], pair<int, key_type>(hash, key));
 		else
-			return super::end();
+			return items.end();
 	}
 
 	iterator insert(key_type key)
@@ -615,16 +545,16 @@ struct hash_set : list<pair<int, key_type> >
 		int bucket = (int)(hash >> shift);
 		
 		pair<int, key_type> search(hash, key);
-		typename super::iterator pos;
-		if (buckets[bucket] != super::end())
+		item_iterator pos;
+		if (buckets[bucket] != items.end())
 			pos = lower_bound(buckets[bucket], buckets[bucket+1], search);
 		else
-			pos = super::end();
+			pos = items.end();
 
-		if (pos == super::end() || pos->second != key)
+		if (pos == items.end() || pos->second != key)
 		{
 			pos.push(search);
-			typename super::iterator result = pos-1;
+			item_iterator result = pos-1;
 
 			for (int i = bucket; i >= 0 && buckets[i] == pos; i--)
 				buckets[i] = result;
@@ -632,10 +562,10 @@ struct hash_set : list<pair<int, key_type> >
 			count++;
 			if (count > buckets.size()-1)
 				rebucket();
-			return iterator(this, super::get_item(result));
+			return iterator(this, result);
 		}
 		else
-			return iterator(this, super::get_item(pos));
+			return iterator(this, pos);
 	}
 
 	iterator insert_duplicate(key_type key)
@@ -644,14 +574,14 @@ struct hash_set : list<pair<int, key_type> >
 		int bucket = (int)(hash >> shift);
 		
 		pair<int, key_type> search(hash, key);
-		typename super::iterator pos;
-		if (buckets[bucket] != super::end())
+		item_iterator pos;
+		if (buckets[bucket] != items.end())
 			pos = lower_bound(buckets[bucket], buckets[bucket+1], search);
 		else
-			pos = super::end();
+			pos = items.end();
 
 		pos.push(search);
-		typename super::iterator result = pos-1;
+		item_iterator result = pos-1;
 
 		for (int i = bucket; i >= 0 && buckets[i] == pos; i--)
 			buckets[i] = result;
@@ -659,25 +589,25 @@ struct hash_set : list<pair<int, key_type> >
 		count++;
 		if (count > buckets.size()-1)
 			rebucket();
-		return iterator(this, super::get_item(result));
+		return iterator(this, result);
 	}
 
 	iterator find(key_type key)
 	{
-		typename super::iterator pos = position(key);
-		if (pos == super::end() || pos->second != key)
+		item_iterator pos = position(key);
+		if (pos == items.end() || pos->second != key)
 			return end();
 		else
-			return iterator(this, super::get_item(pos));
+			return iterator(this, pos);
 	}
 
 	const_iterator find(key_type key) const
 	{
-		typename super::const_iterator pos = position(key);
-		if (pos == super::end() || pos->second != key)
+		item_const_iterator pos = position(key);
+		if (pos == items.end() || pos->second != key)
 			return end();
 		else
-			return const_iterator(this, super::get_item(pos));
+			return const_iterator(this, pos);
 	}
 
 	int count_all(key_type key)
@@ -695,8 +625,8 @@ struct hash_set : list<pair<int, key_type> >
 
 	bool contains(key_type key) const
 	{
-		typename super::const_iterator pos = position(key);
-		return (pos != super::end() && pos->second == key);
+		item_const_iterator pos = position(key);
+		return (pos != items.end() && pos->second == key);
 	}
 };
 

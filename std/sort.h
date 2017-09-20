@@ -44,13 +44,13 @@ type median_iterator(type t1, type t2, type t3)
 }
 
 // Sorting Algorithms
-template <class container>
-container sort_selection(container c)
+template <class container_type>
+container_type sort_selection(container_type c)
 {
-	for (typename container::iterator i = c.begin(); i != c.end(); i++)
+	for (typename container_type::iterator i = c.begin(); i != c.end(); i++)
 	{
-		typename container::iterator max_j = i;
-		for (typename container::iterator j = i+1; j != c.end(); j++)
+		typename container_type::iterator max_j = i;
+		for (typename container_type::iterator j = i+1; j != c.end(); j++)
 			if (*j < *max_j)
 				max_j = j;
 
@@ -60,13 +60,13 @@ container sort_selection(container c)
 	return c;
 }
 
-template <class container>
-container &sort_selection_inplace(container &c)
+template <class container_type>
+container_type &sort_selection_inplace(container_type &c)
 {
-	for (typename container::iterator i = c.begin(); i != c.end(); i++)
+	for (typename container_type::iterator i = c.begin(); i != c.end(); i++)
 	{
-		typename container::iterator max_j = i;
-		for (typename container::iterator j = i+1; j != c.end(); j++)
+		typename container_type::iterator max_j = i;
+		for (typename container_type::iterator j = i+1; j != c.end(); j++)
 			if (*j < *max_j)
 				max_j = j;
 
@@ -76,8 +76,8 @@ container &sort_selection_inplace(container &c)
 	return c;
 }
 
-template <class container>
-container sort_quick(container c, typename container::iterator pivot = typename container::iterator())
+template <class container_type>
+container_type sort_quick(container_type c, typename container_type::iterator pivot = typename container_type::iterator())
 {
 	if (c.begin() == c.end() || c.begin()+1 == c.end())
 		return c;
@@ -94,8 +94,8 @@ container sort_quick(container c, typename container::iterator pivot = typename 
 
 		pivot = c.rbegin();
 
-		typename container::iterator store = c.begin();
-		for (typename container::iterator i = c.begin(); i != c.rbegin(); i++)
+		typename container_type::iterator store = c.begin();
+		for (typename container_type::iterator i = c.begin(); i != c.rbegin() && i != c.end(); i++)
 			if (*i < *pivot)
 			{
 				i.swap(store);
@@ -104,14 +104,14 @@ container sort_quick(container c, typename container::iterator pivot = typename 
 
 		store.swap(c.rbegin());
 
-		sort_quick(c.sub(c.begin(), store));
-		sort_quick(c.sub(store+1, c.end()));
+		sort_quick(slice_t(c.begin(), store));
+		sort_quick(slice_t(store+1, c.end()));
 		return c;
 	}
 }
 
-template <class container>
-container &sort_quick_inplace(container &c, typename container::iterator pivot = typename container::iterator())
+template <class container_type>
+container_type &sort_quick_inplace(container_type &c, typename container_type::iterator pivot = typename container_type::iterator())
 {
 	if (c.begin() == c.end() || c.begin()+1 == c.end())
 		return c;
@@ -128,8 +128,8 @@ container &sort_quick_inplace(container &c, typename container::iterator pivot =
 
 		pivot = c.rbegin();
 
-		typename container::iterator store = c.begin();
-		for (typename container::iterator i = c.begin(); i != c.rbegin(); i++)
+		typename container_type::iterator store = c.begin();
+		for (typename container_type::iterator i = c.begin(); i != c.rbegin() && i != c.end(); i++)
 			if (*i < *pivot)
 			{
 				i.swap(store);
@@ -138,19 +138,19 @@ container &sort_quick_inplace(container &c, typename container::iterator pivot =
 
 		store.swap(c.rbegin());
 
-		sort_quick(c.sub(c.begin(), store));
-		sort_quick(c.sub(store+1, c.end()));
+		sort_quick(slice_t(c.begin(), store));
+		sort_quick(slice_t(store+1, c.end()));
 
 		return c;
 	}
 }
 
-template <class container1, class container2>
-container1 sort_merge(const container1 &c1, const container2 &c2)
+template <class container_type1, class container_type2>
+container_type1 sort_merge(const container_type1 &c1, const container_type2 &c2)
 {
-	container1 result;
-	typename container1::const_iterator i = c1.begin();
-	typename container2::const_iterator j = c2.begin();
+	container_type1 result;
+	typename container_type1::const_iterator i = c1.begin();
+	typename container_type2::const_iterator j = c2.begin();
 	while (i != c1.end() && j != c2.end())
 	{
 		if (*i < *j)
@@ -177,11 +177,11 @@ container1 sort_merge(const container1 &c1, const container2 &c2)
 	return result;
 }
 
-template <class container1, class container2>
-container1 &sort_merge_inplace(container1 &c1, const container2 &c2)
+template <class container_type1, class container_type2>
+container_type1 &sort_merge_inplace(container_type1 &c1, const container_type2 &c2)
 {
-	typename container1::iterator i = c1.begin();
-	typename container2::const_iterator j = c2.begin();
+	typename container_type1::iterator i = c1.begin();
+	typename container_type2::const_iterator j = c2.begin();
 	while (i != c1.end() && j != c2.end())
 	{
 		if (*i < *j)
@@ -203,46 +203,46 @@ container1 &sort_merge_inplace(container1 &c1, const container2 &c2)
 	return c1;
 }
 
-template <class container, class element>
-typename container::iterator sort_insert(container &c1, const element &c2)
+template <class container_type, class element>
+typename container_type::iterator sort_insert(container_type &c1, const element &c2)
 {
-	typename container::iterator result = lower_bound(c1, c2);
+	typename container_type::iterator result = lower_bound(c1, c2);
 	result.push(c2);
 	return result-1;
 }
 
-template <class container>
-bool is_sorted(const container &c)
+template <class container_type>
+bool is_sorted(const container_type &c)
 {
-	for (typename container::const_iterator i = c.begin(); i != c.rbegin(); i++)
+	for (typename container_type::const_iterator i = c.begin(); i != c.rbegin(); i++)
 		if (*(i+1) < *i)
 			return false;
 
 	return true;
 }
 
-template <class container>
-bool is_rsorted(const container &c)
+template <class container_type>
+bool is_rsorted(const container_type &c)
 {
-	for (typename container::const_iterator i = c.begin(); i != c.rbegin(); i++)
+	for (typename container_type::const_iterator i = c.begin(); i != c.rbegin(); i++)
 		if (*(i+1) > *i)
 			return false;
 
 	return true;
 }
 
-template <class container>
-container reverse(container c)
+template <class container_type>
+container_type reverse(container_type c)
 {
-	for (typename container::iterator i = c.begin(), j = c.rbegin(); i != j && i != j+1; i++, j--)
+	for (typename container_type::iterator i = c.begin(), j = c.rbegin(); i != j && i != j+1; i++, j--)
 		i.swap(j);
 	return c;
 }
 
-template <class container>
-container &reverse_inplace(container &c)
+template <class container_type>
+container_type &reverse_inplace(container_type &c)
 {
-	for (typename container::iterator i = c.begin(), j = c.rbegin(); i != j && i != j+1; i++, j--)
+	for (typename container_type::iterator i = c.begin(), j = c.rbegin(); i != j && i != j+1; i++, j--)
 		i.swap(j);
 	return c;
 }
