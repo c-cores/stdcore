@@ -34,23 +34,12 @@ struct hash_map : hash_set<implier<key_type, value_type>, hash_func>
 
 	~hash_map() {}
 
-	value_type &operator[](key_type key)
-	{
-		iterator result = at(key);
-		return result->value;
-	}
-
-	iterator at(key_type key, value_type value = value_type())
-	{
-		return super::at(implier<key_type, value_type>(key, value));
-	}
-
-	iterator insert(key_type key, value_type value)
+	iterator insert(key_type key, value_type value = value_type())
 	{
 		return super::insert(implier<key_type, value_type>(key, value));
 	}
 
-	iterator insert_duplicate(key_type key, value_type value)
+	iterator insert_duplicate(key_type key, value_type value = value_type())
 	{
 		return super::insert_duplicate(implier<key_type, value_type>(key, value));
 	}
@@ -68,6 +57,12 @@ struct hash_map : hash_set<implier<key_type, value_type>, hash_func>
 	bool contains(key_type key) const
 	{
 		return contains(implier<key_type, value_type>(key, value_type()));
+	}
+
+	value_type &operator[](key_type key)
+	{
+		iterator result = insert(key);
+		return result->value;
 	}
 };
 
