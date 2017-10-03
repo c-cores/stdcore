@@ -161,26 +161,3 @@ arr = {2, 6, 3, 2, 7, 3, 7, 5, 1, 0}
 sort_quick_inplace(arr)
 arr = {0, 1, 2, 2, 3, 3, 5, 6, 7, 7}
 ```
-
-## Logging Hastens Deforestation
-
-Finally, there are multiple stream interfaces provided for different logging purposes and its easy to create more.
-
-```c++
-ascii_stream cself(stdout, "\n", "Look at me", true);
-cout << "Hello World!" << endl;
-cnote << "World is asleep." << endl;
-cwarn << "Do not wake world." << endl;
-cerr << "World awoken." << endl;
-cfate << "World floats away." << endl;
-cself << "SPACE!" << endl;
-```
-
-```
-Hello World!
-note: World is asleep.
-warning: Do not wake world.
-error: World awoken.
-example.cpp:13: fatal: World floats away.
-example.cpp:14: Look at me: SPACE!
-``` 

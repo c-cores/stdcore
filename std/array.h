@@ -75,16 +75,6 @@ struct array_iterator
 		return root->data[index];
 	}
 
-	array_iterator<value_type> &ref()
-	{
-		return *this;
-	}
-
-	const array_iterator<value_type> &ref() const
-	{
-		return *this;
-	}
-
 	int idx() const
 	{
 		return index;
@@ -494,16 +484,6 @@ struct array_const_iterator
 		return root->data[index];
 	}
 
-	array_const_iterator<value_type> &ref()
-	{
-		return *this;
-	}
-
-	const array_const_iterator<value_type> &ref() const
-	{
-		return *this;
-	}
-
 	int idx() const
 	{
 		return index;
@@ -679,7 +659,6 @@ struct array_const_iterator
 template <class value_type>
 struct array : container<value_type, array_iterator<value_type>, array_const_iterator<value_type> >
 {
-public:
 	friend class array_iterator<value_type>;
 	friend class array_const_iterator<value_type>;
 
