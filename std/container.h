@@ -26,8 +26,8 @@ struct container
 	virtual const_iterator rend() const = 0;
 };
 
-template<typename value_type, typename i0, typename ci0, typename i1, typename ci1>
-bool compare(const container<value_type, i0, ci0> &a, const container<value_type, i1, ci1> &b)
+template<typename v0, typename i0, typename ci0, typename v1, typename i1, typename ci1>
+bool compare(const container<v0, i0, ci0> &a, const container<v1, i1, ci1> &b)
 {
 	ci0 i = a.begin();
 	ci1 j = b.begin();
@@ -46,8 +46,8 @@ bool compare(const container<value_type, i0, ci0> &a, const container<value_type
 		return 0;
 }
 
-template<typename value_type, typename i0, typename ci0, typename i1, typename ci1>
-bool operator==(const container<value_type, i0, ci0> &a, const container<value_type, i1, ci1> &b)
+template<typename v0, typename i0, typename ci0, typename v1, typename i1, typename ci1>
+bool operator==(const container<v0, i0, ci0> &a, const container<v1, i1, ci1> &b)
 {
 	ci0 i = a.begin();
 	ci1 j = b.begin();
@@ -58,14 +58,14 @@ bool operator==(const container<value_type, i0, ci0> &a, const container<value_t
 	return !(i || j);
 }
 
-template<typename value_type, typename i0, typename ci0, typename i1, typename ci1>
-bool operator!=(const container<value_type, i0, ci0> &a, const container<value_type, i1, ci1> &b)
+template<typename v0, typename i0, typename ci0, typename v1, typename i1, typename ci1>
+bool operator!=(const container<v0, i0, ci0> &a, const container<v1, i1, ci1> &b)
 {
 	return !(a == b);
 }
 
-template<typename value_type, typename i0, typename ci0, typename i1, typename ci1>
-bool operator<(const container<value_type, i0, ci0> &a, const container<value_type, i1, ci1> &b)
+template<typename v0, typename i0, typename ci0, typename v1, typename i1, typename ci1>
+bool operator<(const container<v0, i0, ci0> &a, const container<v1, i1, ci1> &b)
 {
 	ci0 i = a.begin();
 	ci1 j = b.begin();
@@ -80,8 +80,8 @@ bool operator<(const container<value_type, i0, ci0> &a, const container<value_ty
 	return j;
 }
 
-template<typename value_type, typename i0, typename ci0, typename i1, typename ci1>
-bool operator>(const container<value_type, i0, ci0> &a, const container<value_type, i1, ci1> &b)
+template<typename v0, typename i0, typename ci0, typename v1, typename i1, typename ci1>
+bool operator>(const container<v0, i0, ci0> &a, const container<v1, i1, ci1> &b)
 {
 	ci0 i = a.begin();
 	ci1 j = b.begin();
@@ -96,14 +96,14 @@ bool operator>(const container<value_type, i0, ci0> &a, const container<value_ty
 	return i;
 }
 
-template<typename value_type, typename i0, typename ci0, typename i1, typename ci1>
-bool operator<=(const container<value_type, i0, ci0> &a, const container<value_type, i1, ci1> &b)
+template<typename v0, typename i0, typename ci0, typename v1, typename i1, typename ci1>
+bool operator<=(const container<v0, i0, ci0> &a, const container<v1, i1, ci1> &b)
 {
 	return !(a > b);
 }
 
-template<typename value_type, typename i0, typename ci0, typename i1, typename ci1>
-bool operator>=(const container<value_type, i0, ci0> &a, const container<value_type, i1, ci1> &b)
+template<typename v0, typename i0, typename ci0, typename v1, typename i1, typename ci1>
+bool operator>=(const container<v0, i0, ci0> &a, const container<v1, i1, ci1> &b)
 {
 	return !(a < b);
 }

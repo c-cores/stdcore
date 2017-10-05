@@ -31,11 +31,11 @@ struct stream : file
 	{
 	}
 
-	stream(const char *name, unsigned char mode, unsigned char owner, unsigned char group, unsigned char user) : file(name, mode, owner, group, user)
+	stream(const char *name, unsigned char mode = file::rw, unsigned char owner = file::rw, unsigned char group = file::r, unsigned char user = file::r) : file(name, mode, owner, group, user)
 	{
 	}
 
-	stream(array<char> name, unsigned char mode, unsigned char owner, unsigned char group, unsigned char user) : file(name, mode, owner, group, user)
+	stream(array<char> name, unsigned char mode = file::rw, unsigned char owner = file::rw, unsigned char group = file::r, unsigned char user = file::r) : file(name, mode, owner, group, user)
 	{
 	}
 
@@ -59,6 +59,7 @@ stream<stream_type> &operator<<(stream<stream_type> &str, flush_t end)
 	if (end.end != NULL)
 		str << end.end;
 	str.write(str.cache);
+	str.cache.clear();
 	return str;
 }
 

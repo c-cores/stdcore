@@ -186,12 +186,6 @@ string &operator<<(string &s1, const options<implier<type0, type1> > &v)
 }
 
 
-bool operator==(string s1, string s2);
-bool operator!=(string s1, string s2);
-bool operator<(string s1, string s2);
-bool operator>(string s1, string s2);
-bool operator<=(string s1, string s2);
-bool operator>=(string s1, string s2);
 bool operator==(string s1, const char* s2);
 bool operator!=(string s1, const char* s2);
 bool operator<(string s1, const char* s2);
