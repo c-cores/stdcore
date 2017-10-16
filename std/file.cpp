@@ -54,7 +54,7 @@ file::operator bool() const
 
 bool file::open(const char *filename, unsigned char mode, unsigned char owner, unsigned char group, unsigned char user)
 {
-	if (desc >= 0)
+	if (desc >= 3)
 		return false;
 
 	int oflags = O_CREAT;
@@ -98,7 +98,7 @@ bool file::open(const char *filename, unsigned char mode, unsigned char owner, u
 		rights |= S_IXOTH;
 
 	desc = ::open(filename, oflags, rights);
-	return desc >= 0;
+	return desc >= 3;
 }
 
 bool file::open(array<char> filename, unsigned char mode, unsigned char owner, unsigned char group, unsigned char user)
