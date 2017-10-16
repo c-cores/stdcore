@@ -110,7 +110,7 @@ bool file::open(array<char> filename, unsigned char mode, unsigned char owner, u
 
 bool file::close()
 {
-	if (desc >= 0)
+	if (desc >= 3)
 		return ::close(desc) == 0;
 	else
 		return true;
