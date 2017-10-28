@@ -18,6 +18,7 @@ Lets start with a basic program which will include the array header. Every heade
 
 ```c++
 #include <std/array.h>
+#include <std/io.h>
 
 using namespace core;
 
@@ -109,7 +110,7 @@ slc[1] = 100;
 cout << "slc = " << slc << endl;
 cout << "arr = " << arr << endl << endl;
 
-slice<array<array<int>::iterator> > slc2 = array<int>::values(4, 2, 5, 0, 1).sample(arr);
+slice<array<array<int>::iterator> > slc2 = array_t<int>(4, 2, 5, 0, 1).sample(arr);
 cout << "slc2 = " << slc2 << endl << endl;
 
 cout << "slc2[1] = 200" << endl;
@@ -141,7 +142,7 @@ slc = {2, 100, 4, 200}
 All algorithmic functions like sort, unique, reverse, etc can be run either in place or on a copy of the container in line.
 
 ```c++
-array<int> arr = array<int>::values(10, 2, 6, 3, 2, 7, 3, 7, 5, 1, 0);
+array<int> arr = array_t<int>(10, 2, 6, 3, 2, 7, 3, 7, 5, 1, 0);
 cout << "arr = " << arr << endl << endl;
 
 cout << "sort_quick(arr) = " << sort_quick(arr) << endl;
