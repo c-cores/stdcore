@@ -65,24 +65,20 @@ struct list_iterator
 	friend class list_const_iterator<value_type>;
 	typedef value_type type;
 	
-	list<value_type> *root;
 	list_end_item *loc;
 
-	list_iterator(list<value_type> *root, list_end_item *loc)
+	list_iterator(list_end_item *loc)
 	{
-		this->root = root;
 		this->loc = loc;
 	}
 	
 	list_iterator()
 	{
-		root = NULL;
 		loc = NULL;
 	}
 
 	list_iterator(const list_iterator<value_type> &copy)
 	{
-		root = copy.root;
 		loc = copy.loc;
 	}
 
@@ -90,7 +86,7 @@ struct list_iterator
 
 	operator bool() const
 	{
-		return root != NULL && loc != &root->left && loc != &root->right;
+		return loc != NULL and loc->next != loc and loc->prev != loc;
 	}
 
 	value_type &operator*() const
@@ -114,8 +110,8 @@ struct list_iterator
 
 	int idx() const
 	{
-		int count = 0;
-		for (list_end_item *i = root->left.next; i != loc && i != &root->right; i = i->next)
+		int count = -1;
+		for (list_end_item *i = loc; i->prev != i; i = i->prev)
 			count++;
 		return count;
 	}
@@ -148,13 +144,13 @@ struct list_iterator
 
 	list_iterator<value_type> &operator+=(int n)
 	{
-		while (n > 0 && loc != &root->right)
+		while (n > 0 and loc->next != loc)
 		{
 			loc = loc->next;
 			n--;
 		}
 
-		while (n < 0 && loc != &root->left)
+		while (n < 0 and loc->prev != loc)
 		{
 			loc = loc->prev;
 			n++;
@@ -165,13 +161,13 @@ struct list_iterator
 
 	list_iterator<value_type> &operator-=(int n)
 	{
-		while (n < 0 && loc != &root->right)
+		while (n < 0 and loc->next != loc)
 		{
 			loc = loc->next;
 			n++;
 		}
 
-		while (n > 0 && loc != &root->left)
+		while (n > 0 and loc->prev != loc)
 		{
 			loc = loc->prev;
 			n--;
@@ -196,19 +192,19 @@ struct list_iterator
 
 	bool operator==(list_iterator<value_type> i) const
 	{
-		return loc == i.loc;
+		return loc == i.loc or (!i and !*this);
 	}
 
 	bool operator!=(list_iterator<value_type> i) const
 	{
-		return loc != i.loc;
+		return loc != i.loc and (i or *this);
 	}
 
 	int operator-(list_iterator<value_type> i) const
 	{
 		int c0 = 0, c1 = 0;
 		list_iterator<value_type> j = i;
-		while (i.loc != loc && j.loc != loc)
+		while (i.loc != loc and j.loc != loc)
 		{
 			j.loc = j.loc->next;
 			c1++;
@@ -238,7 +234,7 @@ struct list_iterator
 	{
 		int c0 = 0, c1 = 0;
 		list_const_iterator<value_type> j = i;
-		while (i.loc != loc && j.loc != loc)
+		while (i.loc != loc and j.loc != loc)
 		{
 			j.loc = j.loc->next;
 			c1++;
@@ -272,12 +268,12 @@ struct list_iterator
 
 	core::slice<range<list_iterator<value_type> > > sub() const
 	{
-		return range<list_iterator<value_type> >(*this, root->end());
+		return range<list_iterator<value_type> >(*this, list_iterator<value_type>());
 	}
 
 	list<value_type> subcpy() const
 	{
-		return list<value_type>(*this, root->end());
+		return list<value_type>(*this, list_iterator<value_type>());
 	}
 
 	void drop(int n = 1)
@@ -286,7 +282,7 @@ struct list_iterator
 		{
 			list_end_item* start = loc->prev;
 			
-			for (int i = 0; i < n && loc != &root->right; i++)
+			for (int i = 0; i < n and loc->next != loc; i++)
 			{
 				list_end_item *temp = loc->next;
 				delete loc;
@@ -300,7 +296,7 @@ struct list_iterator
 		{
 			list_end_item *start = loc->prev;
 			
-			for (int i = 0; i > n && start != &root->left; i--)
+			for (int i = 0; i > n and start->prev != start; i--)
 			{
 				list_end_item *temp = start->prev;
 				delete start;
@@ -316,9 +312,9 @@ struct list_iterator
 	{
 		list<value_type> result;
 		list_end_item *start = loc;
-		for (int i = 0; i < n && loc != &root->right; i++)
+		for (int i = 0; i < n and loc->next != loc; i++)
 			loc = loc->next;
-		for (int i = 0; i > n && start != &root->left && start != root->left.next; i--)
+		for (int i = 0; i > n and start->prev != start and start->prev->prev != start->prev; i--)
 			start = start->prev;
 
 		if (start != loc)
@@ -367,7 +363,7 @@ struct list_iterator
 			n = -n;
 		}
 
-		if (loc == &root->right)
+		if (loc->next == loc)
 		{
 			push(v);
 			loc = loc->next;
@@ -390,7 +386,7 @@ struct list_iterator
 		}
 
 		typename container::const_iterator j = c.begin();
-		while (n > 0 && j && loc != &root->right)
+		while (n > 0 and j and loc->next != loc)
 		{
 			((list_item<value_type>*)loc)->value = *j;
 			loc = loc->next;
@@ -435,7 +431,6 @@ struct list_iterator
 
 	list_iterator<value_type> &operator=(list_iterator<value_type> i)
 	{
-		root = i.root;
 		loc = i.loc;
 		return *this;
 	}
@@ -447,12 +442,10 @@ struct list_const_iterator
 protected:
 	friend class list<value_type>;
 	friend class list_iterator<value_type>;
-	const list<value_type> *root;
 	const list_end_item *loc;
 
-	list_const_iterator(const list<value_type> *l, const list_end_item *n)
+	list_const_iterator(const list_end_item *n)
 	{
-		root = l;
 		loc = n;
 	}
 public:
@@ -460,25 +453,21 @@ public:
 
 	list_const_iterator()
 	{
-		root = NULL;
 		loc = NULL;
 	}
 
 	list_const_iterator(const list<value_type> *l)
 	{
-		root = l;
 		loc = &l->left;
 	}
 
 	list_const_iterator(const list_iterator<value_type> &i)
 	{
-		root = i.root;
 		loc = i.loc;
 	}
 
 	list_const_iterator(const list_const_iterator<value_type> &i)
 	{
-		root = i.root;
 		loc = i.loc;
 	}
 
@@ -486,7 +475,7 @@ public:
 
 	operator bool() const
 	{
-		return root != NULL && loc != &root->left && loc != &root->right;
+		return loc != NULL and loc->next != loc and loc->prev != loc;
 	}
 
 	const value_type &operator*() const
@@ -521,8 +510,8 @@ public:
 
 	int idx() const
 	{
-		int count = 0;
-		for (list_end_item *i = root->left.next; i != loc && i != &root->right; i = i->next)
+		int count = -1;
+		for (list_end_item *i = loc; i->prev != i; i = i->prev)
 			count++;
 		return count;
 	}
@@ -555,13 +544,13 @@ public:
 
 	list_const_iterator<value_type> &operator+=(int n)
 	{
-		while (n > 0 && loc != &root->right)
+		while (n > 0 and loc->next != loc)
 		{
 			loc = loc->next;
 			n--;
 		}
 
-		while (n < 0 && loc != &root->left)
+		while (n < 0 and loc->prev != loc)
 		{
 			loc = loc->prev;
 			n++;
@@ -572,13 +561,13 @@ public:
 
 	list_const_iterator<value_type> &operator-=(int n)
 	{
-		while (n < 0 && loc != &root->right)
+		while (n < 0 and loc->next != loc)
 		{
 			loc = loc->next;
 			n++;
 		}
 
-		while (n > 0 && loc != &root->left)
+		while (n > 0 and loc->prev != loc)
 		{
 			loc = loc->prev;
 			n--;
@@ -603,29 +592,29 @@ public:
 
 	bool operator==(list_const_iterator<value_type> i) const
 	{
-		return root == i.root && loc == i.loc;
+		return loc == i.loc or (!i and !*this);
 	}
 
 	bool operator!=(list_const_iterator<value_type> i) const
 	{
-		return root != i.root || loc != i.loc;
+		return loc != i.loc and (i or *this);
 	}
 
 	bool operator==(list_iterator<value_type> i) const
 	{
-		return root == i.root && loc == i.loc;
+		return loc == i.loc or (!i and !*this);
 	}
 
 	bool operator!=(list_iterator<value_type> i) const
 	{
-		return root != i.root || loc != i.loc;
+		return loc != i.loc and (i or *this);
 	}
 
 	int operator-(list_const_iterator<value_type> i) const
 	{
 		int c0 = 0, c1 = 0;
 		list_const_iterator<value_type> j = i;
-		while (i.loc != loc && j.loc != loc)
+		while (i.loc != loc and j.loc != loc)
 		{
 			j.loc = j.loc->next;
 			c1++;
@@ -645,7 +634,7 @@ public:
 	{
 		int c0 = 0, c1 = 0;
 		list_const_iterator<value_type> j = i;
-		while (i.loc != loc && j.loc != loc)
+		while (i.loc != loc and j.loc != loc)
 		{
 			j.loc = j.loc->next;
 			c1++;
@@ -679,24 +668,22 @@ public:
 
 	core::slice<range<list_const_iterator<value_type> > > sub() const
 	{
-		return range<list_const_iterator<value_type> >(*this, root->end());
+		return range<list_const_iterator<value_type> >(*this, list_const_iterator<value_type>());
 	}
 
 	list<value_type> subcpy() const
 	{
-		return list<value_type>(*this, root->end());
+		return list<value_type>(*this, list_const_iterator<value_type>());
 	}
 
 	list_const_iterator<value_type> &operator=(list_const_iterator<value_type> i)
 	{
-		root = i.root;
 		loc = i.loc;
 		return *this;
 	}
 
 	list_const_iterator<value_type> &operator=(list_iterator<value_type> i)
 	{
-		root = i.root;
 		loc = i.loc;
 		return *this;
 	}
@@ -795,42 +782,42 @@ struct list : container<value_type, list_iterator<value_type>, list_const_iterat
 
 	iterator begin()
 	{
-		return iterator(this, left.next);
+		return iterator(left.next);
 	}
 
 	iterator end()
 	{
-		return iterator(this, &right);
+		return iterator(&right);
 	}
 
 	iterator rbegin()
 	{
-		return iterator(this, right.prev);
+		return iterator(right.prev);
 	}
 
 	iterator rend()
 	{
-		return iterator(this, &left);
+		return iterator(&left);
 	}
 
 	const_iterator begin() const
 	{
-		return const_iterator(this, left.next);
+		return const_iterator(left.next);
 	}
 
 	const_iterator end() const
 	{
-		return const_iterator(this, &right);
+		return const_iterator(&right);
 	}
 
 	const_iterator rbegin() const
 	{
-		return const_iterator(this, right.prev);
+		return const_iterator(right.prev);
 	}
 
 	const_iterator rend() const
 	{
-		return const_iterator(this, &left);
+		return const_iterator(&left);
 	}
 
 	iterator at(int i)
@@ -1076,7 +1063,7 @@ struct list : container<value_type, list_iterator<value_type>, list_const_iterat
 	static void replace(iterator start, iterator end, const container &c)
 	{
 		typename container::const_iterator i = c.begin();
-		while (start != end && i)
+		while (start != end and i)
 		{
 			start.get() = *i;
 			start++;
@@ -1145,7 +1132,7 @@ struct list : container<value_type, list_iterator<value_type>, list_const_iterat
 	void resize(int n, const value_type &v = value_type())
 	{
 		iterator i = begin();
-		while (i != end() && n > 0)
+		while (i != end() and n > 0)
 		{
 			i++;
 			n--;

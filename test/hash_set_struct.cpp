@@ -66,10 +66,14 @@ TEST(hash_set, find)
 		{
 			EXPECT_FALSE((result == h.end()));
 			if (result != h.end())
+			{
 				EXPECT_EQ(*result, i-50);
+			}
 		}
 		else
+		{
 			EXPECT_TRUE((result == h.end()));
+		}
 	}
 }
 

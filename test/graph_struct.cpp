@@ -23,19 +23,27 @@ TEST(graph, insert)
 	graph<int>::iterator i = g.begin();
 	EXPECT_FALSE((i == g.end()));
 	if (i != g.end())
+	{
 		EXPECT_EQ(*i, 5);
+	}
 	i++;
 	EXPECT_FALSE((i == g.end()));
 	if (i != g.end())
+	{
 		EXPECT_EQ(*i, 10);
+	}
 	i++;
 	EXPECT_FALSE((i == g.end()));
 	if (i != g.end())
+	{
 		EXPECT_EQ(*i, 3);
+	}
 	i++;
 	EXPECT_FALSE((i == g.end()));
 	if (i != g.end())
+	{
 		EXPECT_EQ(*i, 6);
+	}
 	i++;
 	EXPECT_TRUE((i == g.end()));
 }
@@ -52,19 +60,27 @@ TEST(graph, clear)
 	graph<int>::iterator i = g.begin();
 	EXPECT_FALSE((i == g.end()));
 	if (i != g.end())
+	{
 		EXPECT_EQ(*i, 5);
+	}
 	i++;
 	EXPECT_FALSE((i == g.end()));
 	if (i != g.end())
+	{
 		EXPECT_EQ(*i, 10);
+	}
 	i++;
 	EXPECT_FALSE((i == g.end()));
 	if (i != g.end())
+	{
 		EXPECT_EQ(*i, 3);
+	}
 	i++;
 	EXPECT_FALSE((i == g.end()));
 	if (i != g.end())
+	{
 		EXPECT_EQ(*i, 6);
+	}
 	i++;
 	EXPECT_TRUE((i == g.end()));
 
