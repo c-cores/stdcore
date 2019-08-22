@@ -319,12 +319,12 @@ struct list_iterator
 
 		if (start != loc)
 		{
-			result.left.next = start;
-			result.right.prev = loc->prev;
+			result.left->next = start;
+			result.right->prev = loc->prev;
 			start->prev->next = loc;
 			loc->prev = start->prev;
-			result.left.next->prev = &result.left;
-			result.right.prev->next = &result.right;
+			result.left->next->prev = result.left;
+			result.right->prev->next = result.right;
 		}
 
 		return result;
@@ -458,7 +458,7 @@ public:
 
 	list_const_iterator(const list<value_type> *l)
 	{
-		loc = &l->left;
+		loc = l->left;
 	}
 
 	list_const_iterator(const list_iterator<value_type> &i)
@@ -701,51 +701,63 @@ struct list : container<value_type, list_iterator<value_type>, list_const_iterat
 	typedef list_end_item end_item;
 	typedef list_item<value_type> item;
 
-	end_item left;
-	end_item right;
+	end_item *left;
+	end_item *right;
 
 	list()
 	{
-		left.next = &right;
-		right.prev = &left;
+		left = new end_item();
+		right = new end_item();
+		left->next = right;
+		right->prev = left;
 	}
 
 	list(const value_type &c)
 	{
-		left.next = &right;
-		right.prev = &left;
+		left = new end_item();
+		right = new end_item();
+		left->next = right;
+		right->prev = left;
 		end().push(c);
 	}
 
 	template <class container>
 	list(const container &c)
 	{
-		left.next = &right;
-		right.prev = &left;
+		left = new end_item();
+		right = new end_item();
+		left->next = right;
+		right->prev = left;
 		for (typename container::const_iterator i = c.begin(); i; i++)
 			end().push(*i);
 	}
 
 	list(const list<value_type> &c)
 	{
-		left.next = &right;
-		right.prev = &left;
+		left = new end_item();
+		right = new end_item();
+		left->next = right;
+		right->prev = left;
 		for (const_iterator i = c.begin(); i; i++)
 			end().push(*i);
 	}
 
 	list(iterator left, iterator right)
 	{
-		this->left.next = &this->right;
-		this->right.prev = &this->left;
+		left = new end_item();
+		right = new end_item();
+		this->left->next = this->right;
+		this->right->prev = this->left;
 		for (iterator i = left; i != right; i++)
 			end().push(*i);
 	}
 
 	list(const_iterator left, const_iterator right)
 	{
-		this->left.next = &this->right;
-		this->right.prev = &this->left;
+		left = new end_item();
+		right = new end_item();
+		this->left->next = this->right;
+		this->right->prev = this->left;
 		for (const_iterator i = left; i != right; i++)
 			end().push(*i);
 	}
@@ -754,8 +766,10 @@ struct list : container<value_type, list_iterator<value_type>, list_const_iterat
 	template <class container>
 	list(typename container::iterator left, typename container::iterator right)
 	{
-		this->left.next = &this->right;
-		this->right.prev = &this->left;
+		left = new end_item();
+		right = new end_item();
+		this->left->next = this->right;
+		this->right->prev = this->left;
 		for (typename container::iterator i = left; i != right; i++)
 			end().push(*i);
 	}
@@ -764,8 +778,10 @@ struct list : container<value_type, list_iterator<value_type>, list_const_iterat
 	template <class container>
 	list(typename container::const_iterator left, typename container::const_iterator right)
 	{
-		this->left.next = &this->right;
-		this->right.prev = &this->left;
+		left = new end_item();
+		right = new end_item();
+		this->left->next = this->right;
+		this->right->prev = this->left;
 		for (typename container::const_iterator i = left; i != right; i++)
 			end().push(*i);
 	}
@@ -773,6 +789,10 @@ struct list : container<value_type, list_iterator<value_type>, list_const_iterat
 	virtual ~list()
 	{
 		clear();
+		delete left;
+		left = NULL;
+		delete right;
+		right = NULL;
 	}
 
 	int size() const
@@ -782,42 +802,42 @@ struct list : container<value_type, list_iterator<value_type>, list_const_iterat
 
 	iterator begin()
 	{
-		return iterator(left.next);
+		return iterator(left->next);
 	}
 
 	iterator end()
 	{
-		return iterator(&right);
+		return iterator(right);
 	}
 
 	iterator rbegin()
 	{
-		return iterator(right.prev);
+		return iterator(right->prev);
 	}
 
 	iterator rend()
 	{
-		return iterator(&left);
+		return iterator(left);
 	}
 
 	const_iterator begin() const
 	{
-		return const_iterator(left.next);
+		return const_iterator(left->next);
 	}
 
 	const_iterator end() const
 	{
-		return const_iterator(&right);
+		return const_iterator(right);
 	}
 
 	const_iterator rbegin() const
 	{
-		return const_iterator(right.prev);
+		return const_iterator(right->prev);
 	}
 
 	const_iterator rend() const
 	{
-		return const_iterator(&left);
+		return const_iterator(left);
 	}
 
 	iterator at(int i)
@@ -969,12 +989,12 @@ struct list : container<value_type, list_iterator<value_type>, list_const_iterat
 	static void drop(iterator start, iterator end)
 	{
 		list<value_type> result;
-		result.left.next = start.loc;
-		result.right.prev = end.loc->prev;
+		result.left->next = start.loc;
+		result.right->prev = end.loc->prev;
 		start.loc->prev->next = end.loc;
 		end.loc->prev = start.loc->prev;
-		result.left.next->prev = &result.left;
-		result.right.prev->next = &result.right;
+		result.left->next->prev = result.left;
+		result.right->prev->next = result.right;
 		result.release();
 	}
 
@@ -998,12 +1018,12 @@ struct list : container<value_type, list_iterator<value_type>, list_const_iterat
 	static list<value_type> pop(iterator start, iterator end)
 	{
 		list<value_type> result;
-		result.left.next = start.loc;
-		result.right.prev = end.loc->prev;
+		result.left->next = start.loc;
+		result.right->prev = end.loc->prev;
 		start.loc->prev->next = end.loc;
 		end.loc->prev = start.loc->prev;
-		result.left.next->prev = &result.left;
-		result.right.prev->next = &result.right;
+		result.left->next->prev = result.left;
+		result.right->prev->next = result.right;
 
 		return result;
 	}
@@ -1111,22 +1131,22 @@ struct list : container<value_type, list_iterator<value_type>, list_const_iterat
 
 	void swap(list<value_type> &lst)
 	{
-		end_item* tmp_left = left.next;
-		end_item* tmp_right = right.prev;
+		end_item* tmp_left = left->next;
+		end_item* tmp_right = right->prev;
 
-		left.next = lst.left.next;
-		left.prev = &left;
-		left.next->prev = &left;
-		right.prev = lst.right.prev;
-		right.next = &right;
-		right.prev->next = &right;
+		left->next = lst.left->next;
+		left->prev = left;
+		left->next->prev = left;
+		right->prev = lst.right->prev;
+		right->next = right;
+		right->prev->next = right;
 
-		lst.left.next = tmp_left;
-		lst.left.prev = &lst.left;
-		lst.left.next->prev = &lst.left;
-		lst.right.prev = tmp_right;
-		lst.right.next = &lst.right;
-		lst.right.prev->next = &lst.right;
+		lst.left->next = tmp_left;
+		lst.left->prev = lst.left;
+		lst.left->next->prev = lst.left;
+		lst.right->prev = tmp_right;
+		lst.right->next = lst.right;
+		lst.right->prev->next = lst.right;
 	}
 
 	void resize(int n, const value_type &v = value_type())
@@ -1150,28 +1170,28 @@ struct list : container<value_type, list_iterator<value_type>, list_const_iterat
 
 	void clear()
 	{
-		end_item *curr = left.next, *prev;
-		while (curr != &right)
+		end_item *curr = left->next, *prev;
+		while (curr != right)
 		{
 			prev = curr;
 			curr = curr->next;
 			delete prev;
 		}
-		left.next = &right;
-		right.prev = &left;
+		left->next = right;
+		right->prev = left;
 	}
 
 	void release()
 	{
-		end_item *curr = left.next, *prev;
-		while (curr != &right)
+		end_item *curr = left->next, *prev;
+		while (curr != right)
 		{
 			prev = curr;
 			curr = curr->next;
 			delete prev;
 		}
-		left.next = &right;
-		right.prev = &left;
+		left->next = right;
+		right->prev = left;
 	}
 
 	template <class container>
