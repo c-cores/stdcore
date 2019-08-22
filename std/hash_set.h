@@ -174,7 +174,7 @@ public:
 		{
 			list_end_item *start = ref.loc->prev;
 			
-			for (int i = 0; i < n && ref.loc != &root->items.right; i++)
+			for (int i = 0; i < n && ref.loc != root->items.right; i++)
 			{
 				for (int b = bucket(); b >= 0 && root->buckets[b] == ref; b--)
 					root->buckets[b]++;
@@ -192,7 +192,7 @@ public:
 		{
 			list_end_item *start = ref.loc->prev;
 			
-			for (int i = 0; i > n && start != &root->items.left; i--)
+			for (int i = 0; i > n && start != root->items.left; i--)
 			{
 				for (int b = (((list_item<pair<int, key_type> >*)start)->value.first >> root->shift); b < root->buckets.size() && root->buckets[b] == ref; b++)
 					root->buckets[b]--;

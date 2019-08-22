@@ -744,8 +744,8 @@ struct list : container<value_type, list_iterator<value_type>, list_const_iterat
 
 	list(iterator left, iterator right)
 	{
-		left = new end_item();
-		right = new end_item();
+		this->left = new end_item();
+		this->right = new end_item();
 		this->left->next = this->right;
 		this->right->prev = this->left;
 		for (iterator i = left; i != right; i++)
@@ -754,8 +754,8 @@ struct list : container<value_type, list_iterator<value_type>, list_const_iterat
 
 	list(const_iterator left, const_iterator right)
 	{
-		left = new end_item();
-		right = new end_item();
+		this->left = new end_item();
+		this->right = new end_item();
 		this->left->next = this->right;
 		this->right->prev = this->left;
 		for (const_iterator i = left; i != right; i++)
@@ -766,8 +766,8 @@ struct list : container<value_type, list_iterator<value_type>, list_const_iterat
 	template <class container>
 	list(typename container::iterator left, typename container::iterator right)
 	{
-		left = new end_item();
-		right = new end_item();
+		this->left = new end_item();
+		this->right = new end_item();
 		this->left->next = this->right;
 		this->right->prev = this->left;
 		for (typename container::iterator i = left; i != right; i++)
@@ -778,8 +778,8 @@ struct list : container<value_type, list_iterator<value_type>, list_const_iterat
 	template <class container>
 	list(typename container::const_iterator left, typename container::const_iterator right)
 	{
-		left = new end_item();
-		right = new end_item();
+		this->left = new end_item();
+		this->right = new end_item();
 		this->left->next = this->right;
 		this->right->prev = this->left;
 		for (typename container::const_iterator i = left; i != right; i++)

@@ -10,10 +10,10 @@ TEST(list_struct, base_constructor)
 {
 	list<int> x;
 	EXPECT_EQ(x.size(), 0);
-	EXPECT_EQ(x.left.prev, &x.left);
-	EXPECT_EQ(x.left.next, &x.right);
-	EXPECT_EQ(x.right.prev, &x.left);
-	EXPECT_EQ(x.right.next, &x.right);
+	EXPECT_EQ(x.left->prev, x.left);
+	EXPECT_EQ(x.left->next, x.right);
+	EXPECT_EQ(x.right->prev, x.left);
+	EXPECT_EQ(x.right->next, x.right);
 }
 
 TEST(list_struct, copy_constructor)
