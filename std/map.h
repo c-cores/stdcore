@@ -43,15 +43,14 @@ struct map : list<implier<ktype, vtype> >
 		return (pos-1);
 	}
 
-
-	iterator insert(ktype key, vtype value)
+	iterator insert(const ktype &key, const vtype &value)
 	{
 		iterator pos = lower_bound(*this, key);
 		pos.push(implier<ktype, vtype>(key, value));
 		return (pos-1);
 	}
 
-	iterator find(ktype key)
+	iterator find(const ktype &key)
 	{
 		iterator pos = lower_bound(*this, key);
 		if (pos != end() && pos->key == key)
@@ -60,15 +59,28 @@ struct map : list<implier<ktype, vtype> >
 			return end();
 	}
 
-	vtype &operator[](ktype key)
+	iterator at(const ktype &key, const vtype &value = vtype())
 	{
 		iterator pos = lower_bound(*this, key);
-		if (pos != end() && pos->key == key)
-			return pos->value;
-		else
-		{
-			pos.push(implier<ktype, vtype>(key, vtype()));
-			return (pos-1)->value;
+		if (pos == end() || pos->key != key) {
+			pos.push(implier<ktype, vtype>(key, value));
+			return pos-1;
+		} else
+			return pos;
+	}
+
+	vtype &operator[](ktype key)
+	{
+		return at(key)->value;
+	}
+
+	void update(const ktype &key, const vtype &value, vtype (*U)(vtype, vtype))
+	{
+		iterator pos = lower_bound(*this, key);
+		if (pos == end() || pos->key != key) {
+			pos.push(implier<ktype, vtype>(key, value));
+		} else {
+			pos->value = U(pos->value, value);
 		}
 	}
 };
