@@ -402,7 +402,7 @@ struct hash_set : container<key_type, hash_set_iterator<key_type, hash_func>, ha
 
 	hash_set()
 	{
-		buckets.resize(17, items.begin());
+		buckets.resize(17, items.end());
 		shift = 28;
 		salt = rand();
 		count = 0;
@@ -522,7 +522,7 @@ struct hash_set : container<key_type, hash_set_iterator<key_type, hash_func>, ha
 		uint32_t hash = hash_it(key);
 		int bucket = (int)(hash >> shift);
 
-		if (buckets[bucket] != items.end())
+		if (buckets[bucket])
 			return lower_bound(buckets[bucket], buckets[bucket+1], pair<int, key_type>(hash, key));
 		else
 			return items.end();
@@ -533,7 +533,7 @@ struct hash_set : container<key_type, hash_set_iterator<key_type, hash_func>, ha
 		uint32_t hash = hash_it(key);
 		int bucket = (int)(hash >> shift);
 
-		if (buckets[bucket] != items.end())
+		if (buckets[bucket])
 			return lower_bound(buckets[bucket], buckets[bucket+1], pair<int, key_type>(hash, key));
 		else
 			return items.end();
@@ -543,15 +543,17 @@ struct hash_set : container<key_type, hash_set_iterator<key_type, hash_func>, ha
 	{
 		uint32_t hash = hash_it(key);
 		int bucket = (int)(hash >> shift);
-		
+
 		pair<int, key_type> search(hash, key);
 		item_iterator pos;
-		if (buckets[bucket] != items.end())
+		if (buckets[bucket])
 			pos = lower_bound(buckets[bucket], buckets[bucket+1], search);
 		else
 			pos = items.end();
 
-		if (pos == items.end() || pos->second != key)
+		if (pos and pos->second == key)
+			return iterator(this, pos);
+		else
 		{
 			pos.push(search);
 			item_iterator result = pos-1;
@@ -560,12 +562,11 @@ struct hash_set : container<key_type, hash_set_iterator<key_type, hash_func>, ha
 				buckets[i] = result;
 
 			count++;
-			if (count > buckets.size()-1)
+			if (count > buckets.size()-1) {
 				rebucket();
+			}
 			return iterator(this, result);
 		}
-		else
-			return iterator(this, pos);
 	}
 
 	iterator insert_duplicate(key_type key)
@@ -575,7 +576,7 @@ struct hash_set : container<key_type, hash_set_iterator<key_type, hash_func>, ha
 		
 		pair<int, key_type> search(hash, key);
 		item_iterator pos;
-		if (buckets[bucket] != items.end())
+		if (buckets[bucket])
 			pos = lower_bound(buckets[bucket], buckets[bucket+1], search);
 		else
 			pos = items.end();
@@ -595,19 +596,19 @@ struct hash_set : container<key_type, hash_set_iterator<key_type, hash_func>, ha
 	iterator find(key_type key)
 	{
 		item_iterator pos = position(key);
-		if (pos == items.end() || pos->second != key)
-			return end();
-		else
+		if (pos and pos->second == key)
 			return iterator(this, pos);
+		else
+			return end();
 	}
 
 	const_iterator find(key_type key) const
 	{
 		item_const_iterator pos = position(key);
-		if (pos == items.end() || pos->second != key)
-			return end();
-		else
+		if (pos and pos->second == key)
 			return const_iterator(this, pos);
+		else
+			return end();
 	}
 
 	int count_all(key_type key)
@@ -626,7 +627,7 @@ struct hash_set : container<key_type, hash_set_iterator<key_type, hash_func>, ha
 	bool contains(key_type key) const
 	{
 		item_const_iterator pos = position(key);
-		return (pos != items.end() && pos->second == key);
+		return (pos && pos->second == key);
 	}
 };
 
