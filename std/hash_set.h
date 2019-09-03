@@ -514,10 +514,13 @@ struct hash_set : container<key_type, hash_set_iterator<key_type, hash_func>, ha
 		return hash_func((const char*)h.data, h.size(), salt);
 	}
 
-	item_iterator position(key_type key)
+	item_iterator position(key_type key, uint32_t *hashptr = NULL)
 	{
 		uint32_t hash = hash_it(key);
 		int bucket = (int)(hash >> shift);
+
+		if (hashptr != NULL)
+			*hashptr = hash;
 
 		if (buckets[bucket])
 			return lower_bound(buckets[bucket], buckets[bucket+1], pair<uint32_t, key_type>(hash, key));
@@ -525,15 +528,43 @@ struct hash_set : container<key_type, hash_set_iterator<key_type, hash_func>, ha
 			return items.end();
 	}
 
-	item_const_iterator position(key_type key) const
+	item_const_iterator position(key_type key, uint32_t *hashptr = NULL) const
 	{
 		uint32_t hash = hash_it(key);
 		int bucket = (int)(hash >> shift);
+
+		if (hashptr != NULL)
+			*hashptr = hash;
 
 		if (buckets[bucket])
 			return lower_bound(buckets[bucket], buckets[bucket+1], pair<uint32_t, key_type>(hash, key));
 		else
 			return items.end();
+	}
+
+	iterator insert_at(item_iterator pos, key_type key, uint32_t *hashptr = NULL)
+	{
+		uint32_t hash = hashptr == NULL ? hash_it(key) : *hashptr;
+		int bucket = (int)(hash >> shift);
+
+		pair<uint32_t, key_type> search(hash, key);
+
+		if (pos and pos->second == key)
+			return iterator(this, pos);
+		else
+		{
+			pos.push(search);
+			item_iterator result = pos-1;
+
+			for (int i = bucket; i >= 0 && buckets[i] == pos; i--)
+				buckets[i] = result;
+
+			count++;
+			if (count > buckets.size()-1) {
+				rebucket();
+			}
+			return iterator(this, result);
+		}
 	}
 
 	iterator insert(key_type key)

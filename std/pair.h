@@ -31,38 +31,38 @@ struct pair
 	type2 second;
 };
 
-template <class type1, class type2>
-bool operator==(pair<type1, type2> p1, pair<type1, type2> p2)
+template <class type1, class type2, class type3, class type4>
+bool operator==(pair<type1, type2> p1, pair<type3, type4> p2)
 {
 	return p1.first == p2.first && p1.second == p2.second;
 }
 
-template <class type1, class type2>
-bool operator!=(pair<type1, type2> p1, pair<type1, type2> p2)
+template <class type1, class type2, class type3, class type4>
+bool operator!=(pair<type1, type2> p1, pair<type3, type4> p2)
 {
 	return p1.first != p2.first || p1.second != p2.second;
 }
 
-template <class type1, class type2>
-bool operator<(pair<type1, type2> p1, pair<type1, type2> p2)
+template <class type1, class type2, class type3, class type4>
+bool operator<(pair<type1, type2> p1, pair<type3, type4> p2)
 {
 	return p1.first < p2.first || (p1.first == p2.first && p1.second < p2.second);
 }
 
-template <class type1, class type2>
-bool operator>(pair<type1, type2> p1, pair<type1, type2> p2)
+template <class type1, class type2, class type3, class type4>
+bool operator>(pair<type1, type2> p1, pair<type3, type4> p2)
 {
 	return p1.first > p2.first || (p1.first == p2.first && p1.second > p2.second);
 }
 
-template <class type1, class type2>
-bool operator<=(pair<type1, type2> p1, pair<type1, type2> p2)
+template <class type1, class type2, class type3, class type4>
+bool operator<=(pair<type1, type2> p1, pair<type3, type4> p2)
 {
 	return p1.first < p2.first || (p1.first == p2.first && p1.second <= p2.second);
 }
 
-template <class type1, class type2>
-bool operator>=(pair<type1, type2> p1, pair<type1, type2> p2)
+template <class type1, class type2, class type3, class type4>
+bool operator>=(pair<type1, type2> p1, pair<type3, type4> p2)
 {
 	return p1.first > p2.first || (p1.first == p2.first && p1.second >= p2.second);
 }

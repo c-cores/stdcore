@@ -27,6 +27,8 @@ struct hash_map : hash_set<implier<key_type, value_type>, hash_func>
 	using super::rend;
 	using super::insert;
 	using super::contains;
+	using super::position;
+	using super::insert_at;
 	
 	hash_map()
 	{
