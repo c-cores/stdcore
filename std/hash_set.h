@@ -27,20 +27,17 @@ struct hash_set_const_iterator;
 template <class key_type, uint32_t (*hash_func)(const char *,int,uint32_t) = murmur3_32>
 struct hash_set_iterator
 {
-protected:
 	friend class hash_set<key_type, hash_func>;
 	friend class hash_set_const_iterator<key_type, hash_func>;
 	hash_set<key_type, hash_func> *root;
-	typename list<pair<int, key_type> >::iterator ref;
-
-	hash_set_iterator(hash_set<key_type, hash_func> *root, typename list<pair<int, key_type> >::iterator ref)
+	typename list<pair<uint32_t, key_type> >::iterator ref;
+	typedef key_type type;
+	
+	hash_set_iterator(hash_set<key_type, hash_func> *root, typename list<pair<uint32_t, key_type> >::iterator ref)
 	{
 		this->root = root;
 		this->ref = ref;
 	}
-
-public:
-	typedef key_type type;
 
 	hash_set_iterator()
 	{
@@ -194,7 +191,7 @@ public:
 			
 			for (int i = 0; i > n && start != root->items.left; i--)
 			{
-				for (int b = (((list_item<pair<int, key_type> >*)start)->value.first >> root->shift); b < root->buckets.size() && root->buckets[b] == ref; b++)
+				for (int b = (((list_item<pair<uint32_t, key_type> >*)start)->value.first >> root->shift); b < root->buckets.size() && root->buckets[b] == ref; b++)
 					root->buckets[b]--;
 
 				list_end_item *temp = start->prev;
@@ -224,9 +221,9 @@ struct hash_set_const_iterator
 	typedef key_type type;
 
 	const hash_set<key_type, hash_func> *root;
-	typename list<pair<int, key_type> >::const_iterator ref;
+	typename list<pair<uint32_t, key_type> >::const_iterator ref;
 
-	hash_set_const_iterator(const hash_set<key_type, hash_func> *root, typename list<pair<int, key_type> >::const_iterator ref)
+	hash_set_const_iterator(const hash_set<key_type, hash_func> *root, typename list<pair<uint32_t, key_type> >::const_iterator ref)
 	{
 		this->root = root;
 		this->ref = ref;
@@ -391,10 +388,10 @@ struct hash_set : container<key_type, hash_set_iterator<key_type, hash_func>, ha
 	using typename super::iterator;
 	using typename super::const_iterator;
 
-	typedef typename list<pair<int, key_type> >::iterator item_iterator;
-	typedef typename list<pair<int, key_type> >::const_iterator item_const_iterator;
+	typedef typename list<pair<uint32_t, key_type> >::iterator item_iterator;
+	typedef typename list<pair<uint32_t, key_type> >::const_iterator item_const_iterator;
 
-	list<pair<int, key_type> > items;
+	list<pair<uint32_t, key_type> > items;
 	array<item_iterator> buckets;
 	uint32_t salt;
 	int shift;
@@ -502,7 +499,7 @@ struct hash_set : container<key_type, hash_set_iterator<key_type, hash_func>, ha
 			buckets[i*2] = buckets[i];
 		for (int i = 0; i < buckets.size()-1; i+=2)
 		{
-			int boundary = (i+1) << shift;
+			uint32_t boundary = (i+1) << shift;
 			item_iterator j = buckets[i];
 			while (j != buckets[i+2] && j->first < boundary)
 				j++;
@@ -523,7 +520,7 @@ struct hash_set : container<key_type, hash_set_iterator<key_type, hash_func>, ha
 		int bucket = (int)(hash >> shift);
 
 		if (buckets[bucket])
-			return lower_bound(buckets[bucket], buckets[bucket+1], pair<int, key_type>(hash, key));
+			return lower_bound(buckets[bucket], buckets[bucket+1], pair<uint32_t, key_type>(hash, key));
 		else
 			return items.end();
 	}
@@ -534,7 +531,7 @@ struct hash_set : container<key_type, hash_set_iterator<key_type, hash_func>, ha
 		int bucket = (int)(hash >> shift);
 
 		if (buckets[bucket])
-			return lower_bound(buckets[bucket], buckets[bucket+1], pair<int, key_type>(hash, key));
+			return lower_bound(buckets[bucket], buckets[bucket+1], pair<uint32_t, key_type>(hash, key));
 		else
 			return items.end();
 	}
@@ -544,7 +541,7 @@ struct hash_set : container<key_type, hash_set_iterator<key_type, hash_func>, ha
 		uint32_t hash = hash_it(key);
 		int bucket = (int)(hash >> shift);
 
-		pair<int, key_type> search(hash, key);
+		pair<uint32_t, key_type> search(hash, key);
 		item_iterator pos;
 		if (buckets[bucket])
 			pos = lower_bound(buckets[bucket], buckets[bucket+1], search);
@@ -574,7 +571,7 @@ struct hash_set : container<key_type, hash_set_iterator<key_type, hash_func>, ha
 		uint32_t hash = hash_it(key);
 		int bucket = (int)(hash >> shift);
 		
-		pair<int, key_type> search(hash, key);
+		pair<uint32_t, key_type> search(hash, key);
 		item_iterator pos;
 		if (buckets[bucket])
 			pos = lower_bound(buckets[bucket], buckets[bucket+1], search);
@@ -628,6 +625,16 @@ struct hash_set : container<key_type, hash_set_iterator<key_type, hash_func>, ha
 	{
 		item_const_iterator pos = position(key);
 		return (pos && pos->second == key);
+	}
+
+	void clear()
+	{
+		items.clear();
+		buckets.clear();
+		shift = 28;
+		count = 0;
+		
+		buckets.resize(17, items.end());
 	}
 };
 

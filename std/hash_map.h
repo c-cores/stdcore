@@ -64,6 +64,12 @@ struct hash_map : hash_set<implier<key_type, value_type>, hash_func>
 		iterator result = insert(key);
 		return result->value;
 	}
+
+	void update(const key_type &key, const value_type &value, value_type (*U)(value_type, value_type))
+	{
+		iterator pos = insert(key);
+		pos->value = U(pos->value, value);
+	}
 };
 
 }

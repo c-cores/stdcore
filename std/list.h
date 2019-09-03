@@ -21,8 +21,8 @@ struct list_end_item
 {
 	list_end_item()
 	{
-		next = NULL;
-		prev = NULL;
+		next = this;
+		prev = this;
 	}
 
 	virtual ~list_end_item()
@@ -113,8 +113,8 @@ struct list_iterator
 		if (loc == NULL)
 			return 0;
 
-		int count = -1;
-		for (list_end_item *i = loc; i->prev != i; i = i->prev)
+		int count = 0;
+		for (list_end_item *i = loc->prev; i->prev != i; i = i->prev)
 			count++;
 		return count;
 	}
@@ -147,16 +147,18 @@ struct list_iterator
 
 	list_iterator<value_type> &operator+=(int n)
 	{
-		while (n > 0 and loc->next != loc)
-		{
-			loc = loc->next;
-			n--;
-		}
+		if (loc != NULL) {
+			while (n > 0 and loc->next != loc)
+			{
+				loc = loc->next;
+				n--;
+			}
 
-		while (n < 0 and loc->prev != loc)
-		{
-			loc = loc->prev;
-			n++;
+			while (n < 0 and loc->prev != loc)
+			{
+				loc = loc->prev;
+				n++;
+			}
 		}
 
 		return *this;
@@ -164,16 +166,18 @@ struct list_iterator
 
 	list_iterator<value_type> &operator-=(int n)
 	{
-		while (n < 0 and loc->next != loc)
-		{
-			loc = loc->next;
-			n++;
-		}
+		if (loc != NULL) {
+			while (n < 0 and loc->next != loc)
+			{
+				loc = loc->next;
+				n++;
+			}
 
-		while (n > 0 and loc->prev != loc)
-		{
-			loc = loc->prev;
-			n--;
+			while (n > 0 and loc->prev != loc)
+			{
+				loc = loc->prev;
+				n--;
+			}
 		}
 
 		return *this;
@@ -195,66 +199,132 @@ struct list_iterator
 
 	bool operator==(list_iterator<value_type> i) const
 	{
-		return loc == i.loc or (((loc->next == loc) == (i.loc->next == i.loc)) and ((loc->prev == loc) == (i.loc->prev == i.loc)));
+		return loc == i.loc or
+		       (i.loc == NULL and (loc->next == loc or loc->prev == loc)) or
+		       (loc == NULL and (i.loc->next == i.loc or i.loc->prev == i.loc));
 	}
 
 	bool operator!=(list_iterator<value_type> i) const
 	{
-		return loc != i.loc and (((loc->next == loc) != (i.loc->next == i.loc)) or ((loc->prev == loc) != (i.loc->prev == i.loc)));
+		return loc != i.loc and
+		       (i.loc != NULL or (loc->next != loc and loc->prev != loc)) and
+		       (loc != NULL or (i.loc->next != i.loc and i.loc->prev != i.loc));
 	}
 
 	int operator-(list_iterator<value_type> i) const
 	{
 		int c0 = 0, c1 = 0;
-		list_iterator<value_type> j = i;
-		while (((i.loc != NULL and i.loc->prev != i.loc) or
-		        (j.loc != NULL and j.loc->next != j.loc)) and
-		        i.loc != loc and j.loc != loc)
-		{
-			j.loc = j.loc->next;
-			c1++;
-			i.loc = i.loc->prev;
-			c0--;
-		}
-
-		if (j == *this)
+		if (loc == NULL and i.loc == NULL) {
+			return 0;
+		} else if (loc == NULL) {
+			while (i.loc->next != i.loc) {
+				i.loc = i.loc->next;
+				c1++;
+			}
 			return c1;
-		else if (i == *this)
+		} else if (i.loc == NULL) {
+			list_const_iterator<value_type> j = *this;
+			while (j.loc->next != j.loc) {
+				j.loc = j.loc->next;
+				c0--;
+			}
 			return c0;
-		else
-			return c1 - c0;
+		} else {
+			list_const_iterator<value_type> j = i;
+			while ((i.loc != NULL and i.loc->prev != i.loc) and
+							(j.loc != NULL and j.loc->next != j.loc) and
+							i.loc != loc and j.loc != loc)
+			{
+				j.loc = j.loc->next;
+				c1++;
+				i.loc = i.loc->prev;
+				c0--;
+			}
+			while ((i.loc != NULL and i.loc->prev != i.loc) and
+							i.loc != loc and j.loc != loc)
+			{
+				i.loc = i.loc->prev;
+				c0--;
+			}
+			while ((j.loc != NULL and j.loc->next != j.loc) and
+							i.loc != loc and j.loc != loc)
+			{
+				j.loc = j.loc->next;
+				c1++;
+			}
+
+			if (j == *this)
+				return c1;
+			else if (i == *this)
+				return c0;
+			else
+				return c1 - c0;
+		}
 	}
 
 	bool operator==(list_const_iterator<value_type> i) const
 	{
-		return loc == i.loc or (((loc->next == loc) == (i.loc->next == i.loc)) and ((loc->prev == loc) == (i.loc->prev == i.loc)));
+		return loc == i.loc or
+		       (i.loc == NULL and (loc->next == loc or loc->prev == loc)) or
+		       (loc == NULL and (i.loc->next == i.loc or i.loc->prev == i.loc));
 	}
 
 	bool operator!=(list_const_iterator<value_type> i) const
 	{
-		return loc != i.loc and (((loc->next == loc) != (i.loc->next == i.loc)) or ((loc->prev == loc) != (i.loc->prev == i.loc)));
+		return loc != i.loc and
+		       (i.loc != NULL or (loc->next != loc and loc->prev != loc)) and
+		       (loc != NULL or (i.loc->next != i.loc and i.loc->prev != i.loc));
 	}
 
 	int operator-(list_const_iterator<value_type> i) const
 	{
 		int c0 = 0, c1 = 0;
-		list_const_iterator<value_type> j = i;
-		while (((i.loc != NULL and i.loc->prev != i.loc) or
-		        (j.loc != NULL and j.loc->next != j.loc)) and
-		        i.loc != loc and j.loc != loc)
-		{
-			j.loc = j.loc->next;
-			c1++;
-			i.loc = i.loc->prev;
-			c0--;
-		}
-
-		if (j == *this)
+		if (loc == NULL and i.loc == NULL) {
+			return 0;
+		} else if (loc == NULL) {
+			while (i.loc->next != i.loc) {
+				i.loc = i.loc->next;
+				c1++;
+			}
 			return c1;
-		else if (i == *this)
+		} else if (i.loc == NULL) {
+			list_const_iterator<value_type> j = *this;
+			while (j.loc->next != j.loc) {
+				j.loc = j.loc->next;
+				c0--;
+			}
 			return c0;
-		else
-			return c1 - c0;
+		} else {
+			list_const_iterator<value_type> j = i;
+			while ((i.loc != NULL and i.loc->prev != i.loc) and
+							(j.loc != NULL and j.loc->next != j.loc) and
+							i.loc != loc and j.loc != loc)
+			{
+				j.loc = j.loc->next;
+				c1++;
+				i.loc = i.loc->prev;
+				c0--;
+			}
+			while ((i.loc != NULL and i.loc->prev != i.loc) and
+							i.loc != loc and j.loc != loc)
+			{
+				i.loc = i.loc->prev;
+				c0--;
+			}
+			while ((j.loc != NULL and j.loc->next != j.loc) and
+							i.loc != loc and j.loc != loc)
+			{
+				j.loc = j.loc->next;
+				c1++;
+			}
+
+			if (j == *this)
+				return c1;
+			else if (i == *this)
+				return c0;
+			else
+				return c1 - c0;
+		}
 	}
 
 	core::slice<range<list_iterator<value_type> > > sub(int length) const
@@ -285,53 +355,57 @@ struct list_iterator
 
 	void drop(int n = 1)
 	{
-		if (n > 0)
-		{
-			list_end_item* start = loc->prev;
-			
-			for (int i = 0; i < n and loc->next != loc; i++)
+		if (loc != NULL) {
+			if (n > 0)
 			{
-				list_end_item *temp = loc->next;
-				delete loc;
-				loc = temp;
-			}
+				list_end_item* start = loc->prev;
 				
-			start->next = loc;
-			loc->prev = start;
-		}
-		else if (n < 0)
-		{
-			list_end_item *start = loc->prev;
-			
-			for (int i = 0; i > n and start->prev != start; i--)
-			{
-				list_end_item *temp = start->prev;
-				delete start;
-				start = temp;
+				for (int i = 0; i < n and loc->next != loc; i++)
+				{
+					list_end_item *temp = loc->next;
+					delete loc;
+					loc = temp;
+				}
+					
+				start->next = loc;
+				loc->prev = start;
 			}
-			
-			start->next = loc;
-			loc->prev = start;
+			else if (n < 0)
+			{
+				list_end_item *start = loc->prev;
+				
+				for (int i = 0; i > n and start->prev != start; i--)
+				{
+					list_end_item *temp = start->prev;
+					delete start;
+					start = temp;
+				}
+				
+				start->next = loc;
+				loc->prev = start;
+			}
 		}
 	}
 
 	list<value_type> pop(int n = 1)
 	{
 		list<value_type> result;
-		list_end_item *start = loc;
-		for (int i = 0; i < n and loc->next != loc; i++)
-			loc = loc->next;
-		for (int i = 0; i > n and start->prev != start and start->prev->prev != start->prev; i--)
-			start = start->prev;
+		if (loc != NULL) {
+			list_end_item *start = loc;
+			for (int i = 0; i < n and loc->next != loc; i++)
+				loc = loc->next;
+			for (int i = 0; i > n and start->prev != start and start->prev->prev != start->prev; i--)
+				start = start->prev;
 
-		if (start != loc)
-		{
-			result.left->next = start;
-			result.right->prev = loc->prev;
-			start->prev->next = loc;
-			loc->prev = start->prev;
-			result.left->next->prev = result.left;
-			result.right->prev->next = result.right;
+			if (start != loc)
+			{
+				result.left->next = start;
+				result.right->prev = loc->prev;
+				start->prev->next = loc;
+				loc->prev = start->prev;
+				result.left->next->prev = result.left;
+				result.right->prev->next = result.right;
+			}
 		}
 
 		return result;
@@ -339,72 +413,80 @@ struct list_iterator
 
 	void push(value_type v) const
 	{
-		list_end_item *start = loc->prev;
-		start->next = new list_item<value_type>(v);
-		start->next->prev = start;
-		start = start->next;
-		start->next = loc;
-		loc->prev = start;
+		if (loc != NULL) {
+			list_end_item *start = loc->prev;
+			start->next = new list_item<value_type>(v);
+			start->next->prev = start;
+			start = start->next;
+			start->next = loc;
+			loc->prev = start;
+		}
 	}
 
 	template <class container>
 	void append(const container &c) const
 	{
-		list_end_item *start = loc->prev;
-		for (typename container::const_iterator i = c.begin(); i != c.end(); i++)
-		{
-			start->next = new list_item<value_type>(*i);
-			start->next->prev = start;
-			start = start->next;
-		}
+		if (loc != NULL) {
+			list_end_item *start = loc->prev;
+			for (typename container::const_iterator i = c.begin(); i != c.end(); i++)
+			{
+				start->next = new list_item<value_type>(*i);
+				start->next->prev = start;
+				start = start->next;
+			}
 
-		start->next = loc;
-		loc->prev = start;
+			start->next = loc;
+			loc->prev = start;
+		}
 	}
 
 	void replace(int n, value_type v)
 	{
-		if (n < 0)
-		{
-			*this += n;
-			n = -n;
-		}
+		if (loc != NULL) {
+			if (n < 0)
+			{
+				*this += n;
+				n = -n;
+			}
 
-		if (loc->next == loc)
-		{
-			push(v);
-			loc = loc->next;
-		}
-		else
-		{
-			((list_item<value_type>*)loc)->value = v;
-			loc = loc->next;
-			drop(n-1);
+			if (loc->next == loc)
+			{
+				push(v);
+				loc = loc->next;
+			}
+			else
+			{
+				((list_item<value_type>*)loc)->value = v;
+				loc = loc->next;
+				drop(n-1);
+			}
 		}
 	}
 	
 	template <class container>
 	void replace(int n, const container &c)
 	{
-		if (n < 0)
-		{
-			*this += n;
-			n = -n;
-		}
+		if (loc != NULL) {
+			if (n < 0)
+			{
+				*this += n;
+				n = -n;
+			}
 
-		typename container::const_iterator j = c.begin();
-		while (n > 0 and j and loc->next != loc)
-		{
-			((list_item<value_type>*)loc)->value = *j;
-			loc = loc->next;
-			n--;
-			j++;
-		}
+			typename container::const_iterator j = c.begin();
+			while (n > 0 and j and loc->next != loc)
+			{
+				((list_item<value_type>*)loc)->value = *j;
+				loc = loc->next;
+				n--;
+				j++;
+			}
 
-		if (j)
-			append(j.sub());
-		else if (n > 0)
-			drop(n);
+			if (j)
+				append(j.sub());
+			else if (n > 0)
+				drop(n);
+		}
 	}
 
 	template <class iterator_type>
@@ -520,8 +602,8 @@ public:
 		if (loc == NULL)
 			return 0;
 
-		int count = -1;
-		for (list_end_item *i = loc; i->prev != i; i = i->prev)
+		int count = 0;
+		for (list_end_item *i = loc->prev; i->prev != i; i = i->prev)
 			count++;
 		return count;
 	}
@@ -554,16 +636,18 @@ public:
 
 	list_const_iterator<value_type> &operator+=(int n)
 	{
-		while (n > 0 and loc->next != loc)
-		{
-			loc = loc->next;
-			n--;
-		}
+		if (loc != NULL) {
+			while (n > 0 and loc->next != loc)
+			{
+				loc = loc->next;
+				n--;
+			}
 
-		while (n < 0 and loc->prev != loc)
-		{
-			loc = loc->prev;
-			n++;
+			while (n < 0 and loc->prev != loc)
+			{
+				loc = loc->prev;
+				n++;
+			}
 		}
 
 		return *this;
@@ -571,16 +655,18 @@ public:
 
 	list_const_iterator<value_type> &operator-=(int n)
 	{
-		while (n < 0 and loc->next != loc)
-		{
-			loc = loc->next;
-			n++;
-		}
+		if (loc != NULL) {
+			while (n < 0 and loc->next != loc)
+			{
+				loc = loc->next;
+				n++;
+			}
 
-		while (n > 0 and loc->prev != loc)
-		{
-			loc = loc->prev;
-			n--;
+			while (n > 0 and loc->prev != loc)
+			{
+				loc = loc->prev;
+				n--;
+			}
 		}
 
 		return *this;
@@ -602,67 +688,132 @@ public:
 
 	bool operator==(list_const_iterator<value_type> i) const
 	{
-		return loc == i.loc or (((loc->next == loc) == (i.loc->next == i.loc)) and ((loc->prev == loc) == (i.loc->prev == i.loc)));
+		return loc == i.loc or
+		       (i.loc == NULL and (loc->next == loc or loc->prev == loc)) or
+		       (loc == NULL and (i.loc->next == i.loc or i.loc->prev == i.loc));
 	}
 
 	bool operator!=(list_const_iterator<value_type> i) const
 	{
-		return loc != i.loc and (((loc->next == loc) != (i.loc->next == i.loc)) or ((loc->prev == loc) != (i.loc->prev == i.loc)));
+		return loc != i.loc and
+		       (i.loc != NULL or (loc->next != loc and loc->prev != loc)) and
+		       (loc != NULL or (i.loc->next != i.loc and i.loc->prev != i.loc));
 	}
-
+	
 	bool operator==(list_iterator<value_type> i) const
 	{
-		return loc == i.loc or (((loc->next == loc) == (i.loc->next == i.loc)) and ((loc->prev == loc) == (i.loc->prev == i.loc)));
+		return loc == i.loc or
+		       (i.loc == NULL and (loc->next == loc or loc->prev == loc)) or
+		       (loc == NULL and (i.loc->next == i.loc or i.loc->prev == i.loc));
 	}
 
 	bool operator!=(list_iterator<value_type> i) const
 	{
-		return loc != i.loc and (((loc->next == loc) != (i.loc->next == i.loc)) or ((loc->prev == loc) != (i.loc->prev == i.loc)));
+		return loc != i.loc and
+		       (i.loc != NULL or (loc->next != loc and loc->prev != loc)) and
+		       (loc != NULL or (i.loc->next != i.loc and i.loc->prev != i.loc));
 	}
 
 	int operator-(list_const_iterator<value_type> i) const
 	{
 		int c0 = 0, c1 = 0;
-		list_const_iterator<value_type> j = i;
-		while (((i.loc != NULL and i.loc->prev != i.loc) or
-		        (j.loc != NULL and j.loc->next != j.loc)) and
-		        i.loc != loc and j.loc != loc)
-		{
-			j.loc = j.loc->next;
-			c1++;
-			i.loc = i.loc->prev;
-			c0--;
-		}
-
-		
-		if (j == *this)
+		if (loc == NULL and i.loc == NULL) {
+			return 0;
+		} else if (loc == NULL) {
+			while (i.loc->next != i.loc) {
+				i.loc = i.loc->next;
+				c1++;
+			}
 			return c1;
-		else if (i == *this)
+		} else if (i.loc == NULL) {
+			list_const_iterator<value_type> j = *this;
+			while (j.loc->next != j.loc) {
+				j.loc = j.loc->next;
+				c0--;
+			}
 			return c0;
-		else
-			return c1 - c0;
+		} else {
+			list_const_iterator<value_type> j = i;
+			while ((i.loc != NULL and i.loc->prev != i.loc) and
+							(j.loc != NULL and j.loc->next != j.loc) and
+							i.loc != loc and j.loc != loc)
+			{
+				j.loc = j.loc->next;
+				c1++;
+				i.loc = i.loc->prev;
+				c0--;
+			}
+			while ((i.loc != NULL and i.loc->prev != i.loc) and
+							i.loc != loc and j.loc != loc)
+			{
+				i.loc = i.loc->prev;
+				c0--;
+			}
+			while ((j.loc != NULL and j.loc->next != j.loc) and
+							i.loc != loc and j.loc != loc)
+			{
+				j.loc = j.loc->next;
+				c1++;
+			}
+
+			if (j == *this)
+				return c1;
+			else if (i == *this)
+				return c0;
+			else
+				return c1 - c0;
+		}
 	}
 
 	int operator-(list_iterator<value_type> i) const
 	{
 		int c0 = 0, c1 = 0;
-		list_const_iterator<value_type> j = i;
-		while (((i.loc != NULL and i.loc->prev != i.loc) or
-		        (j.loc != NULL and j.loc->next != j.loc)) and
-		        i.loc != loc and j.loc != loc)
-		{
-			j.loc = j.loc->next;
-			c1++;
-			i.loc = i.loc->prev;
-			c0--;
-		}
-
-		if (j == *this)
+		if (loc == NULL and i.loc == NULL) {
+			return 0;
+		} else if (loc == NULL) {
+			while (i.loc->next != i.loc) {
+				i.loc = i.loc->next;
+				c1++;
+			}
 			return c1;
-		else if (i == *this)
+		} else if (i.loc == NULL) {
+			list_const_iterator<value_type> j = *this;
+			while (j.loc->next != j.loc) {
+				j.loc = j.loc->next;
+				c0--;
+			}
 			return c0;
-		else
-			return c1 - c0;
+		} else {
+			list_const_iterator<value_type> j = i;
+			while ((i.loc != NULL and i.loc->prev != i.loc) and
+							(j.loc != NULL and j.loc->next != j.loc) and
+							i.loc != loc and j.loc != loc)
+			{
+				j.loc = j.loc->next;
+				c1++;
+				i.loc = i.loc->prev;
+				c0--;
+			}
+			while ((i.loc != NULL and i.loc->prev != i.loc) and
+							i.loc != loc and j.loc != loc)
+			{
+				i.loc = i.loc->prev;
+				c0--;
+			}
+			while ((j.loc != NULL and j.loc->next != j.loc) and
+							i.loc != loc and j.loc != loc)
+			{
+				j.loc = j.loc->next;
+				c1++;
+			}
+
+			if (j == *this)
+				return c1;
+			else if (i == *this)
+				return c0;
+			else
+				return c1 - c0;
+		}
 	}
 
 	core::slice<range<list_const_iterator<value_type> > > sub(int length) const
@@ -723,20 +874,16 @@ struct list : container<value_type, list_iterator<value_type>, list_const_iterat
 	{
 		left = new end_item();
 		right = new end_item();
-		left->prev = left;
 		left->next = right;
 		right->prev = left;
-		right->next = right;
 	}
 
 	list(const value_type &c)
 	{
 		left = new end_item();
 		right = new end_item();
-		left->prev = left;
 		left->next = right;
 		right->prev = left;
-		right->next = right;
 		end().push(c);
 	}
 
@@ -745,10 +892,8 @@ struct list : container<value_type, list_iterator<value_type>, list_const_iterat
 	{
 		left = new end_item();
 		right = new end_item();
-		left->prev = left;
 		left->next = right;
 		right->prev = left;
-		right->next = right;
 		for (typename container::const_iterator i = c.begin(); i; i++)
 			end().push(*i);
 	}
@@ -757,10 +902,8 @@ struct list : container<value_type, list_iterator<value_type>, list_const_iterat
 	{
 		left = new end_item();
 		right = new end_item();
-		left->prev = left;
 		left->next = right;
 		right->prev = left;
-		right->next = right;
 		for (const_iterator i = c.begin(); i; i++)
 			end().push(*i);
 	}
@@ -769,10 +912,8 @@ struct list : container<value_type, list_iterator<value_type>, list_const_iterat
 	{
 		this->left = new end_item();
 		this->right = new end_item();
-		this->left->prev = this->left;
 		this->left->next = this->right;
 		this->right->prev = this->left;
-		this->right->next = this->right;
 		for (iterator i = left; i != right; i++)
 			end().push(*i);
 	}
@@ -781,10 +922,8 @@ struct list : container<value_type, list_iterator<value_type>, list_const_iterat
 	{
 		this->left = new end_item();
 		this->right = new end_item();
-		this->left->prev = this->left;
 		this->left->next = this->right;
 		this->right->prev = this->left;
-		this->right->next = this->right;
 		for (const_iterator i = left; i != right; i++)
 			end().push(*i);
 	}
@@ -796,9 +935,7 @@ struct list : container<value_type, list_iterator<value_type>, list_const_iterat
 		this->left = new end_item();
 		this->right = new end_item();
 		this->left->next = this->right;
-		this->left->prev = this->left;
 		this->right->prev = this->left;
-		this->right->next = this->right;
 		for (typename container::iterator i = left; i != right; i++)
 			end().push(*i);
 	}
@@ -809,10 +946,8 @@ struct list : container<value_type, list_iterator<value_type>, list_const_iterat
 	{
 		this->left = new end_item();
 		this->right = new end_item();
-		this->left->prev = this->left;
 		this->left->next = this->right;
 		this->right->prev = this->left;
-		this->right->next = this->right;
 		for (typename container::const_iterator i = left; i != right; i++)
 			end().push(*i);
 	}
