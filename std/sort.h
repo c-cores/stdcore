@@ -211,6 +211,18 @@ typename container_type::iterator sort_insert(container_type &c1, const element 
 	return result-1;
 }
 
+template <class container_type, class element>
+typename container_type::iterator sort_unique_insert(container_type &c1, const element &c2)
+{
+	typename container_type::iterator result = lower_bound(c1, c2);
+	if (result and c2 == result.get()) {
+		return result;
+	} else {
+		result.push(c2);
+		return result-1;
+	}
+}
+
 template <class container_type>
 bool is_sorted(const container_type &c)
 {

@@ -356,29 +356,26 @@ struct list_iterator
 	void drop(int n = 1)
 	{
 		if (loc != NULL) {
+			list_end_item *start = loc->prev, *temp;
 			if (n > 0)
-			{
-				list_end_item* start = loc->prev;
-				
+			{	
 				for (int i = 0; i < n and loc->next != loc; i++)
 				{
-					list_end_item *temp = loc->next;
-					delete loc;
-					loc = temp;
+					temp = loc;
+					loc = loc->next;
+					delete temp;
 				}
-					
+				
 				start->next = loc;
 				loc->prev = start;
 			}
 			else if (n < 0)
 			{
-				list_end_item *start = loc->prev;
-				
 				for (int i = 0; i > n and start->prev != start; i--)
 				{
-					list_end_item *temp = start->prev;
-					delete start;
-					start = temp;
+					temp = start;
+					start = start->prev;
+					delete temp;
 				}
 				
 				start->next = loc;
@@ -1154,14 +1151,16 @@ struct list : container<value_type, list_iterator<value_type>, list_const_iterat
 
 	static void drop(iterator start, iterator end)
 	{
-		list<value_type> result;
-		result.left->next = start.loc;
-		result.right->prev = end.loc->prev;
-		start.loc->prev->next = end.loc;
-		end.loc->prev = start.loc->prev;
-		result.left->next->prev = result.left;
-		result.right->prev->next = result.right;
-		result.release();
+		list_end_item *first = start.loc->prev, *last = start.loc, *temp;
+		while (last != end.loc && last->next != last)
+		{
+			temp = last;
+			last = last->next;
+			delete temp;
+		}
+			
+		first->next = last;
+		last->prev = first;
 	}
 
 	void drop(int start, int end)
