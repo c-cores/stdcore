@@ -8,6 +8,7 @@
 #pragma once
 
 #include <std/search.h>
+#include <std/array.h>
 
 namespace core
 {
@@ -77,72 +78,129 @@ container_type &sort_selection_inplace(container_type &c)
 }
 
 template <class container_type>
-container_type sort_quick(container_type c, typename container_type::iterator pivot = typename container_type::iterator())
+typename container_type::iterator choseLast(range<typename container_type::iterator> c)
 {
-	if (c.begin() == c.end() || c.begin()+1 == c.end())
-		return c;
-	else if (c.begin()+2 == c.end())
-	{
-		if (*c.rbegin() < *c.begin())
-			c.begin().swap(c.rbegin());
-		return c;
-	}
-	else
-	{
-		if (pivot)
-			pivot.swap(c.rbegin());
-
-		pivot = c.rbegin();
-
-		typename container_type::iterator store = c.begin();
-		for (typename container_type::iterator i = c.begin(); i != c.rbegin() && i != c.end(); i++)
-			if (*i < *pivot)
-			{
-				i.swap(store);
-				store++;
-			}
-
-		store.swap(c.rbegin());
-
-		sort_quick(slice_t(c.begin(), store));
-		sort_quick(slice_t(store+1, c.end()));
-		return c;
-	}
+	return c.finish-1;
 }
 
 template <class container_type>
-container_type &sort_quick_inplace(container_type &c, typename container_type::iterator pivot = typename container_type::iterator())
+typename container_type::iterator choseMid(range<typename container_type::iterator> c)
 {
-	if (c.begin() == c.end() || c.begin()+1 == c.end())
-		return c;
-	else if (c.begin()+2 == c.end())
-	{
-		if (*c.rbegin() < *c.begin())
-			c.begin().swap(c.rbegin());
-		return c;
-	}
-	else
-	{
-		if (pivot)
-			pivot.swap(c.rbegin());
+	return c.start + c.size()/2;
+}
 
-		pivot = c.rbegin();
+template <class container_type>
+typename container_type::iterator choseRand(range<typename container_type::iterator> c)
+{
+	return c.start + rand()%(c.finish-c.start);
+}
 
-		typename container_type::iterator store = c.begin();
-		for (typename container_type::iterator i = c.begin(); i != c.rbegin() && i != c.end(); i++)
-			if (*i < *pivot)
-			{
-				i.swap(store);
-				store++;
+template <class container_type>
+struct Sort {
+	typedef typename container_type::iterator iterator;
+	typedef iterator (*PivotFunc)(range<iterator>);
+};
+
+template <class container_type>
+container_type sort_quick(container_type c, typename Sort<container_type>::PivotFunc chosePivot = &choseLast<container_type>)
+{
+	typedef range<typename container_type::iterator> section_t;
+	core::array<section_t> stack;
+	if (c.begin() != c.end() and c.begin()+1 != c.end())
+		stack.push_back(section_t(c.begin(), c.end()));
+
+	while (stack.size() > 0) {
+		section_t r = stack.back();
+		stack.drop_back();
+
+		if (r.start+2 == r.finish) {
+			if (*r.start > *(r.start+1))
+				r.start.swap(r.start+1);
+		} else {
+			typename container_type::iterator pivot = chosePivot(r);
+			if (pivot != r.finish-1) {
+				pivot.swap(r.finish-1);
+				pivot = r.finish-1;
 			}
 
-		store.swap(c.rbegin());
+			typename container_type::iterator store = r.start;
+			for (typename container_type::iterator i = r.start; i != pivot and i != r.finish; i++)
+				if (*i < *pivot)
+				{
+					if (i != store)
+						i.swap(store);
+					store++;
+				}
 
-		sort_quick(slice_t(c.begin(), store));
-		sort_quick(slice_t(store+1, c.end()));
+			if (store != pivot) {
+				store.swap(pivot);
+				pivot = store;
+			}
 
-		return c;
+			if (r.start != store and r.start+1 != store)
+				stack.push_back(section_t(r.start, store));
+			store++;
+
+			while (store != r.finish and *store == *pivot)
+				store++;
+
+			if (store != r.finish and store+1 != r.finish)
+				stack.push_back(section_t(store, r.finish));
+		}
 	}
+
+	return c;
+}
+
+template <class container_type>
+container_type &sort_quick_inplace(container_type &c, typename Sort<container_type>::PivotFunc chosePivot = &choseLast<container_type>)
+{
+	typedef range<typename container_type::iterator> section_t;
+	core::array<section_t> stack;
+	if (c.begin() != c.end() and c.begin()+1 != c.end())
+		stack.push_back(section_t(c.begin(), c.end()));
+
+	while (stack.size() > 0) {
+		section_t r = stack.back();
+		stack.drop_back();
+
+		if (r.start+2 == r.finish) {
+			if (*r.start > *(r.start+1))
+				r.start.swap(r.start+1);
+		} else {
+			typename container_type::iterator pivot = chosePivot(r);
+			if (pivot != r.finish-1) {
+				pivot.swap(r.finish-1);
+				pivot = r.finish-1;
+			}
+
+			typename container_type::iterator store = r.start;
+			for (typename container_type::iterator i = r.start; i != pivot and i != r.finish; i++)
+				if (*i < *pivot)
+				{
+					if (i != store)
+						i.swap(store);
+					store++;
+				}
+
+			if (store != pivot) {
+				store.swap(pivot);
+				pivot = store;
+			}
+
+			if (r.start != store and r.start+1 != store)
+				stack.push_back(section_t(r.start, store));
+			store++;
+
+			while (store != r.finish and *store == *pivot)
+				store++;
+
+			if (store != r.finish and store+1 != r.finish)
+				stack.push_back(section_t(store, r.finish));
+		}
+	}
+
+	return c;
 }
 
 template <class container_type1, class container_type2>
