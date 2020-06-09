@@ -81,7 +81,7 @@ struct hash_set_iterator
 		return ref.idx();
 	}
 
-	int hash() const
+	uint32_t hash() const
 	{
 		return ref->first;
 	}
@@ -167,41 +167,61 @@ struct hash_set_iterator
 
 	void drop(int n = 1)
 	{
-		if (n > 0)
-		{
-			list_end_item *start = ref.loc->prev;
-			
-			for (int i = 0; i < n && ref.loc != root->items.right; i++)
+		if (ref.loc != NULL) {
+			if (n > 0)
 			{
-				for (int b = bucket(); b >= 0 && root->buckets[b] == ref; b--)
-					root->buckets[b]++;
-
-				list_end_item *temp = ref.loc->next;
-				delete ref.loc;
-				ref.loc = temp;
-				root->count--;
-			}
+				hash_set_iterator<key_type, hash_func> start = *this-1;
+				list_item<pair<uint32_t, key_type> > *temp;
 				
-			start->next = ref.loc;
-			ref.loc->prev = start;
-		}
-		else if (n < 0)
-		{
-			list_end_item *start = ref.loc->prev;
-			
-			for (int i = 0; i > n && start != root->items.left; i--)
-			{
-				for (int b = (((list_item<pair<uint32_t, key_type> >*)start)->value.first >> root->shift); b < root->buckets.size() && root->buckets[b] == ref; b++)
-					root->buckets[b]--;
+				for (int i = 0; i < n and ref.loc->next != ref.loc; i++)
+				{
+					int bx = bucket();
+					if (root->buckets[bx].loc == ref.loc)
+						root->buckets[bx]++;
+					
+					for (int b = bx+1; b < root->buckets.size() and root->buckets[b].loc == ref.loc; b++) {
+						root->buckets[b]++;
+					}
+					
+					for (int b = bx-1; b >= 0 and root->buckets[b].loc == ref.loc; b--) {
+						root->buckets[b]++;
+					}
 
-				list_end_item *temp = start->prev;
-				delete start;
-				start = temp;
-				root->count--;
+					temp = (list_item<pair<uint32_t, key_type> >*)ref.loc;
+					ref.loc = ref.loc->next;
+					delete temp;
+					root->count--;
+				}
+					
+				start.ref.loc->next = ref.loc;
+				ref.loc->prev = start.ref.loc;
 			}
-			
-			start->next = ref.loc;
-			ref.loc->prev = start;
+			else if (n < 0)
+			{
+				hash_set_iterator<key_type, hash_func> start = *this-1;
+				list_item<pair<uint32_t, key_type> > *temp;
+				
+				for (int i = 0; i > n and start.ref.loc->prev != start.ref.loc; i--)
+				{
+					int bx = start.bucket();
+					if (root->buckets[bx].loc == start.ref.loc)
+						root->buckets[bx]--;
+						
+					for (int b = bx+1; b < root->buckets.size() and root->buckets[b].loc == start.ref.loc; b++)
+						root->buckets[b]--;
+					
+					for (int b = bx-1; b >= 0 and root->buckets[b].loc == start.ref.loc; b--)
+						root->buckets[b]--;
+
+					temp = (list_item<pair<uint32_t, key_type> >*)start.ref.loc;
+					start.ref.loc = start.ref.loc->prev;
+					delete temp;
+					root->count--;
+				}
+				
+				start.ref.loc->next = ref.loc;
+				ref.loc->prev = start.ref.loc;
+			}
 		}
 	}
 
@@ -278,7 +298,7 @@ struct hash_set_const_iterator
 		return ref.idx();
 	}
 
-	int hash() const
+	uint32_t hash() const
 	{
 		return ref->first;
 	}
@@ -500,10 +520,17 @@ struct hash_set : container<key_type, hash_set_iterator<key_type, hash_func>, ha
 		for (int i = 0; i < buckets.size()-1; i+=2)
 		{
 			uint32_t boundary = (i+1) << shift;
-			item_iterator j = buckets[i];
-			while (j != buckets[i+2] && j->first < boundary)
+			if (buckets[i]) {
+				buckets[i+1] = lower_bound(buckets[i], buckets[i+2], pair<uint32_t, key_type>(boundary, key_type()));
+			} else {
+				buckets[i+1] = buckets[i];
+			}
+		
+			/*item_iterator j = buckets[i];
+			while (j and j != buckets[i+2] and j->first < boundary) {
 				j++;
-			buckets[i+1] = j;
+			}
+			buckets[i+1] = j;*/
 		}
 	}
 
@@ -579,10 +606,9 @@ struct hash_set : container<key_type, hash_set_iterator<key_type, hash_func>, ha
 		else
 			pos = items.end();
 
-		if (pos and pos->second == key)
+		if (pos and pos->second == key) {
 			return iterator(this, pos);
-		else
-		{
+		} else {
 			pos.push(search);
 			item_iterator result = pos-1;
 

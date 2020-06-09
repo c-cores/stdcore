@@ -274,7 +274,7 @@ struct array_iterator
 			n = -n;
 		}
 
-		if (root->count < index + n)
+		if ((root->count) < index + n)
 			n = root->count - index;
 		
 		for (value_type *i = root->data+index; i < root->data+index+n; i++)
@@ -300,7 +300,7 @@ struct array_iterator
 			n = -n;
 		}
 
-		if (root->count < index + n)
+		if ((root->count) < index + n)
 			n = root->count - index;
 
 		result.reserve(n);
@@ -1392,7 +1392,7 @@ array<value_type> array_t(int n, ...)
 
 	va_list args;
 	va_start(args, n);
-	for (result.count = 0; result.count < n; result.count++)
+	for (result.count = 0; (result.count) < n; result.count++)
 		new (result.data+result.count) value_type(va_arg(args, value_type));
 	va_end(args);
 

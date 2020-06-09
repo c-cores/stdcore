@@ -356,12 +356,13 @@ struct list_iterator
 	void drop(int n = 1)
 	{
 		if (loc != NULL) {
-			list_end_item *start = loc->prev, *temp;
+			list_end_item *start = loc->prev;
+			list_item<value_type> *temp;
 			if (n > 0)
 			{	
 				for (int i = 0; i < n and loc->next != loc; i++)
 				{
-					temp = loc;
+					temp = (list_item<value_type>*)loc;
 					loc = loc->next;
 					delete temp;
 				}
@@ -373,7 +374,7 @@ struct list_iterator
 			{
 				for (int i = 0; i > n and start->prev != start; i--)
 				{
-					temp = start;
+					temp = (list_item<value_type>*)start;
 					start = start->prev;
 					delete temp;
 				}
@@ -1323,28 +1324,32 @@ struct list : container<value_type, list_iterator<value_type>, list_const_iterat
 
 	void clear()
 	{
-		end_item *curr = left->next, *prev;
-		while (curr != right)
-		{
-			prev = curr;
-			curr = curr->next;
-			delete prev;
+		if (left != NULL and right != NULL) {
+			end_item *curr = left->next, *prev;
+			while (curr != right)
+			{
+				prev = curr;
+				curr = curr->next;
+				delete prev;
+			}
+			left->next = right;
+			right->prev = left;
 		}
-		left->next = right;
-		right->prev = left;
 	}
 
 	void release()
 	{
-		end_item *curr = left->next, *prev;
-		while (curr != right)
-		{
-			prev = curr;
-			curr = curr->next;
-			delete prev;
+		if (left != NULL and right != NULL) {
+			end_item *curr = left->next, *prev;
+			while (curr != right)
+			{
+				prev = curr;
+				curr = curr->next;
+				delete prev;
+			}
+			left->next = right;
+			right->prev = left;
 		}
-		left->next = right;
-		right->prev = left;
 	}
 
 	template <class container>

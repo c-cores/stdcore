@@ -321,24 +321,26 @@ template <class container_type1, class container_type2>
 container_type1 &sort_unique_merge_inplace(container_type1 &c1, const container_type2 &c2)
 {
 	typename container_type2::const_iterator j = c2.begin();
-	typename container_type1::iterator i = lower_bound(c1, *j);
-	while (i != c1.end() && j != c2.end())
-	{
-		if (*i < *j)
-			i++;
-		else if (*j < *i)
+	if (j) {
+		typename container_type1::iterator i = lower_bound(c1, *j);
+		while (i != c1.end() && j != c2.end())
 		{
-			i.push(*j);
-			j++;
+			if (*i < *j)
+				i++;
+			else if (*j < *i)
+			{
+				i.push(*j);
+				j++;
+			}
+			else
+			{
+				i++;
+				j++;
+			}
 		}
-		else
-		{
-			i++;
-			j++;
-		}
-	}
 
-	c1.append_back(j.sub());
+		c1.append_back(j.sub());
+	}
 	return c1;
 }
 
