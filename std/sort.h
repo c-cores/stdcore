@@ -1,5 +1,5 @@
 /*
- * algorithm.h
+ * sort.h
  *
  *  Created on: Oct 7, 2014
  *      Author: nbingham
