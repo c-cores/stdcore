@@ -10,18 +10,18 @@ namespace core
 {
 
 template <typename value_type>
-struct range;
+struct boundary;
 
 template <typename value_type>
-struct range_const_iterator
+struct boundary_const_iterator
 {
-	friend class range<value_type>;
+	friend class boundary<value_type>;
 
 protected:
-	const range<value_type> *root;
+	const boundary<value_type> *root;
 	value_type value;
 
-	range_const_iterator(const range<value_type> *root, value_type value)
+	boundary_const_iterator(const boundary<value_type> *root, value_type value)
 	{
 		this->root = root;
 		this->value = value;
@@ -29,19 +29,19 @@ protected:
 public:
 	typedef value_type type;
 
-	range_const_iterator()
+	boundary_const_iterator()
 	{
 		this->root = NULL;
 	}
 
-	~range_const_iterator()
+	~boundary_const_iterator()
 	{
 
 	}
 
 	operator bool() const
 	{
-		return root != NULL && value >= root->start && value < root->finish;
+		return root != NULL && value != root->start-1 && value != root->finish;
 	}
 
 	value_type operator*() const
@@ -69,108 +69,108 @@ public:
 		return value - root->start;
 	}
 
-	range_const_iterator<value_type> operator++(int)
+	boundary_const_iterator<value_type> operator++(int)
 	{
-		range_const_iterator<value_type> result = *this;
+		boundary_const_iterator<value_type> result = *this;
 		value++;
 		return result;
 	}
 
-	range_const_iterator<value_type> operator--(int)
+	boundary_const_iterator<value_type> operator--(int)
 	{
-		range_const_iterator<value_type> result = *this;
+		boundary_const_iterator<value_type> result = *this;
 		value--;
 		return result;
 	}
 
-	range_const_iterator<value_type> &operator++()
+	boundary_const_iterator<value_type> &operator++()
 	{
 		value++;
 		return *this;
 	}
 
-	range_const_iterator<value_type> &operator--()
+	boundary_const_iterator<value_type> &operator--()
 	{
 		value--;
 		return *this;
 	}
 
-	range_const_iterator<value_type> &operator+=(int n)
+	boundary_const_iterator<value_type> &operator+=(int n)
 	{
 		value += n;
 		return *this;
 	}
 
-	range_const_iterator<value_type> &operator-=(int n)
+	boundary_const_iterator<value_type> &operator-=(int n)
 	{
 		value -= n;
 		return *this;
 	}
 
-	range_const_iterator<value_type> operator+(int n) const
+	boundary_const_iterator<value_type> operator+(int n) const
 	{
-		range_const_iterator<value_type> result;
+		boundary_const_iterator<value_type> result;
 		result.root = root;
 		result.value = value + n;
 		return result;
 	}
 
-	range_const_iterator<value_type> operator-(int n) const
+	boundary_const_iterator<value_type> operator-(int n) const
 	{
-		range_const_iterator<value_type> result;
+		boundary_const_iterator<value_type> result;
 		result.root = root;
 		result.value = value - n;
 		return result;
 	}
 
-	bool operator==(range_const_iterator<value_type> i) const
+	bool operator==(boundary_const_iterator<value_type> i) const
 	{
 		return value == i.value;
 	}
 
-	bool operator!=(range_const_iterator<value_type> i) const
+	bool operator!=(boundary_const_iterator<value_type> i) const
 	{
 		return value != i.value;
 	}
 
-	int operator-(range_const_iterator<value_type> i) const
+	int operator-(boundary_const_iterator<value_type> i) const
 	{
 		return value - i.value;
 	}
 
-	range<value_type> sub(int length) const
+	boundary<value_type> sub(int length) const
 	{
 		value_type bound = value+length;
 		if (length < 0)
-			return range<value_type>(bound < root->start ? root->start : bound, value);
+			return boundary<value_type>(bound < root->start ? root->start : bound, value);
 		else
-			return range<value_type>(value, bound > root->finish ? root->finish : bound);
+			return boundary<value_type>(value, bound > root->finish ? root->finish : bound);
 	}
 
-	range<value_type> subcpy(int length) const
+	boundary<value_type> subcpy(int length) const
 	{
 		value_type bound = value+length;
 		if (length < 0)
-			return range<value_type>(bound < root->start ? root->start : bound, value);
+			return boundary<value_type>(bound < root->start ? root->start : bound, value);
 		else
-			return range<value_type>(value, bound > root->finish ? root->finish : bound);
+			return boundary<value_type>(value, bound > root->finish ? root->finish : bound);
 	}
 
-	range<value_type> sub() const
+	boundary<value_type> sub() const
 	{
-		return range<value_type>(value, root->finish);
+		return boundary<value_type>(value, root->finish);
 	}
 
-	range<value_type> subcpy() const
+	boundary<value_type> subcpy() const
 	{
-		return range<value_type>(value, root->finish);
+		return boundary<value_type>(value, root->finish);
 	}
 };
 
 template <class value_type>
-struct range : container<value_type, range_const_iterator<value_type>, range_const_iterator<value_type> >
+struct boundary : container<value_type, boundary_const_iterator<value_type>, boundary_const_iterator<value_type> >
 {
-	typedef container<value_type, range_const_iterator<value_type>, range_const_iterator<value_type> > super;
+	typedef container<value_type, boundary_const_iterator<value_type>, boundary_const_iterator<value_type> > super;
 	
 	using typename super::type;
 	using typename super::iterator;
@@ -179,30 +179,30 @@ struct range : container<value_type, range_const_iterator<value_type>, range_con
 	value_type start;
 	value_type finish;
 
-	range()
+	boundary()
 	{
 	}
 
-	range(value_type start, value_type finish)
+	boundary(value_type start, value_type finish)
 	{
 		this->start = start;
 		this->finish = finish;
 	}
 
 	template <class value_type2>
-	range(const range<value_type2> &a)
+	boundary(const boundary<value_type2> &a)
 	{
 		this->start = a.start;
 		this->finish = a.finish;
 	}
 
-	range(const_iterator start, const_iterator finish)
+	boundary(const_iterator start, const_iterator finish)
 	{
 		this->start = *start;
 		this->finish = *finish;
 	}
 
-	virtual ~range()
+	virtual ~boundary()
 	{
 
 	}
@@ -271,66 +271,66 @@ struct range : container<value_type, range_const_iterator<value_type>, range_con
 	}
 
 	// Slicing
-	range<value_type> sub(int start, int end) const
+	boundary<value_type> sub(int start, int end) const
 	{
 		int count = size();
 		start = start < 0 ? count + start : start;
 		end = end < 0 ? count + end : end;
-		return range<value_type>(this->start + start, this->start + end);
+		return boundary<value_type>(this->start + start, this->start + end);
 	}
 
-	range<value_type> sub(int start) const
+	boundary<value_type> sub(int start) const
 	{
 		int count = size();
 		start = start < 0 ? count + start : start;
-		return range<value_type>(this->start + start, this->finish);
+		return boundary<value_type>(this->start + start, this->finish);
 	}
 
-	range<value_type> sub() const
+	boundary<value_type> sub() const
 	{
-		return range<value_type>(start, finish);
+		return boundary<value_type>(start, finish);
 	}
 
-	range<value_type> subcpy(int start, int end) const
+	boundary<value_type> subcpy(int start, int end) const
 	{
 		int count = size();
 		start = start < 0 ? count + start : start;
 		end = end < 0 ? count + end : end;
-		return range<value_type>(this->start + start, this->start + end);
+		return boundary<value_type>(this->start + start, this->start + end);
 	}
 
-	range<value_type> subcpy(int start) const
+	boundary<value_type> subcpy(int start) const
 	{
 		int count = size();
 		start = start < 0 ? count + start : start;
-		return range<value_type>(this->start + start, this->finish);
+		return boundary<value_type>(this->start + start, this->finish);
 	}
 
-	range<value_type> subcpy() const
+	boundary<value_type> subcpy() const
 	{
-		return range<value_type>(start, finish);
-	}
-
-	template <class container>
-	range<typename container::iterator> sample(container &c) const
-	{
-		return range<typename container::iterator>(c.at(start), c.at(finish));
+		return boundary<value_type>(start, finish);
 	}
 
 	template <class container>
-	range<typename container::const_iterator> sample(const container &c) const
+	boundary<typename container::iterator> sample(container &c) const
 	{
-		return range<typename container::const_iterator>(c.at(start), c.at(finish));
+		return boundary<typename container::iterator>(c.at(start), c.at(finish));
 	}
 
-	range<int> idx() const
+	template <class container>
+	boundary<typename container::const_iterator> sample(const container &c) const
 	{
-		return range<int>(start.idx(), finish.idx());
+		return boundary<typename container::const_iterator>(c.at(start), c.at(finish));
+	}
+
+	boundary<int> idx() const
+	{
+		return boundary<int>(start.idx(), finish.idx());
 	}
 
 	// Modifiers	
 	
-	void swap(range<value_type> &root)
+	void swap(boundary<value_type> &root)
 	{
 		value_type tmp_start = start;
 		value_type tmp_finish = finish;
@@ -340,7 +340,7 @@ struct range : container<value_type, range_const_iterator<value_type>, range_con
 		root.finish = tmp_finish;
 	}
 
-	range<value_type> &operator=(const range<value_type> &root)
+	boundary<value_type> &operator=(const boundary<value_type> &root)
 	{
 		start = root.start;
 		finish = root.finish;
@@ -351,40 +351,40 @@ struct range : container<value_type, range_const_iterator<value_type>, range_con
 // Faster comparison algorithms
 
 template <class value_type1, class value_type2>
-bool operator==(range<value_type1> s1, range<value_type2> s2)
+bool operator==(boundary<value_type1> s1, boundary<value_type2> s2)
 {
 	return (s1.start == s2.start && s1.finish == s2.finish);
 }
 
 template <class value_type1, class value_type2>
-bool operator!=(range<value_type1> s1, range<value_type2> s2)
+bool operator!=(boundary<value_type1> s1, boundary<value_type2> s2)
 {
 	return (s1.start != s2.start || s1.finish != s2.finish);
 }
 
 template <class value_type1, class value_type2>
-bool operator<(range<value_type1> s1, range<value_type2> s2)
+bool operator<(boundary<value_type1> s1, boundary<value_type2> s2)
 {
 	return (s1.start < s2.start || (s1.start == s2.start &&
 		    s1.finish < s2.finish));
 }
 
 template <class value_type1, class value_type2>
-bool operator>(range<value_type1> s1, range<value_type2> s2)
+bool operator>(boundary<value_type1> s1, boundary<value_type2> s2)
 {
 	return (s1.start > s2.start || (s1.start == s2.start &&
 			s1.finish > s2.finish));
 }
 
 template <class value_type1, class value_type2>
-bool operator<=(range<value_type1> s1, range<value_type2> s2)
+bool operator<=(boundary<value_type1> s1, boundary<value_type2> s2)
 {
 	return (s1.start < s2.start || (s1.start == s2.start &&
 			s1.finish <= s2.finish));
 }
 
 template <class value_type1, class value_type2>
-bool operator>=(range<value_type1> s1, range<value_type2> s2)
+bool operator>=(boundary<value_type1> s1, boundary<value_type2> s2)
 {
 	return (s1.start > s2.start || (s1.start == s2.start &&
 			s1.finish >= s2.finish));
@@ -392,9 +392,9 @@ bool operator>=(range<value_type1> s1, range<value_type2> s2)
 
 // Constructers that auto-determine value_type
 template <typename value_type>
-range<value_type> range_t(value_type start, value_type finish)
+boundary<value_type> boundary_t(value_type start, value_type finish)
 {
-	return range<value_type>(start, finish);
+	return boundary<value_type>(start, finish);
 }
 
 }

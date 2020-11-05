@@ -519,15 +519,15 @@ struct hash_set : container<key_type, hash_set_iterator<key_type, hash_func>, ha
 			buckets[i*2] = buckets[i];
 		for (int i = 0; i < buckets.size()-1; i+=2)
 		{
-			uint32_t boundary = (i+1) << shift;
+			uint32_t start = (i+1) << shift;
 			if (buckets[i]) {
-				buckets[i+1] = lower_bound(buckets[i], buckets[i+2], pair<uint32_t, key_type>(boundary, key_type()));
+				buckets[i+1] = lower_bound(buckets[i], buckets[i+2], pair<uint32_t, key_type>(start, key_type()));
 			} else {
 				buckets[i+1] = buckets[i];
 			}
 		
 			/*item_iterator j = buckets[i];
-			while (j and j != buckets[i+2] and j->first < boundary) {
+			while (j and j != buckets[i+2] and j->first < start) {
 				j++;
 			}
 			buckets[i+1] = j;*/

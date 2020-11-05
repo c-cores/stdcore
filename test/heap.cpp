@@ -48,4 +48,14 @@ TEST(heap, heap_push)
 	EXPECT_EQ(x, array_t<int>(7, 7, 3, 6, 1, 3, 2, 3));
 }
 
+TEST(heap, sort_heap_inplace)
+{
+	core::array<int> x = array_t<int>(7, 3, 1, 2, 3, 6, 3, 7);
+	
+	sort_heap_inplace(x);
+
+	EXPECT_EQ(x, array_t<int>(7, 1, 2, 3, 3, 3, 6, 7));
+}
+
+
 

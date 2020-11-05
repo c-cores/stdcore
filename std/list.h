@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <std/range.h>
+#include <std/boundary.h>
 #include <std/slice.h>
 
 #include <stdlib.h>
@@ -327,12 +327,12 @@ struct list_iterator
 		}
 	}
 
-	core::slice<range<list_iterator<value_type> > > sub(int length) const
+	core::slice<boundary<list_iterator<value_type> > > sub(int length) const
 	{
 		if (length < 0)
-			return range<list_iterator<value_type> >(*this+length, *this);
+			return boundary<list_iterator<value_type> >(*this+length, *this);
 		else
-			return range<list_iterator<value_type> >(*this, *this+length);
+			return boundary<list_iterator<value_type> >(*this, *this+length);
 	}
 
 	list<value_type> subcpy(int length) const
@@ -343,9 +343,9 @@ struct list_iterator
 			return list<value_type>(*this, *this+length);
 	}
 
-	core::slice<range<list_iterator<value_type> > > sub() const
+	core::slice<boundary<list_iterator<value_type> > > sub() const
 	{
-		return range<list_iterator<value_type> >(*this, list_iterator<value_type>());
+		return boundary<list_iterator<value_type> >(*this, list_iterator<value_type>());
 	}
 
 	list<value_type> subcpy() const
@@ -802,12 +802,12 @@ public:
 		}
 	}
 
-	core::slice<range<list_const_iterator<value_type> > > sub(int length) const
+	core::slice<boundary<list_const_iterator<value_type> > > sub(int length) const
 	{
 		if (length < 0)
-			return range<list_const_iterator<value_type> >(*this+length, *this);
+			return boundary<list_const_iterator<value_type> >(*this+length, *this);
 		else
-			return range<list_const_iterator<value_type> >(*this, *this+length);
+			return boundary<list_const_iterator<value_type> >(*this, *this+length);
 	}
 
 	list<value_type> subcpy(int length) const
@@ -818,9 +818,9 @@ public:
 			return list<value_type>(*this, *this+length);
 	}
 
-	core::slice<range<list_const_iterator<value_type> > > sub() const
+	core::slice<boundary<list_const_iterator<value_type> > > sub() const
 	{
-		return range<list_const_iterator<value_type> >(*this, list_const_iterator<value_type>());
+		return boundary<list_const_iterator<value_type> >(*this, list_const_iterator<value_type>());
 	}
 
 	list<value_type> subcpy() const
@@ -1060,9 +1060,9 @@ struct list : container<value_type, list_iterator<value_type>, list_const_iterat
 		return result;
 	}
 
-	core::slice<range<iterator> > sub(int start, int end)
+	core::slice<boundary<iterator> > sub(int start, int end)
 	{
-		return range<iterator>(at(start), at(end));
+		return boundary<iterator>(at(start), at(end));
 	}
 
 	list<value_type> subcpy(int start, int end)
@@ -1070,9 +1070,9 @@ struct list : container<value_type, list_iterator<value_type>, list_const_iterat
 		return list<value_type>(at(start), at(end));
 	}
 
-	core::slice<range<iterator> > sub(int start)
+	core::slice<boundary<iterator> > sub(int start)
 	{
-		return range<iterator>(at(start), this->end());
+		return boundary<iterator>(at(start), this->end());
 	}
 
 	list<value_type> subcpy(int start)
@@ -1080,9 +1080,9 @@ struct list : container<value_type, list_iterator<value_type>, list_const_iterat
 		return list<value_type>(at(start), this->end());
 	}
 
-	core::slice<range<iterator> > sub()
+	core::slice<boundary<iterator> > sub()
 	{
-		return range<iterator>(begin(), end());
+		return boundary<iterator>(begin(), end());
 	}
 
 	list<value_type> subcpy()
@@ -1090,9 +1090,9 @@ struct list : container<value_type, list_iterator<value_type>, list_const_iterat
 		return *this;
 	}
 
-	core::slice<range<const_iterator> > sub(int start, int end) const
+	core::slice<boundary<const_iterator> > sub(int start, int end) const
 	{
-		return range<const_iterator>(at(start), at(end));
+		return boundary<const_iterator>(at(start), at(end));
 	}
 
 	list<value_type> subcpy(int start, int end) const
@@ -1100,9 +1100,9 @@ struct list : container<value_type, list_iterator<value_type>, list_const_iterat
 		return list<value_type>(at(start), at(end));
 	}
 
-	core::slice<range<const_iterator> > sub(int start) const
+	core::slice<boundary<const_iterator> > sub(int start) const
 	{
-		return range<const_iterator>(at(start), this->end());
+		return boundary<const_iterator>(at(start), this->end());
 	}
 
 	list<value_type> subcpy(int start) const
@@ -1110,9 +1110,9 @@ struct list : container<value_type, list_iterator<value_type>, list_const_iterat
 		return list<value_type>(at(start), this->end());
 	}
 
-	core::slice<range<const_iterator> > sub() const
+	core::slice<boundary<const_iterator> > sub() const
 	{
-		return range<const_iterator>(begin(), end());
+		return boundary<const_iterator>(begin(), end());
 	}
 
 	list<value_type> subcpy() const

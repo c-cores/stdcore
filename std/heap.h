@@ -8,6 +8,8 @@
 #pragma once
 
 #include <std/sort.h>
+#include <std/slice.h>
+#include <std/io.h>
 
 namespace core
 {
@@ -89,11 +91,19 @@ typename container_type::type heap_pop(container_type &c)
 	return result;
 }
 
-/*template <class container_type>
-struct heap : container<typename container_type::type, typename container_type::iterator, typename container_type::const_iterator>
+template <class container_type>
+void sort_heap_inplace(container_type &c)
 {
-	container_type ref;
-};*/
+	heap_make(c);
+	slice<range<typename container_type::iterator> > heap = c.sub();
+	
+	while (heap.begin() != heap.end())
+	{
+		heap.rbegin().swap(heap.begin());
+		heap.ref.finish--;
+		heap_down(heap.begin());
+	}
+}
 
 }
 
