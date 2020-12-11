@@ -198,7 +198,7 @@ string &operator<<(string &s1, short s2)
 string &operator<<(string &s1, long s2)
 {
 	s1.reserve(s1.size() + 12);
-	s1.alloc_back_unsafe(itoa((int)s2, s1.data + s1.size()));
+	s1.alloc_back_unsafe(itoa((long long)s2, s1.data + s1.size()));
 	return s1;
 }
 
@@ -233,7 +233,7 @@ string &operator<<(string &s1, unsigned short s2)
 string &operator<<(string &s1, unsigned long s2)
 {
 	s1.reserve(s1.size() + 12);
-	s1.alloc_back_unsafe(itoa((unsigned int)s2, s1.data + s1.size()));
+	s1.alloc_back_unsafe(itoa((unsigned long long)s2, s1.data + s1.size()));
 	return s1;
 }
 
@@ -298,7 +298,7 @@ string &operator<<(string &s1, options<long> s2)
 		break;
 	default:
 		s1.reserve(s1.size() + 12);
-		s1.alloc_back_unsafe(itoa((int)*s2.value, s1.data+s1.size()));
+		s1.alloc_back_unsafe(itoa((long long)*s2.value, s1.data+s1.size()));
 	}
 
 	return s1;
@@ -395,7 +395,7 @@ string &operator<<(string &s1, options<unsigned long> s2)
 		break;
 	default:
 		s1.reserve(s1.size() + 12);
-		s1.alloc_back_unsafe(itoa((unsigned int)*s2.value, s1.data+s1.size()));
+		s1.alloc_back_unsafe(itoa((unsigned long long)*s2.value, s1.data+s1.size()));
 	}
 	return s1;
 }
