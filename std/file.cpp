@@ -177,4 +177,19 @@ intptr_t file::write(const array<char> &str)
 	return result;
 }
 
+intptr_t file::read_to(const char *delimiters, array<char> &str)
+{
+	const char *cptr;
+	do {
+		char c;
+		intptr_t count = ::read(desc, &c, 1);
+		if (count == 0) {
+			return str.count;
+		}
+		str.push_back(c);
+		for (cptr = delimiters; *cptr and c != *cptr; ++cptr);
+	} while (not *cptr);
+	return str.count;
+}
+
 }

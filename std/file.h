@@ -55,6 +55,8 @@ struct file
 
 	intptr_t write(intptr_t length, const char *str);
 	intptr_t write(const array<char> &str);
+
+	intptr_t read_to(const char *delimiters, array<char> &str);
 };
 
 }
