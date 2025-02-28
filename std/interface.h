@@ -4,6 +4,8 @@
 #include <cassert>
 #include <functional>
 
+// Original idea from http://wall.org/~lewis/2012/07/23/go-style-interfaces-in-cpp.html
+
 // This header creates a Golang-style interface using C++ macros.
 //
 // Define your interface like so:
